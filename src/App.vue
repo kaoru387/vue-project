@@ -31,11 +31,13 @@
         <router-view v-loading="loading"/>  
       </v-container>
     </v-main>
+    <modal-login ref="dialogLogin" :dialog-form-visible="modal_login_visible" :close-modal="close_login_modal" />
   </v-app>
 </template>
 
 <script>
   import store from './store/app';
+
 
 export default {
   name: 'App',
@@ -48,6 +50,7 @@ export default {
       // width: window.innerWidth,
       tabs: null,
       text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+      modal_login_visible: false,
     }
   },
   computed: {
@@ -66,19 +69,9 @@ export default {
     // });
   },
   methods: {
-    // bookLoaded(data){
-    //   return _.forEach(data, function(v, key) {
-    //     store.dispatch('getBookings',{ 
-    //       schedule_id: v.id,
-    //       name: v.name,
-    //       slot: true
-    //     });
-    //   });
-    // },
-    test(){
-      return 'OK'
+    close_login_modal: function() {
+        this.modal_login_visible = false;
     },
-
     handleSelect(key, keyPath) {
       // this.activeIndex = this.$route.name;
       this.activeIndex = key;

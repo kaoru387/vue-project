@@ -94,6 +94,7 @@ export default {
         },
       },
       selectDate: '',
+      elDay: '',
     }
   },
   computed: {
@@ -122,44 +123,42 @@ export default {
     async handleClickSignIn() {
       try {
         
-        let that = this
-        let checkGauthLoad = setInterval(function () {
-          // console.log('home',store.state.result.events)
-          // that.isInit = that.$gAuth.isInit;
-          // that.isSignIn = that.$gAuth.isAuthorized;
-          // if (that.isInit) clearInterval(checkGauthLoad);
-          let CALENDAR_ID = 'onkltar6879bqv4616fa28i048@group.calendar.google.com'
-          that.$gapi.getGapiClient().then((gapi) => {
-              gapi.client.request({
-              'path': 'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(CALENDAR_ID) + '/events?singleEvents=true'
-              }).then(function(response) {
-                // console.log(response.result)
-                // store.state.result.events =  response.result.items;
-                _.forEach(response.result.items, function(v, key) {
-                  // console.log(v, key)
-                  store.state.result.events.push({
-                    id: v.id,
-                    title: v.summary,
-                    start: v.start.dateTime,
-                    end: v.end.dateTime,
-                    // rendering: 'background',
-                  // color: '#D6E7E0',
-                  display: true,
-                  backgroundColor: '#AD1457',
-                  borderColor: '#AD1457',
-                  studioName: 'コザスタジオ',
-                  description: '',
-                  fontColor: 'white',
-                  isGoogle: true,
-                  })  
-                })
-                clearInterval(checkGauthLoad);
-              });
-            store.commit('SET_ISLOADING', false);
-          })
-
-
-        }, 1000);
+        // let that = this
+        // let checkGauthLoad = setInterval(function () {
+        //   // console.log('home',store.state.result.events)
+        //   // that.isInit = that.$gAuth.isInit;
+        //   // that.isSignIn = that.$gAuth.isAuthorized;
+        //   // if (that.isInit) clearInterval(checkGauthLoad);
+        //   let CALENDAR_ID = 'onkltar6879bqv4616fa28i048@group.calendar.google.com'
+        //   that.$gapi.getGapiClient().then((gapi) => {
+        //       gapi.client.request({
+        //       'path': 'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(CALENDAR_ID) + '/events?singleEvents=true'
+        //       }).then(function(response) {
+        //         // console.log(response.result)
+        //         // store.state.result.events =  response.result.items;
+        //         _.forEach(response.result.items, function(v, key) {
+        //           // console.log(v, key)
+        //           store.state.result.events.push({
+        //             id: v.id,
+        //             title: v.summary,
+        //             start: v.start.dateTime,
+        //             end: v.end.dateTime,
+        //             // rendering: 'background',
+        //           // color: '#D6E7E0',
+        //           display: true,
+        //           backgroundColor: '#AD1457',
+        //           borderColor: '#AD1457',
+        //           studioName: 'コザスタジオ',
+        //           description: '',
+        //           fontColor: 'white',
+        //           isGoogle: true,
+        //           })  
+        //         })
+        //       });
+        //       store.commit('SET_ISLOADING', false);
+        //       clearInterval(checkGauthLoad);
+        //   })
+        // }, 1000);
 
       } catch (error) {
         //on fail do something
@@ -169,8 +168,12 @@ export default {
     },
     handleDateClick(arg) {  // 日付選択
       // alert('date click! ' + arg.dateStr)
+      // console.log(this.elDay.style)
+      if(this.elDay.style!==undefined) this.elDay.style.backgroundColor = 'white';
+      this.elDay = arg.dayEl;
+
       this.selectDates = arg.dateStr;
-      // console.log(arg)
+      arg.dayEl.style.backgroundColor = '#ff9f89';
       // this.$refs.fullCalendar.getApi().gotoDate(arg.dateStr)
       // this.$refs.fullCalendar.getApi().changeView('timeGridDay');
       // this.$emit('dayEvent',arg)
@@ -190,7 +193,7 @@ export default {
       }
       this.$emit('eventChange',event)
     },
-     eventDidMount: function(info) {
+    eventDidMount: function(info) {
       // console.log(info.event)
       var tooltip = new BPopover({
         propsData: {

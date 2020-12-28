@@ -13,8 +13,8 @@
       <div class="form-group">
         <div class="form-row justify-content-start align-items-end">
           <div class="col-12 mb-1">
-            <!-- <iframe class="if-koza" :src='"https://www.supersaas.jp/schedule/susture/General?service_id=233195&year="+year+"&month="+month+"&day="+day' width="100%" :height=height></iframe> -->
-            <iframe class="if-koza" :src='"https://m.supersaas.jp/schedule/susture/General?service_id=233195"' width="100%" :height=height></iframe>
+            <iframe class="if-koza" :src='"https://www.supersaas.jp/schedule/susture/General?service_id=233195&year="+year+"&month="+month+"&day="+day' width="100%" :height=height></iframe>
+            <!-- <iframe class="if-koza" :src='"https://m.supersaas.jp/schedule/susture/General?service_id=233195"' width="100%" :height=height></iframe> -->
             <!-- <iframe class="if-koza" :src='"https://www.supersaas.jp/schedule/susture/General?service_id=233195"' width="100%" :height=height></iframe> -->
           </div>
         </div>

@@ -22,6 +22,9 @@
       <el-button type="success" @click="reservationKoza">コザスタジオ予約の登録・編集</el-button>
       <el-button type="primary" @click="reservationNago">ナゴスタジオ予約の登録・編集</el-button>
     </el-row> -->
+
+    <a href="https://www.supersaas.com/api/login?account=susture&after=experience&user[name]=A%40susture.com&checksum=1e5dcff50bb5f9a5273602b25a2f0d41">Log in</a>
+
     <calendar ref="calendar" v-if="events.length" :events="events" @reservationEvent="dayEvent" @eventChange="changeEvent" :event-sources="eventSources"></calendar>
 
     <!-- <modal-experience ref="dialog_supersass" :dialog-form-visible="modal_experience_visible" :close-modal="close_experience_modal" /> -->
@@ -104,6 +107,7 @@ export default {
 		          slot: true
 		        });
 	        });
+	        store.commit('SET_ISLOADING', false);
 	    });
 	    next();
 	    
