@@ -4,7 +4,7 @@
     <!-- <button @click="toggleWeekends">toggle weekends</button> -->
     <FullCalendar
       ref="fullCalendar"
-      :style="{'min-height':'600px','height':height}"
+      :style="{'min-height':height-180+'px','height':height+'px'}"
       defaultView="dayGridMonth"
       :options="calendarOptions">
        <!-- <template #eventContent="arg">
@@ -70,7 +70,7 @@ export default {
         initialView: 'dayGridMonth',
         headerToolbar: {
           left:   'title',
-          center: 'myCustomButton',
+          // center: 'customButtons',
           right:  'today prev,next'
           // left: 'prev,next today',
           // center: 'title',
@@ -86,20 +86,20 @@ export default {
         // eventChange: this.changeEvent,
         weekends: true,
         eventDidMount: this.eventDidMount,
-        customButtons: {
-          myCustomButton: {
-            text: '予約',
-            click: this.reservationEvent
-          }
-        },
+        // customButtons: {
+        //   myCustomButton: {
+        //     text: '予約する',
+        //     click: this.reservationEvent
+        //   }
+        // },
       },
       selectDate: '',
       elDay: '',
     }
   },
   computed: {
-    // events() {
-    //   return store.state.result.events;
+    // loading() {
+    //   return store.state.isLoading;
     // },
   },
   created: function () {
@@ -122,7 +122,6 @@ export default {
     },
     async handleClickSignIn() {
       try {
-        
         // let that = this
         // let checkGauthLoad = setInterval(function () {
         //   // console.log('home',store.state.result.events)
@@ -173,10 +172,11 @@ export default {
       this.elDay = arg.dayEl;
 
       this.selectDates = arg.dateStr;
-      arg.dayEl.style.backgroundColor = '#ff9f89';
+      // arg.dayEl.style.backgroundColor = 'rgba(255,0,0,0.15)';
+      arg.dayEl.style.backgroundColor = 'rgba(255, 220, 40, 0.15)';
       // this.$refs.fullCalendar.getApi().gotoDate(arg.dateStr)
       // this.$refs.fullCalendar.getApi().changeView('timeGridDay');
-      // this.$emit('dayEvent',arg)
+      this.$emit('reservationEvent',arg.dateStr)
     },
     reservationEvent() {
       this.$emit('reservationEvent',this.selectDates)

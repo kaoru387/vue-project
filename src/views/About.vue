@@ -1,7 +1,7 @@
 <template>
   <v-container class="about">
     <h1>スタジオ予約（会員専用）</h1>
-    <HelloWorld msg="スケジュール"/>
+    <StudioReservation msg="スケジュール"/>
     <!-- <calendar ref="calendar" :events="events" @eventClick="removeEvent" @eventChange="changeEvent"></calendar> -->
   </v-container>
 </template>
@@ -9,14 +9,14 @@
 <script>
 import store from '../store/app';
 // import calendar from '../components/Calendar'
-import HelloWorld from '../components/HelloWorld'
+import StudioReservation from '../components/StudioReservation'
 import axios from 'axios';
 import _ from 'lodash';
 
 export default {
 	components: {
 		// calendar
-		HelloWorld
+		StudioReservation
   	},
 	data: function () {
 	    return {
@@ -49,6 +49,14 @@ export default {
 	    next()
 	},
 	created () {
+		console.log('kai')
+		store.commit('SET_ISLOADING', true)
+    	// トークンが存在、かつログイン有効期限を過ぎてない場合、またはログイン画面の場合
+	    if (!store.state.auth.login.token) {
+	        // ログイン画面に飛ばす。ログイン後に元の画面に戻れるよう、backuriパラメーターにリダイレクト前のURLを入れる
+	        // next({path: '/login', query: {backuri: store.state.backuri}})
+	        this.$router.push({path: '/login', query: {backuri: store.state.backuri}});
+	    }    
 	},
 	methods: {
 	    addEvent: function() {

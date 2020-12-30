@@ -1,7 +1,25 @@
 <template>
   <v-app>
+    <v-card flat>
+      <v-card-text class="p-0 m-0">
+        <div class="layout column align-center">
+          <h4 class="flex my-4">スタジオ予約</h4>
+        </div>
+      </v-card-text>
+    </v-card>
+    <v-main>
+      <!-- <v-container fluid> -->
+        <router-view v-loading="loading"/>  
+      <!-- </v-container> -->
+    </v-main>
+  </v-app>
+  <!-- <v-app>
     <v-toolbar flat>
-      <v-spacer>スタジオ予約</v-spacer>
+      <v-card-text>
+        <div class="layout column align-center">
+          <h4 class="flex mt-5">スタジオ予約</h4>
+        </div>
+      </v-card-text>
       <template v-slot:extension>
         <v-tabs
           v-model="tabs"
@@ -15,7 +33,6 @@
           >
             スケジュール
           </v-tab>
-
           <v-tab
             href="#mobile-tabs-5-2"
             class="primary--text"
@@ -31,23 +48,23 @@
         <router-view v-loading="loading"/>  
       </v-container>
     </v-main>
-    <modal-login ref="dialogLogin" :dialog-form-visible="modal_login_visible" :close-modal="close_login_modal" />
-  </v-app>
+  </v-app> -->
 </template>
 
 <script>
   import store from './store/app';
-
+  // import { VCard, VCardText, VCardMedia } from 'vuetify/lib'
 
 export default {
   name: 'App',
   components: {
+    // VCard,
+    // VCardText,
+    // VCardMedia
   },
   data() {
     return {
       activeIndex: 'Home',
-      // height: window.innerHeight,
-      // width: window.innerWidth,
       tabs: null,
       text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
       modal_login_visible: false,
@@ -75,7 +92,7 @@ export default {
     handleSelect(key, keyPath) {
       // this.activeIndex = this.$route.name;
       this.activeIndex = key;
-    }
+    },
   }
 };
 </script>
