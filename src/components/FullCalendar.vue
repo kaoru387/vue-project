@@ -12,14 +12,12 @@
           <v-list-item-content>
             <v-list-item-title>
               <p v-if="!arg.event.extendedProps.isGoogle" class="circle-icon" :style="{'background':arg.event.extendedProps.iconColor}"></p>
-
               <b :style="{'color':arg.event.extendedProps.fontColor}">{{ arg.timeText }}</b>
               <i class="cal-title p-0 m-0" :style="{'color':arg.event.extendedProps.fontColor}">{{ arg.event.title }}</i>
             </v-list-item-title>
             <v-list-item-subtitle>
               <p v-if="!arg.event.extendedProps.isGoogle" class="sample" :style="{'color':arg.event.extendedProps.fontColor}">{{ arg.event.extendedProps.studioName }}</p>
             </v-list-item-subtitle>
-
           </v-list-item-content>
         </v-list-item>
       </template> -->
@@ -42,7 +40,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import timeGridPlugin from "@fullcalendar/timegrid";
 import ja from "@fullcalendar/core/locales/ja";
-import { formatDate } from '@fullcalendar/vue'
+// import { formatDate } from '@fullcalendar/vue'
 import store from '../store/app';
 
 // import { mdiCircle } from '@mdi/js'
@@ -64,14 +62,13 @@ export default {
     return {
       width: window.innerWidth,
       height: window.innerHeight,
-      // mdiIcon: mdiCircle,
       calendarOptions: {
         plugins: [ dayGridPlugin, timeGridPlugin, interactionPlugin ],
         initialView: 'dayGridMonth',
         headerToolbar: {
           left:   'title',
-          // center: 'customButtons',
-          right:  'today prev,next'
+          // center: 'myCustomButton',
+          right:  'myCustomButton dayGridMonth prev,next',
           // left: 'prev,next today',
           // center: 'title',
           // right: 'dayGridMonth,timeGridWeek,timeGridDay'
@@ -86,25 +83,24 @@ export default {
         // eventChange: this.changeEvent,
         weekends: true,
         eventDidMount: this.eventDidMount,
-        // customButtons: {
-        //   myCustomButton: {
-        //     text: '予約する',
-        //     click: this.reservationEvent
-        //   }
-        // },
+        customButtons: {
+          myCustomButton: {
+            text: '今日',
+            click: this.todayEvent
+          }
+        },
+        viewDidMount: this.viewDidMount
       },
-      selectDate: '',
       elDay: '',
+      elToday: '',
     }
   },
   computed: {
-    // loading() {
-    //   return store.state.isLoading;
-    // },
+    selectDate() {
+      return store.state.selectDate;
+    },
   },
   created: function () {
-    this.selectDates=this.$moment().format('YYYY-MM-DD');
-    this.handleClickSignIn();
   },
   watch: {
     // events:  function(newEvents) {
@@ -120,66 +116,33 @@ export default {
     handleWeekendsToggle() {
       this.calendarOptions.weekends = !this.calendarOptions.weekends // update a property
     },
-    async handleClickSignIn() {
-      try {
-        // let that = this
-        // let checkGauthLoad = setInterval(function () {
-        //   // console.log('home',store.state.result.events)
-        //   // that.isInit = that.$gAuth.isInit;
-        //   // that.isSignIn = that.$gAuth.isAuthorized;
-        //   // if (that.isInit) clearInterval(checkGauthLoad);
-        //   let CALENDAR_ID = 'onkltar6879bqv4616fa28i048@group.calendar.google.com'
-        //   that.$gapi.getGapiClient().then((gapi) => {
-        //       gapi.client.request({
-        //       'path': 'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(CALENDAR_ID) + '/events?singleEvents=true'
-        //       }).then(function(response) {
-        //         // console.log(response.result)
-        //         // store.state.result.events =  response.result.items;
-        //         _.forEach(response.result.items, function(v, key) {
-        //           // console.log(v, key)
-        //           store.state.result.events.push({
-        //             id: v.id,
-        //             title: v.summary,
-        //             start: v.start.dateTime,
-        //             end: v.end.dateTime,
-        //             // rendering: 'background',
-        //           // color: '#D6E7E0',
-        //           display: true,
-        //           backgroundColor: '#AD1457',
-        //           borderColor: '#AD1457',
-        //           studioName: 'コザスタジオ',
-        //           description: '',
-        //           fontColor: 'white',
-        //           isGoogle: true,
-        //           })  
-        //         })
-        //       });
-        //       store.commit('SET_ISLOADING', false);
-        //       clearInterval(checkGauthLoad);
-        //   })
-        // }, 1000);
-
-      } catch (error) {
-        //on fail do something
-        console.error(error);
-        return null;
-      }
-    },
     handleDateClick(arg) {  // 日付選択
-      // alert('date click! ' + arg.dateStr)
-      // console.log(this.elDay.style)
+      
+      if(arg.dateStr<this.$moment().format('YYYY-MM-DD')) {
+        // alert('選択できません。');
+        return;
+      }
+
+      var cells = document.getElementsByTagName("td");
+      for (var i = 0; i < cells.length; i++) {
+        if(cells[i].getAttribute('data-date')==this.$moment().format('YYYY-MM-DD')){
+          cells[i].classList.remove('fc-day-today');
+        }
+      }
+
+
+      // 選択日付の背景色を変更する ====
       if(this.elDay.style!==undefined) this.elDay.style.backgroundColor = 'white';
       this.elDay = arg.dayEl;
-
-      this.selectDates = arg.dateStr;
       // arg.dayEl.style.backgroundColor = 'rgba(255,0,0,0.15)';
       arg.dayEl.style.backgroundColor = 'rgba(255, 220, 40, 0.15)';
+      // ==================
+
+      store.commit('SET_SELECT_DATE', arg.dateStr);
+      
+      // 週表示
       // this.$refs.fullCalendar.getApi().gotoDate(arg.dateStr)
       // this.$refs.fullCalendar.getApi().changeView('timeGridDay');
-      this.$emit('reservationEvent',arg.dateStr)
-    },
-    reservationEvent() {
-      this.$emit('reservationEvent',this.selectDates)
     },
     changeEvent: function(eventInfo) {
       event = eventInfo.event.toJSON()
@@ -200,7 +163,8 @@ export default {
           html: true,
           container: 'body',
           title: info.timeText+' '+info.event.title,
-          content: info.event.extendedProps.studioName+' '+ '\n' +info.event.extendedProps.description,
+          // content: info.event.extendedProps.studioName+' '+ '\n' +info.event.extendedProps.description,
+          content: info.event.extendedProps.description,
           placement: 'auto',
           boundary: 'scrollParent',
           // boundary: 'viewport',
@@ -211,6 +175,33 @@ export default {
           target: info.el,
         }
       }).$mount()
+
+      // if (info.event.extendedProps.status === 'done') {
+      //   console.log('done')
+      // }
+    },
+    viewDidMount: function(e){
+      
+      // 今日の日付の背景色をリセット
+      let that = this
+      var cells = document.getElementsByTagName("td");
+      for (var i = 0; i < cells.length; i++) {
+        if(cells[i].getAttribute('data-date')==this.$moment().format('YYYY-MM-DD')){
+          // cells[i].classList.remove('fc-day-today');
+          that.elToday=cells[i];
+        }
+        // 過去の日付は選択できないため背景色を変更
+        if(cells[i].getAttribute('data-date')<this.$moment().format('YYYY-MM-DD')){
+          cells[i].style.backgroundColor = 'rgba(128,128,128,0.08)';
+        }
+      }
+
+    },
+    todayEvent: function(){
+      // 今日にリセット
+      this.elDay.style.backgroundColor = 'white';
+      this.elToday.classList.add('fc-day-today');
+      store.commit('SET_SELECT_DATE', this.$moment().format('YYYY-MM-DD'));
     },
   }
 };

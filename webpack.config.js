@@ -80,24 +80,37 @@ module.exports = {
   devServer: {
     contentBase: '../public_html/dist',
     // port: 4005,
+    // headers: {
+    //     'X-Frame-Options': "allow-from *"
+    // },
     proxy: {
+      // '/api': {
+      //     target: "https://dev.fandangos-okinawa.com/koza.php",
+      //     // target: "https://script.google.com/macros/s/AKfycbzZ033TdCyxhAQJ7nss3K9skvrhKvb8KTmw2kqJK5OwbdQmyaIX/exec",
+      //     changeOrigin: true,
+      //     'pathRewrite': {'^/api/': ''}
+      // },
+      // '/google': {
+      //     target: "https://script.google.com/macros/s/AKfycbzZ033TdCyxhAQJ7nss3K9skvrhKvb8KTmw2kqJK5OwbdQmyaIX/exec",
+      //     // target: 'https://script.googleapis.com',
+      //     changeOrigin: true,
+      //     'pathRewrite': {'^/google/': ''}
+      // },
       '/api': {
-          target: "https://dev.fandangos-okinawa.com/koza.php",
-          // target: "https://script.google.com/macros/s/AKfycbzZ033TdCyxhAQJ7nss3K9skvrhKvb8KTmw2kqJK5OwbdQmyaIX/exec",
+          target: "https://supersaas.com/api",
           changeOrigin: true,
           'pathRewrite': {'^/api/': ''}
       },
-      '/google': {
-          target: "https://script.google.com/macros/s/AKfycbzZ033TdCyxhAQJ7nss3K9skvrhKvb8KTmw2kqJK5OwbdQmyaIX/exec",
-          // target: 'https://script.googleapis.com',
-          changeOrigin: true,
-          'pathRewrite': {'^/google/': ''}
-      },
       '/supersass': {
-          target: "https://supersaas.com/api",
+          target: "https://schedule.kdev.page",
           changeOrigin: true,
           'pathRewrite': {'^/supersass/': ''}
-      }
+      },
+      '/gcf': {
+          target: "https://asia-northeast2-quickstart-1604473380297.cloudfunctions.net/getMD5",
+          changeOrigin: true,
+          'pathRewrite': {'^/gcf/': ''}
+      },
     }
   },
   plugins: [

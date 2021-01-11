@@ -1,87 +1,67 @@
 <template>
   <div class="home">
-  	
-		<v-alert
-	      text
-	      type="info"
-	    >
-	      <span class="sample">予約日：</span><strong class="mr-2">{{ selectDate }}</strong>
-		  <v-btn
-		    depressed
-		    color="error"
-		    @click="openModal"
-		    >予約する</v-btn>
-	    </v-alert>
-	    <el-alert
-		    type="success"
-		    description="カレンダー日付を選択して予約日をご指定ください。"
-		    show-icon>
-		</el-alert>
-	    <!-- <v-alert
-		  v-if="!loading"
-		  dense
-		  type="success"
-		  text
-		  class="mb-0"
-		  v-model="alert"
-	      dismissible
-		>
-		　　予約する日付を選択してください。
-		</v-alert> -->
 
-	    <!-- <el-button type="primary mr-5" @click="reservationNago">ナゴスタジオ予約の登録・編集</el-button> -->
-	    
-	    <!-- <el-row class="mt-2">
-	    <h1 class="mt-2 mb-2">スケジュール</h1>
-	      <el-button type="success" @click="reservationKoza">コザスタジオ予約の登録・編集</el-button>
-	      <el-button type="primary" @click="reservationNago">ナゴスタジオ予約の登録・編集</el-button>
-	    </el-row> -->
+  	<!-- {{auth.checksum}} -->
+  	<!-- <a :href='"https://www.supersaas.com/api/login?account=susture&after=experience&user[name]=susture387@gmail.com&checksum="+auth.checksum'>Log in</a> -->
+  	<v-tooltip top>
+      	<template v-slot:activator="{ on, attrs }" >
+	  		<v-btn
+	  			v-if="auth.username==''"
+			    class="mb-2"
+			    elevation="2"
+			    color="error"
+			    v-bind="attrs" 
+			    v-on="on"
+			    @click="openModal"
+			    >ログインする</v-btn>
+		</template>
+		<span>はじめてのお客様もお気軽にご登録ください。</span>
+    </v-tooltip>
 
-	    <!-- <a href="https://www.supersaas.com/api/login?account=susture&after=experience&user[name]=A%40susture.com&checksum=1e5dcff50bb5f9a5273602b25a2f0d41">Log in</a>
-	 	-->
+	<v-tooltip top v-if="auth.username!==''">
+      <template v-slot:activator="{ on, attrs }">
+        <strong class="ml-2">{{ selectDate }}<v-icon class="mb-1" color="#40B883" v-bind="attrs" v-on="on">{{ mdiInformation }}</v-icon></strong>
+		    <el-dropdown>
+			  <el-button type="primary">
+			    + 新規予約<i class="el-icon-arrow-down el-icon--right"></i>
+			  </el-button>
+			  <el-dropdown-menu slot="dropdown">
+			    <el-dropdown-item @click.native="presonal">個人で利用する</el-dropdown-item>
+			    <el-dropdown-item @click.native="group">グループで利用する</el-dropdown-item>
+			  </el-dropdown-menu>
+			</el-dropdown>
+      </template>
+      <span>カレンダー日付を選択して予約日をご指定ください。</span>
+    </v-tooltip>
+
  	<v-container fluid>
-	    <calendar ref="calendar" v-if="events.length" :events="events" @reservationEvent="dayEvent" @eventChange="changeEvent" :event-sources="eventSources"></calendar>
+	    <calendar ref="calendar" v-if="events.length" :events="events" @eventChange="changeEvent" :event-sources="eventSources"></calendar>
 	</v-container>
 
-    <!-- <modal-experience ref="dialog_supersass" :dialog-form-visible="modal_experience_visible" :close-modal="close_experience_modal" /> -->
-
-    <!-- <modal-studio-koza ref="dialog_koza" :dialog-form-visible="modal_koza_visible" :close-modal="close_modal_koza" />
-    <modal-studio-nago ref="dialog_nago" :dialog-form-visible="modal_nago_visible" :close-modal="close_modal_nago" /> -->
-    <!-- <modal-experience ref="dialog_supersass" :dialog-form-visible="modal_experience_visible" :close-modal="close_experience_modal" /> -->
-
-    <modal-non-member ref="dialogNonMember" :dialog-form-visible="modal_experience_visible" :close-modal="close_experience_modal" />
-    <modal-fullscreen ref="dialogFullscreen" :dialog-form-visible="modal_visible" :close-modal="close_modal" />
+   <!--  <modal-non-member ref="dialogNonMember" :dialog-form-visible="modal_experience_visible" :close-modal="close_experience_modal" />-->
+    <modal-reservation-studio ref="dialogFullscreen" :dialog-form-visible="modal_visible" :close-modal="close_modal" />
   </div>
 </template>
 
 <script>
 import store from '../store/app';
-// import HelloWorld from '../components/HelloWorld.vue'
-// import Calendar from '../components/Calendar.vue'
 import Calendar from '../components/FullCalendar.vue'
-
-// import ModalExperience from '../components/ModalExperience'
-// import ModalStudioKoza from '../components/ModalStudioKoza'
-// import ModalStudioNago from '../components/ModalStudioNago'
-import ModalNonMember from '../components/ModalNonMember'
-// import ModalShopTicket from './ModalShopTicket'
-import ModalFullscreen from '../components/ModalFullscreen'
+import ModalReservationStudio from '../components/ModalReservationStudio'
 import axios from 'axios';
-import _ from 'lodash';
-// import moment from 'moment-timezone'
 
+import firebase from "../Firebase";
+import _ from 'lodash';
+import { mdiInformation,mdiHospital } from '@mdi/js'
 
 export default {
 	components: {
 	    Calendar,
-	    ModalNonMember,
-	    ModalFullscreen,
+	    ModalReservationStudio,
 	},
 	data() {
     	return {
     		v0: true,
     		alert: true,
-    		selectDate: '',
     		modal_visible: false,
       		modal_koza_visible: false,
       		modal_nago_visible: false,
@@ -94,6 +74,8 @@ export default {
       		},
       		items: [],
       		modal_shop_visible: false,
+      		mdiInformation,
+      		mdiHospital
 	  }
 	},
 	computed: {
@@ -103,53 +85,36 @@ export default {
 	    events() {
 	      return store.state.result.events;
 	    },
+	    selectDate() {
+	      return store.state.selectDate;
+	    },
+	    auth() {
+	      return store.state.auth;
+	    },
 	},
 	beforeRouteUpdate (to, from, next) { // eslint-disable-line
-	    //
 	    console.log('beforeRouteUpdate');
-	    //store.dispatch('getProjectItems',{});
 	    next();
 	},
 	beforeRouteEnter (to, from, next) {
 	    //ページの更新
-	    console.log('beforeRouteEnter');
-	    store.commit('SET_BACK_URI', to.fullPath)
-
-	    store.dispatch('getServiceResources')
-	    store.dispatch('getNonMembers')
-    	
-	    // 初期化
-	    store.commit('SET_EVENTS', [])
-
-	    let that = this
-	    store.dispatch('getDatas', function(e){
-	      // console.log('success',e);
-	      // that.bookLoaded(e.data)
-	      	let books = _.forEach(e.data, function(v, key) {
-		        store.dispatch('getBookings',{ 
-		          schedule_id: v.id,
-		          name: v.name,
-		          slot: true
-		        });
-	        });
-	        store.commit('SET_ISLOADING', false);
-	    });
-	    next();
-	    
-	  },
+	    console.log('beforeRouteEnter /Home');
+	    // // ログイン後か判定
+	    // let that = this;
+	    // next(vm => {
+	    // 	if(store.state.backuri=='/?mode=signedIn') {
+		   //    // ログイン後フラグを初期化
+		   //    store.commit('SET_BACK_URI', '');
+		   //    vm.$router.push({path: '/useconfirm'})
+		   //    // vm.$router.push({path: '/'})
+		   //  }
+	    // });
+	    next()
+	},
 	created: function () {
-		this.selectDate=this.$moment().format('YYYY-MM-DD');
 	},
 	watch: {
-	    // 'events': function() {
-	    	// this.$refs.calendar.fullCalendar( 'rerenderEvents' );
-	    	// this.$refs.calendar.rerenderEvents();
-		    //  if(newVal == true){
-		    //     this.loadingInstance = this.$loading({target: this.$el});
-		    //   }else{
-		    //     this.loadingInstance.close();
-		    //   }
-	    // },
+	  
 	},
 	methods: {
 		close_shop_modal: function() {
@@ -161,47 +126,67 @@ export default {
 	    reservationNonMember(){
 	      this.modal_experience_visible = true;
 	    },
-	 //    close_modal_koza: function() {
-	 //      this.modal_koza_visible = false;
-	 //    },
-	 //    close_modal_nago: function() {
-	 //      this.modal_nago_visible = false;
-	 //    },
 	    close_experience_modal: function() {
 	      this.modal_experience_visible = false;
 	    },
 	    close_modal: function() {
-	      this.modal_visible = false;
-	    },
-	 //    addEvent: function() {
-	 //      this.events.push({
-	 //        id: String(this.events.length + 1),
-	 //        ...this.eventForm
-	 //      })
-	 //    },
-	 	// weekEvent: function() {	// 
-	  //   	this.modal_experience_visible = true;
-	  //   },
-	    dayEvent: function(dateStr) {	// 
-	    	// console.log('ok',dateStr)
-	    	this.selectDate = dateStr;
-	    	// this.modal_experience_visible = true;
-	    	// this.$refs.dialogNonMember.setDate(dateStr);
+	    	this.modal_visible = false;
+
+	    	store.commit('SET_ISLOADING', true)
+	    	// 初期化
+    		store.commit('SET_EVENTS', [])
+    		// 予約取得
+		    store.dispatch('getDatas', function(e){
+		        let books = _.forEach(e.data, function(v, key) {
+		          store.dispatch('getBookings',{ 
+		            schedule_id: v.id,
+		            name: v.name,
+		            slot: true
+		          });
+		        });
+		        if(books) store.commit('SET_ISLOADING', false)
+		    });
 	    },
 	    changeEvent: function(eventInfo) {
 	    	this.modal_experience_visible = true;
 	    	this.$refs.dialogNonMember.setDate(eventInfo.start);
-	    	// this.$refs.dialogNonMember.setDate(eventInfo.dateStr);
-	      // this.events = this.events.map(event => {
-	      //   if(event.id === eventInfo.event.id) {
-	      //     event = eventInfo.event.toJSON()
-	      //   }
-	      //   return event;
-	      // })
 	    },
 	    openModal(){
-	      this.modal_visible = true;
-	      this.$refs.dialogFullscreen.setDate(this.selectDate);
+
+	    	// ログインチェック
+	    	var that = this;
+	    	let currentUserStatus = firebase.auth().currentUser;
+	    	// console.log('current',currentUserStatus)
+	    	if(currentUserStatus===null) {
+	    		// ログイン未だの場合
+	    		that.$router.push({path: '/login'});
+	    		return;
+	    	}
+
+	    	// ログイン済の場合
+  			// this.modal_visible = true;
+  			// this.$refs.dialogFullscreen.setDate(this.selectDate);
+
+  			// if(store.state.auth.general){
+  			// 	// 一般の場合
+  			// 	that.$router.push({path: '/useconfirm'});
+  			// }else{
+  			// 	// 会員の場合
+  			// 	that.$router.push({path: '/member1'});
+  			// }
+
+	    },
+	    presonal(){
+	    	// 個人利用
+	    	store.state.info.isPersonal=true;
+	    	this.$refs.dialogFullscreen.ready();
+	    	this.modal_visible = true;
+	    },
+	    group(){
+	    	// グループ利用
+	    	store.state.info.isPersonal=false;
+	    	this.$refs.dialogFullscreen.ready();
+	    	this.modal_visible = true;
 	    }
 	}
 }

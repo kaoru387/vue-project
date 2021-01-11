@@ -24,16 +24,16 @@ a{
   margin: unset;
 }
 
-//bootstrap
-// .container,
-// .container-fluid,
-// .container-sm,
-// .container-md,
-// .container-lg,
-// .container-xl {
-//   padding-right: 8px !important;
-//   padding-left: 8px !important;
-// }
+// bootstrap
+.container,
+.container-fluid,
+.container-sm,
+.container-md,
+.container-lg,
+.container-xl {
+  padding-right: 5px !important;
+  padding-left: 5px !important;
+}
 
 // vuetify　
 .v-card__text {

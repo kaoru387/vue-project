@@ -1,121 +1,75 @@
-<template>
-  <!-- <div class="login">
-    <form method="post" action="https://www.supersaas.com/api/users">
-      <input type="hidden" name="account" value="susture"/>
-      <input type="hidden" name="id" value="1234fk"/> 
-      <input type="hidden" name="user[name]" value="A@susture.com"/>
-      <input type="hidden" name="user[full_name]" value="生徒A"/>
-      <input type="hidden" name="user[email]" value="A@susture.com"/>
-      <input type="hidden" name="user[mobile]" value=""/>
-      <input type="hidden" name="user[address]" value=""/>
-      <input type="hidden" name="checksum" value="1e5dcff50bb5f9a5273602b25a2f0d41"/>
-      <input type="hidden" name="after" value="experience"/>
-      <input type="submit" value="Book now"/>
-    </form>
-  </div> -->
+  <template>
   <div>
-    <v-card 
-      :tile="$vuetify.breakpoint.sm || $vuetify.breakpoint.xs"
-      class="mx-auto fill-width"
-      flat
-      >
-      <v-card-title class="text-center pt-4 pb-5">
-        <h4 class="fill-width">ログイン</h4>
-      </v-card-title> 
-      <v-card-text class="pt-0">
-        <!-- <div class="layout column align-center">
-          <h2 class="flex my-4 primary--text font-weight-bold">ログイン</h2>
-        </div> -->
-        <v-form ref="loginForm">
-          <v-text-field
-            :append-icon=person
-            name="login"
-            label="メールアドレス"
-            type="text"
-            v-model="model.email"
-            :counter="128"
-            :rules="emailRules"
-            required
-          ></v-text-field>
-          <v-text-field
-            :append-icon="lock"
-            name="password"
-            label="パスワード"
-            id="password"
-            type="password"
-            v-model="model.password"
-            :counter="32"
-            :rules="passwordRules"
-            required
-          ></v-text-field>
-        </v-form>
-      </v-card-text> 
-      <v-card-actions>
-        <!-- <v-btn primary large block>Login</v-btn> -->
-        <!-- <v-btn primary large block color="primary white--text" @click="login" :loading="loading">ログイン</v-btn> -->
-        <v-btn
-          class="fill-width caption"
-          color="#FFCB00"
-          depressed
-          height="48px"
-          tile
-          @click="login" 
-        >
-          ログイン
-        </v-btn>
-      </v-card-actions>
-
-      <div class="pt-4 pb-1">
-        <router-link to="/">キャンセル</router-link>
-      </div>
-      <!-- <v-divider></v-divider>
-      <div class="pt-5 pb-3">
-        <span>アカウントはお持ちですか？</span>
-        <router-link to="/account" class="primary--text">新規アカウントを作成する。</router-link>
-      </div> -->
-      <!-- <div class="separator separator_login_page">
-        <div class="middle_separator">または</div>
-      </div>
-      <div class="pt-6 pb-4">
-        <v-btn
-          elevation="2"
-          large
-          medium
-          small
-          x-large
-          x-small
-        >アカウントなしで予約する</v-btn>
-      </div> -->
-    </v-card>
+    <div class="mx-auto pb-3" :style="{'max-width':'360px'}">
+      <el-alert
+        v-if="isFirst"
+        :closable="false"
+        type="info"
+        class="text-left"
+        description="はじめてのお客様も登録情報をご入力いただき、このままお進みください。"
+        show-icon>
+      </el-alert>
+      <el-alert
+        v-else
+        :closable="false"
+        type="warning"
+        class="text-left"
+        description="ログイン処理中..."
+        show-icon>
+      </el-alert>
+    </div>
+    <div id="firebaseui-auth-container"></div>
+    <div id="loader">Loading...</div>
+    <v-divider></v-divider>
+    <!-- <div class="pt-8 pb-4">
+      <span>アカウントをお持ちですか？</span>
+      <router-link to="/account" class="text-primary">新規アカウント作成</router-link>
+    </div> -->
+    <div class="pt-4 pb-1">
+      <!-- <router-link to="/" class="button btn-light">キャンセル</router-link> -->
+      <button type="button" class="btn btn-light" @click="cancel">キャンセル</button>
+    </div>
   </div>
 </template>
 
 <script>
 import store from '../store/app';
 import axios from "axios"
-import { mdiAccount,mdiKey } from '@mdi/js'
+
+import firebase from "../Firebase";
+// import firebase from "@firebase/app";
+// import firebaseui from "firebaseui-ja";
+
+// import { mdiAccount,mdiKey } from '@mdi/js'
 export default {
   data() {
     return {
       loading: false,
-      emailRules: [
-        v => !!v || "メールアドレスは必須項目です。",
-        v => (v && v.length <= 128) || "メールアドレスは128文字以内で入力してください。",
-        v => /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || "メールアドレスの形式が正しくありません。"
-      ],
-      passwordRules: [
-        v => !!v || "パスワードは必須項目です。",
-        v => (v && v.length <= 32) || "パスワードは32文字以内で入力してください。"
-      ],
+      isFirst: true,
+      // emailRules: [
+      //   v => !!v || "メールアドレスは必須項目です。",
+      //   v => (v && v.length <= 128) || "メールアドレスは128文字以内で入力してください。",
+      //   v => /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || "メールアドレスの形式が正しくありません。"
+      // ],
+      // passwordRules: [
+      //   v => !!v || "パスワードは必須項目です。",
+      //   v => (v && v.length <= 32) || "パスワードは32文字以内で入力してください。"
+      // ],
       model: {
-        email: "",
+        username: "",
         password: ""
       },
-      person: mdiAccount,
-      lock: mdiKey,
-      passwordShow: false
+      // person: mdiAccount,
+      // lock: mdiKey,
+      passwordShow: false,
+      // companies: [],
     }
   },
+  // beforeRouteEnter (to, from, next) {
+  //     //ページの更新
+  //     console.log('beforeRouteEnter login');
+  //     next()
+  // },
   // data: () => ({
   //   loading: false,
   //   emailRules: [
@@ -134,41 +88,147 @@ export default {
   //   person: mdiAccount,
   //   lock: mdiKey,
   // }),
+  computed: {
+    // username() {
+    //   return this.$store.actions.email
+    // },
+    // userStatus() {
+    //   //return true in login state
+    //   return this.$store.actions.isSignedIn
+    // },
+    // ui() {
+    //   return store.state.firebaseui;
+    // }
+  },
   created: function () {
     store.commit('SET_ISLOADING', false)
+    // this.ui = new firebaseui.auth.AuthUI(firebase.auth());
+  },
+  mounted() {
+    // console.log("Login_mounted");
+
+    let that = this;
+    var ui = firebase.authUI();
+    var uiConfig = {
+      callbacks: {
+        signInSuccess: function(currentUser, credential, redirectUrl) {
+          // サインイン成功時のコールバック関数
+          // 戻り値で自動的にリダイレクトするかどうかを指定
+          alert('1')
+          return true;
+        },
+        signInSuccessWithAuthResult: function(authResult, redirectUrl) {
+          console.log('2')
+          // // 認証種類判定
+          // if (authResult.additionalUserInfo.providerId === 'twitter.com') {
+          //     return true;
+          // } else {
+
+            // 確認メールの有無
+            const mailFlag = authResult.user.emailVerified;
+            if (mailFlag === false) {
+
+                // 確認メール未時に確認メール送信
+                firebase.auth().currentUser.sendEmailVerification()
+                .then(function() {
+                    // alert('登録メールを送信しました。メールが届いているかをご確認ください。');
+                    // URLリロード
+                    that.$router.replace('/sendemail')
+                })
+                .catch(function(error) {
+                  console.log('error',error)
+                  alert('登録に失敗しました!');
+                  that.$router.replace('/')
+                });
+
+            } else {
+              // 確認メール済時にメイン画面へ移動
+              return true;
+            }
+
+          // }
+
+          // alert('管理者に通知されました。登録メールが届くまで、しばらくお待ち下さい...');
+          // that.$router.replace('/')
+        },
+        signInFailure: function(error) {
+          console.log('3')
+          alert('signin error')
+          // Some unrecoverable error occurred during sign-in.
+          // Return a promise when error handling is completed and FirebaseUI
+          // will reset, clearing any UI. This commonly occurs for error code
+          // 'firebaseui/anonymous-upgrade-merge-conflict' when merge conflict
+          // occurs. Check below for more details on this.
+          return handleUIError(error);
+        },
+        uiChanged: function (fromPageId, toPageId) {
+          // console.log('uiChanged isPendingRedirect: ', ui.isPendingRedirect())
+          // console.log('uiChanged fromPageId:', fromPageId)
+          // console.log('uiChanged toPageId:', toPageId)
+
+          // // キャンセルボタン非表示
+          // var kesu = document.getElementsByClassName('firebaseui-id-secondary-link');
+          // for(var i = 0; i < kesu.length; i++) {
+          //   // kesu[i].style.display = "none";
+          //   kesu[i].type = "button";
+          //   kesu[i].onclick = function() {
+          //     // ここに#buttonをクリックしたら発生させる処理を記述する
+              
+          //     firebase.onAuth();
+          //     ui.reset();
+          //     that.$router.replace('/about');
+          //   };
+          // }
+
+        },
+        uiShown: function() {
+          console.log('uiShown isPendingRedirect: ', ui.isPendingRedirect())
+          // The widget is rendered.
+          // Hide the loader.
+          document.getElementById('loader').style.display = 'none';
+        }
+      },
+      // autoUpgradeAnonymousUsers: true,
+      // signInFlow: 'redirect',
+      signInFlow: 'popup',
+      // Query parameter name for mode.
+      queryParameterForWidgetMode: 'mode',
+      // Query parameter name for sign in success url.
+      queryParameterForSignInSuccessUrl: 'signInSuccessUrl',
+      signInSuccessUrl: '/?mode=signedIn',
+      signInOptions: firebase.signInOptions(),
+      // tosUrl: '<your-tos-url>',
+      // privacyPolicyUrl: '<your-privacy-policy-url>',
+      // credentialHelper: firebase.credential()
+      credentialHelper: 'none'
+    }
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        ui.reset();
+        this.isFirst=false;
+        store.commit('SET_ISLOADING', false)
+      }else{
+        firebase.onAuth();
+        ui.start("#firebaseui-auth-container", uiConfig);
+      }
+    })
+
+    if (ui.isPendingRedirect()) {
+      ui.start("#firebaseui-auth-container", uiConfig);
+    }
+    
+    // // This can also be done via:
+    // // console.log(window.location.href)
+    // if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
+      // ui.start('#firebaseui-auth-container', uiConfig);
+    // }
+
   },
   methods: {
-    login() {
-      // バリデーションが通った場合
-      if (this.$refs.loginForm.validate()) {
-
-        // ぐるぐる表示にしてボタンを二度押しできなくする
-        // store.commit('SET_ISLOADING', true);
-        store.dispatch('getUsers');
-        console.log(store.state.result.users);
-
-
-
-        // APIでログイン認証を行う
-        // axios.post("/api/auth/login", this.model).then(res => {
-        //   // 成功した場合
-        //   if (res.data.result) {
-        //     // ログイン情報を store に保存
-        //     this.$store.dispatch("setLoginInfo", res.data)
-        //     // 元の画面に戻る
-        //     this.$router.push({path: "backuri" in this.$route.query && this.$route.query.backuri.match(/^\//) ? this.$route.query.backuri : '/'})
-        //   // メールアドレスとパスワードが正しくない組み合わせだった場合
-        //   } else {
-        //     this.loading = false
-        //     alert(Object.values(res.data.errors).join("\n"))
-        //   }
-        // }).catch(error => {
-        //   alert("処理が正しく行えませんでした。時間をおいてやり直してください。")
-        //   this.loading = false
-        // })
-
-      }
-    }
+    cancel: function () {
+      this.$router.replace('/')
+    },
   }
 }
 </script>

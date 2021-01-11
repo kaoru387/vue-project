@@ -14,167 +14,75 @@
     </form>
   </div> -->
   <div>
-    <v-card 
+    <div id="firebaseui-auth-container"></div>
+    <div id="loader">Loading...</div>
+    <!-- <v-card 
       :tile="$vuetify.breakpoint.sm || $vuetify.breakpoint.xs"
-      class="mx-auto fill-width"
-      flat
       >
-      <v-card-title class="text-center pt-4 pb-0">
-        <h4 class="fill-width">新規アカウント作成</h4>
-        <v-card-text>詳細情報を入力してください。</v-card-text>
+      <v-card-title class="text-left pt-4 pb-5">
+        <h5 class="fill-width">アカウント作成</h5>
       </v-card-title> 
-      <v-divider> </v-divider>
-      <v-card-text>
+      <v-card-text class="pt-0">
         <v-form ref="loginForm">
           <v-text-field
+            name="email"
+            label="メールアドレス"
+            type="text"
             v-model="model.email"
             :rules="emailRules"
-            autofocus
-            dense
-            height="45px"
-            outlined
-            placeholder="ログイン名"
+            required
           ></v-text-field>
+          <el-alert
+            class="mt-0 mb-1"
+            v-if="Validation.loginReult"
+            type="error"
+            :description="Validation.loginReult"
+            show-icon>
+          </el-alert>
           <v-text-field
+            name="password"
+            label="パスワード"
+            id="password"
+            type="password"
             v-model="model.password"
-            :append-icon="passwordShow ? 'mdi-eye' : 'mdi-eye-off'"
             :rules="passwordRules"
-            :type="passwordShow ? 'text' : 'password'"
-            dense
-            height="45px"
-            name="input-password"
-            outlined
-            placeholder="パスワード"
-            @click:append="passwordShow = !passwordShow"
+            required
           ></v-text-field>
           <v-text-field
-            v-model="model.email"
-            :rules="emailRules"
-            dense
-            height="45px"
-            outlined
-            placeholder="氏名"
-          ></v-text-field>
-          <v-text-field
-            v-model="model.email"
-            :rules="emailRules"
-            dense
-            height="45px"
-            outlined
-            placeholder="メールアドレス"
-          ></v-text-field>
-          <v-text-field
-            v-model="model.email"
-            :rules="emailRules"
-            dense
-            height="45px"
-            outlined
-            placeholder="携帯"
-          ></v-text-field>
-          <v-text-field
-            v-model="model.email"
-            :rules="emailRules"
-            dense
-            height="45px"
-            outlined
-            placeholder="住所"
+            name="username"
+            label="ユーザー名"
+            type="text"
+            v-model="model.username"
+            required
           ></v-text-field>
         </v-form>
       </v-card-text> 
-      <!-- <div class="login-btn">
-        <v-btn block color="primary white--text" @click="login" :loading="loading">ログイン</v-btn>
-      </div> -->
       <v-card-actions>
-        <!-- <v-btn primary large block>Login</v-btn> -->
-        <!-- <v-btn primary large block color="primary white--text" @click="login" :loading="loading">ログイン</v-btn> -->
         <v-btn
           class="fill-width caption"
           color="#FFCB00"
           depressed
           height="48px"
           tile
+          @click="login" 
         >
-          新規アカウント作成
+          ログイン
         </v-btn>
       </v-card-actions>
-      
-      <v-divider></v-divider>
-      <div class="pt-4 pb-2">
-        <router-link to="/login">戻る</router-link>
-        <!-- <router-link to="/login" class="primary--text">新規登録</router-link> -->
-      </div>
-    </v-card>
+    </v-card> -->
+    <v-divider></v-divider>
+    <div class="pt-4 pb-1">
+      <router-link to="/">キャンセル</router-link>
+    </div>
   </div>
-  <!-- <div>
-    <v-card
-      :tile="$vuetify.breakpoint.sm || $vuetify.breakpoint.xs"
-      class="mx-auto fill-width"
-      flat
-      max-width="640"
-    >
-      <v-card-title class="text-center pa-8">
-        <h4 class="fill-width">会員情報入力</h4>
-      </v-card-title>
-      <v-divider> </v-divider>
-      <div class="px-6 py-8">
-        <div style="max-width:344px" class="mx-auto">
-          
-          <div class="separator separator_login_page">
-            <div class="middle_separator">または</div>
-          </div>
-          <div class="pt-6">
-            <div>
-              <v-text-field
-                v-model="model.email"
-                :rules="[emailRules.required, emailRules.regex]"
-                autofocus
-                dense
-                height="48px"
-                outlined
-                placeholder="メールアドレス"
-              ></v-text-field>
-
-              <v-text-field
-                v-model="model.password"
-                :append-icon="passwordShow ? 'mdi-eye' : 'mdi-eye-off'"
-                :rules="[passwordRules.required, passwordRules.regex]"
-                :type="passwordShow ? 'text' : 'password'"
-                dense
-                height="48px"
-                name="input-password"
-                outlined
-                placeholder="パスワード"
-                @click:append="passwordShow = !passwordShow"
-              ></v-text-field>
-            </div>
-            <div class="login-btn pb-8">
-              <v-btn
-                class="fill-width caption"
-                color="#FFCB00"
-                depressed
-                height="48px"
-                tile
-              >
-                会員登録
-              </v-btn>
-            </div>
-            <v-divider></v-divider>
-            <div class="pt-8 pb-4">
-              <span>すでにアカウントをお持ちですか？</span>
-              <nuxt-link to="/login">ログインに移動</nuxt-link>
-            </div>
-          </div>
-        </div>
-      </div>
-    </v-card>
-  </div> -->
-
 </template>
 
 <script>
 import store from '../store/app';
 import axios from "axios"
+import firebase from "../Firebase";
 import { mdiAccount,mdiKey } from '@mdi/js'
+
 export default {
   data() {
     return {
@@ -182,7 +90,17 @@ export default {
       emailRules: [
         v => !!v || "メールアドレスは必須項目です。",
         v => (v && v.length <= 128) || "メールアドレスは128文字以内で入力してください。",
-        v => /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || "メールアドレスの形式が正しくありません。"
+        v => /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || "メールアドレスの形式が正しくありません。",
+        // v => {
+        //   if(v=='') return '';
+        //   firebase.auth().createUserWithEmailAndPassword(v, 'check9028163840').then(
+        //     (err) => {
+        //       if(err.code=="auth/email-already-in-use") return "メールアドレスは既に存在しています。";
+        //     }
+        //   )
+        //   return ''
+
+        // }
       ],
       passwordRules: [
         v => !!v || "パスワードは必須項目です。",
@@ -190,11 +108,15 @@ export default {
       ],
       model: {
         email: "",
-        password: ""
+        password: "",
+        username: ""
       },
       person: mdiAccount,
       lock: mdiKey,
-      passwordShow: false
+      passwordShow: false,
+      Validation:{
+        loginReult: "",
+      }
     }
   },
   // data: () => ({
@@ -218,29 +140,119 @@ export default {
   created: function () {
     store.commit('SET_ISLOADING', false)
   },
+  mounted() {
+    console.log("account! muted");
+    
+    var ui = firebase.authUI();
+    ui.start("#firebaseui-auth-container", {
+      callbacks: {
+        signInSuccess: function(currentUser, credential, redirectUrl) {
+          // サインイン成功時のコールバック関数
+          // 戻り値で自動的にリダイレクトするかどうかを指定
+          return true;
+        },
+        signInSuccessWithAuthResult: function(authResult, redirectUrl) {
+
+          // // 認証種類判定
+          // if (authResult.additionalUserInfo.providerId === 'twitter.com') {
+          //     return true;
+          // } else {
+          //     // 確認メールの有無
+          //     const mailFlag = authResult.user.emailVerified;
+          //     if (mailFlag === false) {
+
+          //         // 確認メール未時に確認メール送信
+          //         firebase.auth().currentUser.sendEmailVerification()
+          //         .then(function() {
+          //             alert('登録メールを送信しました。ご確認ください。');
+          //             // URLリロード
+          //             root.$router.go()
+          //         })
+          //         .catch(function(error) {
+          //         });
+
+          //     } else {
+          //         // 確認メール済時にメイン画面へ移動
+          //         return true;
+          //     }
+          // }
+
+        },
+        signInFailure: function(error) {
+          console.log('signin error')
+          // Some unrecoverable error occurred during sign-in.
+          // Return a promise when error handling is completed and FirebaseUI
+          // will reset, clearing any UI. This commonly occurs for error code
+          // 'firebaseui/anonymous-upgrade-merge-conflict' when merge conflict
+          // occurs. Check below for more details on this.
+          return handleUIError(error);
+        },
+        uiShown: function() {
+          // The widget is rendered.
+          // ログイン画面が出たときに行う作業
+          // Hide the loader.
+          document.getElementById('loader').style.display = 'none';
+        }
+      },
+      autoUpgradeAnonymousUsers: true,
+      signInFlow: 'popup',
+      signInSuccessUrl: 'verifyemail',
+      signInOptions: firebase.signInOptions(),
+      // Terms of service url.
+      tosUrl: '<your-tos-url>',
+      // Privacy policy url.
+      privacyPolicyUrl: '<your-privacy-policy-url>'
+    });
+
+      
+  },
+
   methods: {
     login() {
+
       // バリデーションが通った場合
       if (this.$refs.loginForm.validate()) {
-        // ぐるぐる表示にしてボタンを二度押しできなくする
-        // this.loading = true
-        // APIでログイン認証を行う
-        axios.post("/api/auth/login", this.model).then(res => {
-          // 成功した場合
-          if (res.data.result) {
-            // ログイン情報を store に保存
-            this.$store.dispatch("setLoginInfo", res.data)
-            // 元の画面に戻る
-            this.$router.push({path: "backuri" in this.$route.query && this.$route.query.backuri.match(/^\//) ? this.$route.query.backuri : '/'})
-          // メールアドレスとパスワードが正しくない組み合わせだった場合
-          } else {
-            this.loading = false
-            alert(Object.values(res.data.errors).join("\n"))
+
+        let that = this;
+        firebase.auth().createUserWithEmailAndPassword(this.model.email, this.model.password).then(
+          (user) => {
+            console.log('OK',user,firebase.auth().currentUser);
+
+            let currentUser = firebase.auth().currentUser;
+            currentUser.updateProfile({
+              displayName: this.model.username,
+              // photoURL: "https://example.com/jane-q-user/profile.jpg"
+            }).then(function() {
+              // Update successful.
+              that.$router.replace('/')
+            }).catch(function(error) {
+              // An error happened.
+            });
+           
+            currentUser.sendEmailVerification()
+            .then(() => {
+              alert('登録メールを送信しました。ご確認ください。');
+              // alert('アカウントの新規作成が完了しました！', user.email)
+            }).catch((err) => {
+              alert('EmailVerificationでerrが発生しました。', err)
+            })
+            // that.$router.replace('/')
+          },
+          (err) => {
+            let errorCode = err.code
+            let errorMessage = err.message
+            // console.log(errorCode)
+            if(errorCode=='auth/email-already-in-use') {
+              // alert('emailは既に存在しています！');
+              this.Validation.loginReult="emailは既に存在しています！"
+            }
+            
+            // alert()
+            // console.log(errorCode,errorMessage)
           }
-        }).catch(error => {
-          alert("処理が正しく行えませんでした。時間をおいてやり直してください。")
-          this.loading = false
-        })
+        )
+
+
       }
     }
   }

@@ -2,8 +2,13 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Login from '../views/Login.vue'
-import Account from '../views/Account.vue'
+// import Account from '../views/Account.vue'
+import SendEmail from '../views/SendEmail.vue'
+import UseConfirm from '../views/UseConfirm.vue'
+
 import store from "../store/app.js"
+
+import Firebase from "../Firebase"
 
 Vue.use(VueRouter)
 
@@ -12,13 +17,14 @@ const routes = [
     path: '/',
     name: 'home',
     component: Home,
-    // children: [
-    //   {
-    //     // /projects/:page がマッチした時に
-    //     path: '/:page',
-    //     component: () =>import("../components/StudioNago.vue")
-    //   },
-    // ],
+    children: [
+      {
+        // /projects/:page がマッチした時に
+        path: '/login',
+        component: Login,
+        redirect: { name: 'login', params: { param1: 200 } },
+      },
+    ],
   },
   {
     path: '/login',
@@ -26,10 +32,15 @@ const routes = [
     component: Login,
   },
   {
-    path: '/account',
-    name: 'account',
-    component: Account,
+    path: '/sendemail',
+    name: 'sendemail',
+    component: SendEmail,
   },
+  // {
+  //   path: '/account',
+  //   name: 'account',
+  //   component: Account,
+  // },
   {
     path: '/about',
     name: 'about',
@@ -39,20 +50,50 @@ const routes = [
     /* webpackChunkName: "about" */ 
     component: () => import('../views/About.vue')
   },
+  // {
+  //   path: "/general1", 
+  //   name: 'general1',   
+  //   component: () =>import("../components/General1.vue")
+  // },
+  // {
+  //   path: "/general2", 
+  //   name: 'general2',   
+  //   component: () =>import("../components/General2.vue")
+  // },
   {
-    path: "/general1", 
-    name: 'general1',   
-    component: () =>import("../components/General1.vue")
+    path: "/member1", 
+    name: 'member1',   
+    component: () =>import("../components/StudioReservation.vue")
   },
-  {
-    path: "/general2", 
-    name: 'general2',   
-    component: () =>import("../components/General2.vue")
-  },
+  // {
+  //   path: "/member2", 
+  //   name: 'member2',   
+  //   component: () =>import("../components/General2.vue")
+  // },
   {
     path: "/reservation", 
     name: 'reservation',   
     component: () =>import("../views/About.vue")
+  },
+  {
+    path: "/verifyemail", 
+    name: 'verifyemail',   
+    component: () =>import("../views/VerifyEmail.vue")
+  },
+  {
+    path: "/useconfirm", 
+    name: 'useconfirm',   
+    component: () =>import("../views/About.vue"),
+    beforeEnter(to, from, next) {　//追記
+      // ログイン確認
+      var currentUser = Firebase.auth().currentUser;
+      if (!currentUser) {  
+        // 未だの場合
+        next("/");
+      } else {  
+        next();
+      }
+    },
   },
 ]
 
@@ -63,28 +104,90 @@ const router = new VueRouter({
   routes: routes,
 })
 
-// // router gards
-// router.beforeEach((to, from, next) => {
-//   // NProgress.start()
-//   console.log('start')
-//   // トークンが存在、かつログイン有効期限を過ぎてない場合、またはログイン画面の場合
-//   if ((store.state.auth.login.token && store.state.auth.login.expire > (new Date()).getTime()) || to.matched.some(page => {
-//     store.commit('SET_ISLOADING', false)
-//     // ログイン画面はリダイレクト対象外 (他にも404ページなどいくつか対象外にする必要があるかも)
-//     return (page.path === '/login')
+// router gards
+router.beforeEach((to, from, next) => {
 
-//   })) {
-//     next()
-//   } else {
-//     // ログイン画面に飛ばす。ログイン後に元の画面に戻れるよう、backuriパラメーターにリダイレクト前のURLを入れる
-//     next({path: '/login', query: {backuri: to.fullPath}})
-//   }
-// })
+  // NProgress.start()
+  // console.log('start',to.fullPath)
+
+  Firebase.onAuth();
+
+  var auth = Firebase.auth();
+  // Get the action to complete.
+  var mode = getParameterByName('mode');
+  // Get the one-time code from the query parameter.
+  var actionCode = getParameterByName('oobCode');
+  // (Optional) Get the continue URL from the query parameter if available.
+  var continueUrl = getParameterByName('continueUrl');
+  var lang = getParameterByName('lang') || 'en';
+
+  switch (mode) {
+    case 'resetPassword':
+      // Display reset password handler and UI.
+      // handleResetPassword(auth, actionCode, continueUrl, lang);
+      break;
+    case 'recoverEmail':
+      // Display email recovery handler and UI.
+      // handleRecoverEmail(auth, actionCode, lang);
+      break;
+    case 'verifyEmail':
+     　// email認証完了
+      handleVerifyEmail(auth, actionCode, continueUrl, lang, next);
+      break;
+    case 'signedIn':
+      // ログイン後
+      let currentUserStatus = Firebase.auth().currentUser;
+      if(to.fullPath !== '/useconfirm'){
+        store.commit('SET_BACK_URI', to.fullPath)
+        // next({ name: 'useconfirm' });
+        next();
+      }
+      break;
+    default:
+      // Error: invalid mode.
+  }
+  next();
+
+})
 
 // router.afterEach((to, from) => {
 //   // NProgress.done()
 //   console.log('end')
 // })
+
+// URLよりパラメータ取得
+function getParameterByName( name ){
+  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+  var regexS = "[\\?&]"+name+"=([^&#]*)";
+  var regex = new RegExp( regexS );
+  var results = regex.exec( window.location.href );
+  if( results == null )
+    return "";
+  else
+    return decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+// email認証
+function handleVerifyEmail(auth, actionCode, continueUrl, lang,next) {
+  // Localize the UI to the selected language as determined by the lang
+  // parameter.
+  // Try to apply the email verification code.
+  var that = this;
+  auth.applyActionCode(actionCode).then(function(resp) {
+    // Email address has been verified.
+
+    // TODO: Display a confirmation message to the user.
+    // You could also provide the user with a link back to the app.
+
+    // TODO: If a continue URL is available, display a button which on
+    // click redirects the user back to the app via continueUrl with
+    // additional state determined from that URL's parameters.
+    next('/verifyemail');
+  }).catch(function(error) {
+    console.log('error',error)
+  });
+
+}
 
 
 export default router
