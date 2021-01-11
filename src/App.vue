@@ -99,24 +99,25 @@ export default {
       }
     });
 
-    // サービスリソース取得
-    store.dispatch('getServiceResources')
-    // 一般会員取得
-    store.dispatch('getNonMembers')
+    // // サービスリソース取得
+    // store.dispatch('getServiceResources')
+    // // 一般会員取得
+    // store.dispatch('getNonMembers')
 
     // 初期化
     store.commit('SET_EVENTS', [])
 
     // 予約取得
-    store.dispatch('getDatas', function(e){
-        let books = _.forEach(e.data, function(v, key) {
-          store.dispatch('getBookings',{ 
-            schedule_id: v.id,
-            name: v.name,
-            slot: true
-          });
-        });
-    });
+    store.dispatch('getDatas')
+    // store.dispatch('getDatas', function(e){
+    //     let books = _.forEach(e.data, function(v, key) {
+    //       store.dispatch('getBookings',{ 
+    //         schedule_id: v.id,
+    //         name: v.name,
+    //         slot: true
+    //       });
+    //     });
+    // });
 
     // 状態ストレージ保有
     // console.log('state!',store.state)

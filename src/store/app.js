@@ -75,49 +75,46 @@ const state = {
 }
 
 const actions = {
-  // getMD5: (store,{params}) => {
+  getMD5: (store,{params}) => {
+    // store.commit('SET_AUTH_CHECKSUM', 'eff56d8034a71152abe9d45dc8c0d309')
+    // store.commit('SET_AUTH_CHECKSUM', '63e05e52145c25a984962af126e6baa2') 
+    // store.commit('SET_ISLOADING', false)
 
-
-  //   // store.commit('SET_AUTH_CHECKSUM', 'eff56d8034a71152abe9d45dc8c0d309')
-  //   // store.commit('SET_AUTH_CHECKSUM', '63e05e52145c25a984962af126e6baa2') 
-  //   // store.commit('SET_ISLOADING', false)
-
-  //   axios.get('/gcf',{
-  //     name: 'susturesusture2525'+params['user_name']
-  //   }).then((response) => {
-  //     // store.commit('SET_USERS', response.data)
-  //     console.log('ハッシュ値',response.data.result)
-  //     // store.commit('SET_AUTH_CHECKSUM', '63e05e52145c25a984962af126e6baa2')
-  //     store.commit('SET_AUTH_CHECKSUM', response.data.result)
-  //     store.commit('SET_ISLOADING', false)
-  //     // callback(response)
-  //   }).catch((error) => {
-  //       console.log(error);
-  //   });
-    
-  // },
-  loginSupersass: (store,{params}) => {
-
-    // axios.get('/api/login?account=susture&after=General&user[name]=susture387@gmail.com&checksum='+state.auth.checksum,
-    axios.post('/api/login',
-    {
-      account:'susture',
-      checksum: params.checksum,
-      user: {
-        name: params.email
-      },
-      withCredentials: true,
-      // responseType : 'document',
+    axios.get('/gcf/getMD5',{
+      name: 'susturesusture2525'+params['user_name']
     }).then((response) => {
-      console.log('login??',response)
       // store.commit('SET_USERS', response.data)
+      console.log('ハッシュ値',response.data.result)
+      // store.commit('SET_AUTH_CHECKSUM', '63e05e52145c25a984962af126e6baa2')
+      store.commit('SET_AUTH_CHECKSUM', response.data.result)
+      store.commit('SET_ISLOADING', false)
       // callback(response)
     }).catch((error) => {
         console.log(error);
     });
+    
   },
+  // loginSupersass: (store,{params}) => {
+  //   // axios.get('/api/login?account=susture&after=General&user[name]=susture387@gmail.com&checksum='+state.auth.checksum,
+  //   axios.post('/api/login',
+  //   {
+  //     account:'susture',
+  //     checksum: params.checksum,
+  //     user: {
+  //       name: params.email
+  //     },
+  //     withCredentials: true,
+  //     // responseType : 'document',
+  //   }).then((response) => {
+  //     console.log('login??',response)
+  //     // store.commit('SET_USERS', response.data)
+  //     // callback(response)
+  //   }).catch((error) => {
+  //       console.log(error);
+  //   });
+  // },
   getUsers: (store,callback) => {
-    axios.get('/supersass/api/users',
+    axios.get('/schedule/api/users',
     {
       withCredentials: true,
       params: {
@@ -134,53 +131,61 @@ const actions = {
         console.log(error);
     });
   },
-  getServiceResources: (store) => {  // 一般の選択項目
-    // 
-    axios.get('/supersass/api/resources.json',{
-      withCredentials: true,
-      params: {
-        schedule_id: 535588,
-        username: 'susture',
-        password: 'jmlLq1BhwucEkul_WgmSOA'
-      },
-      auth: store.state.superSassInfo
-    }).then((response) => {
-      // console.log('test',response)
-      store.commit('SET_SERVICE_RESOURCES', response.data)
-      // console.log("get resource!")
-    }).catch((error) => {
-        console.log(error);
-    });
+  // getServiceResources: (store) => {  // 一般の選択項目
+  //   // 
+  //   axios.get('/schedule/api/resources.json',{
+  //     withCredentials: true,
+  //     params: {
+  //       schedule_id: 535588,
+  //       username: 'susture',
+  //       password: 'jmlLq1BhwucEkul_WgmSOA'
+  //     },
+  //     auth: store.state.superSassInfo
+  //   }).then((response) => {
+  //     // console.log('test',response)
+  //     store.commit('SET_SERVICE_RESOURCES', response.data)
+  //     // console.log("get resource!")
+  //   }).catch((error) => {
+  //       console.log(error);
+  //   });
 
-  },
-  getNonMembers: (store) => {
-      axios.get('/supersass/api/bookings.json?slot=true',{
-        withCredentials: true,
-        params: {
-          schedule_id: 535588
-        },
-        auth: store.state.superSassInfo
-      }).then((response) => {
-        let dt = _.map(response.data, function(v) {
-            return {
-              id: v.id,
-              fullName: v.full_name,
-              userId: v.user_id
-            };
-        });
-        store.commit('SET_NONMEMBERS', dt)
-        // console.log("get nonMembers!")
-      }).catch((error) => {
-          console.log(error);
-      });
-  },
-  getDatas: (store,callback) => {
+  // },
+  // getNonMembers: (store) => {
+  //     axios.get('/schedule/api/bookings.json?slot=true',{
+  //       withCredentials: true,
+  //       params: {
+  //         schedule_id: 535588
+  //       },
+  //       auth: store.state.superSassInfo
+  //     }).then((response) => {
+  //       let dt = _.map(response.data, function(v) {
+  //           return {
+  //             id: v.id,
+  //             fullName: v.full_name,
+  //             userId: v.user_id
+  //           };
+  //       });
+  //       store.commit('SET_NONMEMBERS', dt)
+  //       // console.log("get nonMembers!")
+  //     }).catch((error) => {
+  //         console.log(error);
+  //     });
+  // },
+  getDatas: (store) => {
       // console.log("get datas!",store)
       store.commit('SET_ISLOADING', true)
-      axios.get('/supersass/api/schedules.json',{
+      axios.get('/schedule/api/schedules.json',{
         auth: store.state.superSassInfo
       }).then((response) => {
-        callback(response);
+
+        let books = _.forEach(response.data, function(v, key) {
+          store.dispatch('getBookings',{ 
+            schedule_id: v.id,
+            name: v.name,
+            slot: true
+          });
+        });
+        // callback(response);
       })  
       .then(() => {
         // store.commit('SET_ISLOADING', false)
@@ -196,7 +201,8 @@ const actions = {
 
       let that = this;
       // store.commit('SET_ISLOADING', true)
-      axios.get('/supersass/api/bookings.json',{
+      axios.get('/schedule/api/bookings.json',{
+        withCredentials: true,
         params: params,
         auth: store.state.superSassInfo
       }).then((response) => {
@@ -222,21 +228,21 @@ const actions = {
               color = '#F3C857';
             }
 
-            // 非会員チェック
-            const nonMember = _.find(store.state.result.nonMembers, { userId: v.user_id }); 
-            if(nonMember){
-              //一般の場合
-              // description = v.status_message
-              description = '一般'
-              // iconColor = '#ffb6c1'
-              // color = '#ffb6c1'
-            }else{
-              // 会員の場合
-              isMember = true;
-              description = v.field_2_r
-              // iconColor = '#67C23A'
-              // color = '#67C23A';
-            }
+            // // 非会員チェック
+            // const nonMember = _.find(store.state.result.nonMembers, { userId: v.user_id }); 
+            // if(nonMember){
+            //   //一般の場合
+            //   // description = v.status_message
+            //   description = '一般'
+            //   // iconColor = '#ffb6c1'
+            //   // color = '#ffb6c1'
+            // }else{
+            //   // 会員の場合
+            //   isMember = true;
+            //   description = v.field_2_r
+            //   // iconColor = '#67C23A'
+            //   // color = '#67C23A';
+            // }
 
             store.state.result.events.push({
               id: v.id,
@@ -285,7 +291,7 @@ const actions = {
         store.commit('SET_AUTH_CHECKSUM', response.data.result)
 
         // supersass
-        axios.post('/api/users/'+_code+'fk.json',{
+        axios.post('/schedule/users/'+_code+'fk.json',{
           account:'susture',
           password:'jmlLq1BhwucEkul_WgmSOA',
           user: {

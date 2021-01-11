@@ -101,13 +101,13 @@ module.exports = {
           changeOrigin: true,
           'pathRewrite': {'^/api/': ''}
       },
-      '/supersass': {
+      '/schedule': {
           target: "https://schedule.kdev.page",
           changeOrigin: true,
-          'pathRewrite': {'^/supersass/': ''}
+          'pathRewrite': {'^/schedule/': ''}
       },
       '/gcf': {
-          target: "https://asia-northeast2-quickstart-1604473380297.cloudfunctions.net/getMD5",
+          target: "https://asia-northeast2-quickstart-1604473380297.cloudfunctions.net",
           changeOrigin: true,
           'pathRewrite': {'^/gcf/': ''}
       },

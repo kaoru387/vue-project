@@ -114,8 +114,12 @@ firebase.auth().onAuthStateChanged(user => {
 			      	// 	}
 			      	// });
 		      	}
-		      
-		      	
+		      	// ハッシュ値取得：検証用
+		      	// store.dispatch('getMD5',{
+		      	// 	params: {
+		      	// 		'user_name':user.email
+		      	// 	}
+		      	// });
 
 		 	});
 			
