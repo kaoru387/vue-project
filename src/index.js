@@ -35,17 +35,17 @@ Vue.use(ElementUI, { locale })
 // library.add(fas) // Include needed icons
 // Vue.component('font-awesome-icon', FontAwesomeIcon) // Register component globally
 
-// import GAuth from 'vue-google-oauth2'
-// Vue.use(GAuth, {
-//   clientId: '768834812579-007e5802er7gj3c93p8qa9568h8bj3na.apps.googleusercontent.com', scope: 'email', prompt: 'consent', fetch_basic_profile: false
-// })
+// // iframe
+// import VueFriendlyIframe from 'vue-friendly-iframe';
+// Vue.use(VueFriendlyIframe);
 
-// iframe
-import VueFriendlyIframe from 'vue-friendly-iframe';
-Vue.use(VueFriendlyIframe);
+// カンマ区切り保留
+// Vue.filter('moneyDelimiter', function(value) {
+//  return value.toLocaleString();
+// });
 
-import VueCookies from 'vue-cookies'
-Vue.use(VueCookies)
+// import VueCookies from 'vue-cookies'
+// Vue.use(VueCookies)
 
 Vue.config.productionTip = false
 
@@ -56,12 +56,20 @@ import firebase from "@firebase/app";
 // firebase.initializeApp(firebaseConfig)
 // Vue.use(firebase)
 
-
 Firebase.init();
+
+// // 検証用
+// store.dispatch('getInfo',{
+// 	params: {},
+// 	callback: function(res){
+// 		console.log('test!!',res)
+// 		// store.commit('SET_ISLOADING', false) 
+// 	}
+// });
 
 firebase.auth().onAuthStateChanged(user => {
 	if (user) {
-		// console.log(user);
+		// ログイン情報
 		if (user.ma) {
 		  localStorage.setItem('jwt', user.ma);
 		} 
@@ -72,7 +80,7 @@ firebase.auth().onAuthStateChanged(user => {
 		 	// supersass
 		 	store.dispatch('getUsers',function(e){
 		 		// supersassに存在するかチェック
-		      	let list = _.filter(e.data, function(o) {
+		      	let list = _.filter(e, function(o) {
 		            if(user.email==o.email){
 		              return o;
 		            }
@@ -94,15 +102,18 @@ firebase.auth().onAuthStateChanged(user => {
 		      			}
 		      		});
 		      		return;
-
 		      	}else{
 		      		// 存在する場合、権限を確認し保有（true:一般、false:会員）
 		      		if(!list[0].fk) store.commit('SET_AUTH_ROLE', false)
 		      		else store.commit('SET_AUTH_ROLE', true)
 
-		      		// TODO: checksum不具合解決まで・・
-		      		// console.log('yaho',list[0].super_field)
-		      		store.commit('SET_AUTH_CHECKSUM', list[0].super_field) 
+		      		// checksum変換
+		      		store.dispatch('getMD5',{
+			      		params: list[0],
+			      		callback: function(res){
+			      			store.commit('SET_AUTH_CHECKSUM', res) 
+			      		}
+			      	});
 		      		store.commit('SET_ISLOADING', false)
 
 		      		// 失敗
@@ -137,6 +148,7 @@ firebase.auth().onAuthStateChanged(user => {
 		render: h => h(App)
 	}).$mount("#app");
 })
+
 
 // new Vue({
 //   vuetify,

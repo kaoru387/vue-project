@@ -2,18 +2,15 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 Vue.use(Vuex)
 
-// import config from "../config/google-config"
-// import VueGapi from 'vue-gapi'
-// Vue.use(VueGapi, config)
-
+import { supersassConfig } from "../config/supersass-config"
 import axiosBase from 'axios';
 const axios = axiosBase.create({
   // baseURL: 'http://localhost:4005', // バックエンドB のURL:port を指定する
   headers: {
     'Content-Type': 'application/json',
-    // 'Content-Type': 'text/html',
+    // 'Content-Type': 'application/xml',
     'X-Requested-With': 'XMLHttpRequest',
-    'Access-Control-Allow-Origin':'https://localhost:4005',
+    // 'Access-Control-Allow-Origin':'https://localhost:4005',
     'Access-Control-Allow-Origin':'*',
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Allow-Headers': '*',
@@ -21,6 +18,7 @@ const axios = axiosBase.create({
     Authorization: "Basic " + btoa("susture" + ":" + "susture2525"),
   },
   responseType: 'json',
+  // responseType: 'text/xml'
 });
 
 import _ from 'lodash';
@@ -32,6 +30,13 @@ Vue.use(VueMoment, {
 
 import createPersistedState from "vuex-persistedstate";
 
+import xml2js from 'xml2js'
+const parser = new xml2js.Parser({
+        async: false, 
+        explicitArray: false
+      });
+import firebase from "@firebase/app";
+
 // const debug = process.env.NODE_ENV !== 'production'
 const debug = process.env.NODE_ENV !== 'development'
 
@@ -39,8 +44,9 @@ const state = {
     result:{
       events: [],
       users: [],
+      schedules: [],
       service_resources: [],
-      nonMembers: []
+      // nonMembers: []
       // list:{},
       // pagenate:{},
     },
@@ -52,266 +58,630 @@ const state = {
     total:1,
     totalPages:1,
     query:{
-        limit:10,
+      limit:10,
     },
-    superSassInfo: {
-      username: 'susture',
-      password: 'susture2525'
-    },
+    // superSassInfo: {
+    //   username: supersassConfig.account,
+    //   password: supersassConfig.password,
+    //   api_key: supersassConfig.apiKey
+    // },
     backuri: '',
     selectDate: '',
     auth: {
+      user_id: '',
       username: '',
       password: '',
       email: '',
-      general: true,
-      checksum: ''
+      checksum: '',
+      isMember: false,
+      credit: 0,
+      supersass: supersassConfig
     },
     authStatus: false,
     info: {
       browser:'',
       isPersonal: true,
+      isSafariLogin: false,
     }
 }
 
 const actions = {
-  getMD5: (store,{params}) => {
-    // store.commit('SET_AUTH_CHECKSUM', 'eff56d8034a71152abe9d45dc8c0d309')
-    // store.commit('SET_AUTH_CHECKSUM', '63e05e52145c25a984962af126e6baa2') 
-    // store.commit('SET_ISLOADING', false)
-
-    axios.get('/gcf/getMD5',{
-      name: 'susturesusture2525'+params['user_name']
-    }).then((response) => {
-      // store.commit('SET_USERS', response.data)
-      console.log('ハッシュ値',response.data.result)
-      // store.commit('SET_AUTH_CHECKSUM', '63e05e52145c25a984962af126e6baa2')
-      store.commit('SET_AUTH_CHECKSUM', response.data.result)
-      store.commit('SET_ISLOADING', false)
-      // callback(response)
-    }).catch((error) => {
-        console.log(error);
-    });
-    
-  },
-  // loginSupersass: (store,{params}) => {
-  //   // axios.get('/api/login?account=susture&after=General&user[name]=susture387@gmail.com&checksum='+state.auth.checksum,
-  //   axios.post('/api/login',
-  //   {
-  //     account:'susture',
-  //     checksum: params.checksum,
-  //     user: {
-  //       name: params.email
-  //     },
-  //     withCredentials: true,
-  //     // responseType : 'document',
-  //   }).then((response) => {
-  //     console.log('login??',response)
-  //     // store.commit('SET_USERS', response.data)
-  //     // callback(response)
-  //   }).catch((error) => {
-  //       console.log(error);
-  //   });
-  // },
-  getUsers: (store,callback) => {
-    axios.get('/schedule/api/users',
-    {
-      withCredentials: true,
-      params: {
-        username: 'susture',
-        password: 'jmlLq1BhwucEkul_WgmSOA',
-      },
-      auth: store.state.superSassInfo
-    }
-    ).then((response) => {
-      // console.log('OK',response)
-      store.commit('SET_USERS', response.data)
-      callback(response)
-    }).catch((error) => {
-        console.log(error);
-    });
-  },
-  // getServiceResources: (store) => {  // 一般の選択項目
-  //   // 
-  //   axios.get('/schedule/api/resources.json',{
-  //     withCredentials: true,
-  //     params: {
-  //       schedule_id: 535588,
-  //       username: 'susture',
-  //       password: 'jmlLq1BhwucEkul_WgmSOA'
-  //     },
-  //     auth: store.state.superSassInfo
-  //   }).then((response) => {
-  //     // console.log('test',response)
-  //     store.commit('SET_SERVICE_RESOURCES', response.data)
-  //     // console.log("get resource!")
-  //   }).catch((error) => {
-  //       console.log(error);
-  //   });
-
-  // },
-  // getNonMembers: (store) => {
-  //     axios.get('/schedule/api/bookings.json?slot=true',{
-  //       withCredentials: true,
-  //       params: {
-  //         schedule_id: 535588
-  //       },
-  //       auth: store.state.superSassInfo
-  //     }).then((response) => {
-  //       let dt = _.map(response.data, function(v) {
-  //           return {
-  //             id: v.id,
-  //             fullName: v.full_name,
-  //             userId: v.user_id
-  //           };
-  //       });
-  //       store.commit('SET_NONMEMBERS', dt)
-  //       // console.log("get nonMembers!")
-  //     }).catch((error) => {
-  //         console.log(error);
-  //     });
-  // },
-  getDatas: (store) => {
-      // console.log("get datas!",store)
-      store.commit('SET_ISLOADING', true)
-      axios.get('/schedule/api/schedules.json',{
-        auth: store.state.superSassInfo
-      }).then((response) => {
-
-        let books = _.forEach(response.data, function(v, key) {
-          store.dispatch('getBookings',{ 
-            schedule_id: v.id,
-            name: v.name,
-            slot: true
-          });
+  getMD5: (store,{params,callback}) => {
+    // console.log('md',store.state.auth.email,params)
+    try {
+      const processA = async function() {
+        const httpEvent = firebase.functions().httpsCallable('getHash');
+        await httpEvent({ 
+          name: 'susturesusture2525'+store.state.auth.email,
+          headers: {
+            "Access-Control-Allow-Credentials": "true",
+            "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
+            "Accept": "application/json",
+            "Content-Type": "application/json; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
+          }
+        }).then((res) => {
+          callback(res.data)
+          // store.commit('SET_USERS', res.data)
         });
-        // callback(response);
-      })  
-      .then(() => {
-        // store.commit('SET_ISLOADING', false)
-      }).catch((error) => {
-          console.log(error);
-      });
+      }
+      const processAll = async function() {
+        await processA()
+      }
+      processAll()
+    } catch(error){
+      console.log(error)
+    }
 
   },
-  getBookings: (store,params) => {
-      
-      // 非会員は取得しない
-      if(params.schedule_id === 535588) return;
+  getInfo: (store) => {
+    try {
+      const processA = async function() {
+        const httpEvent = firebase.functions().httpsCallable('getSSass');
+        await httpEvent({ 
+          // path: '/resources',
+          path: '/schedules',
+          params: {
+            // schedule_id: 535588,
+            // schedule_id: 535588,
+            account: 'susture',
+            api_key: 'jmlLq1BhwucEkul_WgmSOA'
+          },
+          headers: {
+            "Access-Control-Allow-Credentials": "true",
+            "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
+            "Accept": "application/json",
+            "Content-Type": "application/json; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
+          }
+        }).then((res) => {
+          // console.log('schedules',res);
+          // callback(res.data)
+          // store.commit('SET_USERS', res.data)
+        });
+      }
+      const processAll = async function() {
+        await processA()
+      }
+      processAll()
+    } catch(error){
+      console.log(error)
+    }
+  },
+  loginSupersass: (store,{params}) => {
+    // axios.get('/api/login?account=susture&after=General&user[name]=susture387@gmail.com&checksum='+state.auth.checksum,
+    // axios.post('/api/login',
+    // {
+    //   account:'susture',
+    //   checksum: params.checksum,
+    //   user: {
+    //     name: params.email
+    //   },
+    //   withCredentials: true,
+    //   // responseType : 'document',
+    // }).then((response) => {
+    //   console.log('login??',response)
+    //   // store.commit('SET_USERS', response.data)
+    //   // callback(response)
+    // }).catch((error) => {
+    //     console.log(error);
+    // });
+    try {
+        const processA = async function() {
+          
+          // const httpEvent = firebase.functions().httpsCallable('httpEvent');
+          // const httpEvent = await axios.post('/httpEvent',{
+          //   account:'susture',
+          // }).then((response) => {
+          //   console.log(response)
+          // }).catch((error) => {
+          //   console.log(error)
+          // });
 
-      let that = this;
-      // store.commit('SET_ISLOADING', true)
-      axios.get('/schedule/api/bookings.json',{
-        withCredentials: true,
-        params: params,
-        auth: store.state.superSassInfo
-      }).then((response) => {
-      
-        _.forEach(response.data, function(v, key) {
-          if(v.start!==null && v.status!==6) {
-            // console.log('value check.',v)
+          const httpEvent = await axios.post('/httpEvent',{
+            account:'susture',
+          }).then((response) => {
+            console.log(response)
+          }).catch((error) => {
+            console.log(error)
+          });
 
-            if(!v.res_name){ return; }  // 削除された場合、表示しない
+          // await httpEvent({ 
+          //   path: '/login',
+          //   params: {
+          //     account:'susture',
+          //     checksum: params.checksum,
+          //     user: {
+          //       name: params.email
+          //     }
+          //   },
+          //   headers: {
+          //     "Accept": "text/html",
+          //     "Content-Type": "text/html",
+          //     "Access-Control-Allow-Origin": "*",
+          //   }
+          // }).then((res) => {
+          //   console.log('login',res);
+          // });
+        }
+        const processAll = async function() {
+          await processA()
+        }
+        processAll()
+      } catch(error){
+        console.log(error)
+      }
 
-            let description = '';
-            let iconColor = '#ffb6c1'  // 一般
-            let color = '#ffb6c1'
-            let isMember=false;
+  },
+  getUsers: (store,callback) => {
+    // console.log("get users");
+    try {
+      const processA = async function() {
+        const httpEvent = firebase.functions().httpsCallable('getSSass');
+        await httpEvent({ 
+          path: '/users',
+          params: {
+            username: 'susture',
+            password: 'jmlLq1BhwucEkul_WgmSOA',
+          },
+          headers: {
+            "Access-Control-Allow-Credentials": "true",
+            "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
+            "Accept": "application/json",
+            "Content-Type": "application/json; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
+          }
+        }).then((res) => {
+          // console.log('get',res);
+          callback(res.data)
+          store.commit('SET_USERS', res.data)
+        });
+      }
+      const processAll = async function() {
+        await processA()
+      }
+      processAll()
+    } catch(error){
+      console.log(error)
+    }
 
-            // コザ以外＝ナゴ
-            // if(params.schedule_id !== 534330) {
-            if(v.res_name == 'ナゴスタジオ') {
-              iconColor = '#9DC0AC';
-              color = '#9DC0AC';
-            }else if(v.res_name == 'コザスタジオ') {
-              iconColor = '#F3C857';
-              color = '#F3C857';
+  },
+  getUserAgenda: (store,{params, callback}) => {  // ユーザー予約を取得
+    // console.log("get user agenda", params);
+    store.commit('SET_ISLOADING', false)
+    try {
+      const processA = async function() {
+        const httpEvent2 = firebase.functions().httpsCallable('getSSass');
+        const d_appoint = httpEvent2({ 
+          path: '/agenda',
+          method: 'GET',
+          params: {
+            user: params.email,
+            api_key: supersassConfig.apiKey,
+            account: supersassConfig.account,
+            from: params.from_date,
+            slot: true
+          },
+          headers: {
+            "Accept": "*/*",
+            "Contsent-Type": "application/json; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
+          }
+        }).then((res2) => {
+          // xml to json
+          parser.parseString(res2.data, function (err, result) {
+            callback(result.bookings);
+          })
+        });
+      }
+      const processAll = async function() {
+        await processA()
+      }
+      processAll()
+    } catch(error){
+      console.log(error)
+    }
+
+  },
+  getCapaExperience: (store) => {
+      // console.log("free!",store.state.selectDate)
+      store.commit('SET_ISLOADING', true)
+      try {
+        const processA = async function() {
+          const httpEvent = firebase.functions().httpsCallable('getSSass');
+          await httpEvent({ 
+            path: '/free/536129.json',
+            params: {
+              from: store.state.selectDate + ' 00:00:00',
+              checksum: '09f6be878d92eba5cccd8f61923fd24d',
+            },
+            headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/json; charset=utf-8",
+              "Access-Control-Allow-Origin": "*",
             }
+          }).then((res) => {
+            // console.log('free',res);
+            _.forEach(res.data.slots, function(v, k) {
 
-            // // 非会員チェック
-            // const nonMember = _.find(store.state.result.nonMembers, { userId: v.user_id }); 
-            // if(nonMember){
-            //   //一般の場合
-            //   // description = v.status_message
-            //   description = '一般'
-            //   // iconColor = '#ffb6c1'
-            //   // color = '#ffb6c1'
-            // }else{
-            //   // 会員の場合
-            //   isMember = true;
-            //   description = v.field_2_r
-            //   // iconColor = '#67C23A'
-            //   // color = '#67C23A';
-            // }
+              let description = v.description;
+              let iconColor = '#ffb6c1'
+              let color = '#ffb6c1'
+              let isMember=false;
 
+              let datetime = +moment(v.start).format("h:mm")+'〜'+moment(v.finish).format("h:mm:ss a");
+              store.state.result.events.push({
+                id: v.id,
+                title: v.title,
+                start: v.start,
+                end: v.finish,
+                datetime: datetime,
+                description: description,
+                isMember:isMember,
+                studioName: '',
+                iconColor: iconColor,
+                color: color,
+                fontColor: 'black',
+                display: '',
+                isReserve: false,
+                allDay: true
+              })
+            });
+            // callback(res.data)
+            // store.commit('SET_USERS', res.data)
+          });
+        }
+        const processAll = async function() {
+          await processA()
+        }
+        processAll()
+      } catch(error){
+        console.log(error)
+      }
+
+  },
+  getClass: (store, {params}) => { //クラスのレッスン
+    // store.commit('SET_ISLOADING', true)
+    try {
+      const processA = async function(schedule_id,studio_name,color) {
+        const httpEvent = firebase.functions().httpsCallable('getSSass');
+        await httpEvent({ 
+          path: '/free/'+schedule_id+'.json',
+          params: {
+            from: store.state.selectDate + ' 00:00:00',
+            checksum: '09f6be878d92eba5cccd8f61923fd24d',
+          },
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
+          }
+        }).then((res) => {
+          // console.log('free',res);
+          _.forEach(res.data.slots, function(v, k) {
+            // console.log('free',v);
+            let description = v.description;
+            let isMember = false;
+
+            // description = description + ' ' +moment(v.start).format("h:mm")+'〜'+moment(v.finish).format("h:mm:ss a");
+            let _start = moment(v.start).format("HH:mm");
+            let _finish = moment(v.finish).format("HH:mm");
             store.state.result.events.push({
               id: v.id,
-              // title: v.full_name,
-              title: v.res_name+' '+v.full_name,
+              title: v.title,
               start: v.start,
               end: v.finish,
+              datetime: _start+'〜'+_finish,
               description: description,
               isMember:isMember,
-              studioName: v.res_name,
-              iconColor: iconColor,
+              studioName: studio_name,
+              iconColor: color,
               color: color,
               fontColor: 'black',
               display: '',
-              isGoogle: false,
-              // allDay: true
+              isReserve: false,
+              allDay: true
             })
+            store.commit('SET_ISLOADING', false)
+          });
+          // callback(res.data)
+          // store.commit('SET_USERS', res.data)
+        });
+      }
+      // コザクラス
+      const processAll = async function() {
+        await processA(535055,'コザスタジオ','#F3C857')
+      }
+      processAll()
+      // ナゴクラス
+      const processAll2 = async function() {
+        await processA(548481,'ナゴスタジオ','#9DC0AC')
+      }
+      processAll2()
 
+    } catch(error){
+      console.log(error)
+    }
+  },
+  getBookings: (store) => {
+      try {
+        const processA = async function(schedule_id, use_type) {
+          const httpEvent = firebase.functions().httpsCallable('getSSass');
+          await httpEvent({ 
+            path: '/bookings',
+            params: {
+              schedule_id: schedule_id,
+              checksum: '09f6be878d92eba5cccd8f61923fd24d',
+            },
+            headers: {
+              "Accept": "application/xml",
+              "Content-Type": "application/xml; charset=utf-8",
+              "Access-Control-Allow-Origin": "*",
+            }
+          }).then((res) => {
+            // console.log('book',res);
+            // xml to json
+            parser.parseString(res.data, function (err, result) {
+              // 個人と団体データ様式が異なるため！
+              let _datas =  result.reservations;
+              if(_datas==undefined) _datas =  result.appointments;
+              _.forEach(_datas, function(reservations, k) {
+                _.forEach(reservations, function(v, key) {
+                  // console.log('bookings.',v)
+                  if(!v['res-name']) return;  // 削除された場合、表示しない
+
+                  let description = v['status-message'];
+                  let _start = moment(v['start']['_']).utc().format("HH:mm");
+                  let _finish = moment(v['finish']['_']).utc().format("HH:mm");
+                  let iconColor = '#ffb6c1'  // 一般
+                  let color = '#ffb6c1'
+                  let isMember=false;
+
+                  // コザが含まれているか検索
+                  iconColor = '#9DC0AC';
+                  color = '#9DC0AC';
+                  var result = v['res-name'].indexOf('コザ');
+                  if(result==-1) {
+                    // コザ
+                    iconColor = '#F3C857';
+                    color = '#F3C857';
+                  }
+
+                  store.state.result.events.push({
+                    id: v['id']['_'],
+                    title: v['full-name'],
+                    start: v['start']['_'],
+                    end: v['finish']['_'],
+                    description: description,
+                    datetime: _start+'〜'+_finish,
+                    isMember:isMember,
+                    studioName: v['res-name'],
+                    iconColor: iconColor,
+                    color: color,
+                    fontColor: 'black',
+                    display: '',
+                    isReserve: true,
+                    created: v['created-on']['_'],
+                    user_id: v['user-id']['_'],
+                    use_type: use_type
+                  })
+
+                })
+              })
+            });
+          });
+        }
+        // 個人利用
+        const processAll = async function() {
+          await processA(534330,'個人利用')
+        }
+        processAll()
+        // 団体利用
+        const processAll2 = async function() {
+          await processA(542652,'団体利用')
+        }
+        processAll2()
+      } catch(error){
+        console.log(error)
+      }
+  },
+  getBooking: (store,{params,callback}) => {  //単一
+    // console.log("get book",params);
+    // store.commit('SET_ISLOADING', false)
+    try {
+      const processA = async function() {
+        const httpEvent2 = firebase.functions().httpsCallable('getSSass');
+        const d_appoint = httpEvent2({ 
+          path: '/bookings/'+ params.id +'.json',
+          method: 'GET',
+          params: {
+            schedule_id: 534330,
+            checksum: '09f6be878d92eba5cccd8f61923fd24d',
+          },
+          headers: {
+            // "Access-Control-Allow-Credentials": "true",
+            // "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
+            "Accept": "*/*",
+            "Contsent-Type": "application/json; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
           }
-        })
+        }).then((res2) => {
+          console.log('apoi',res2)
+          callback(res2);
+        });
 
-      })  
-      .then(() => {
-        // store.commit('SET_ISLOADING', false)
-      }).catch((error) => {
-          console.log(error);
-      });
+      }
+      const processAll = async function() {
+        await processA()
+      }
+      processAll()
+    } catch(error){
+      console.log(error)
+    }
+
+  },
+  addAppointment: (store,{params,callback}) => {
+      // 予約追加
+      // console.log(store.state.auth)
+      try {
+        const processA = async function() {
+          
+          const httpEvent = firebase.functions().httpsCallable('postSSass');
+          await httpEvent({ 
+            path: '/bookings.json',
+            method: 'POST',
+            params: {
+              account: "susture",
+              user_id: store.state.auth.user_id,
+              after: "experience",
+              'user[name]': store.state.auth.email,
+              checksum:  store.state.auth.checksum,
+              // schedule_id: 536129,
+              // user_id: store.state.auth.user_id,
+              // checksum: "09f6be878d92eba5cccd8f61923fd24d",
+              // 'booking[slot_id]': 35868655,
+              // 'booking[full_name]': "test6",
+              // 'booking[email]': "kaoru1225@gmail.com",
+              // booking: {
+              //   slot_id: '35868655',
+              //   full_name: "test5",
+              //   email: "kaoru1225@gmail.com",
+              // },
+              // form:true,
+            },
+            headers: {
+              // cookie: 'account=susture;'+'checksum='+store.state.auth.checksum,
+              // "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
+              // "Access-Control-Allow-Origin": "*",
+              // "Access-Control-Allow-Credentials": "true",
+              // "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
+              // 'X-Requested-With': 'XMLHttpRequest',
+              // 'Accept': 'text/plain',
+              // "Contsent-Type": "application/xml",
+
+              "Accept": "*/*",
+              // "Contsent-Type": "application/json; charset=utf-8",
+              "Access-Control-Allow-Origin": "*",
+            }
+          }).then((res) => {
+            // console.log('apo',res);
+            // callback(res)
+          });
+        }
+        const processAll = async function() {
+          await processA()
+        }
+        processAll()
+      } catch(error){
+        console.log(error)
+      }
+  },
+  deleteAppointment: (store,{params,callback}) => {
+      try {
+        // スタジオリソース
+        let _schedule_id = '534330'
+        let _checksum = '09f6be878d92eba5cccd8f61923fd24d';
+
+        // 予約削除
+        const processA = async function() {
+          const httpEvent2 = firebase.functions().httpsCallable('deleteSSass');
+          const d_appoint = httpEvent2({ 
+            path: '/bookings/'+ params.id +'.json',
+            params: {
+              schedule_id: _schedule_id,
+              checksum: _checksum,
+            },
+            headers: {
+              "Accept": "*/*",
+              "Contsent-Type": "application/json; charset=utf-8",
+              "Access-Control-Allow-Origin": "*",
+            }
+          }).then((res) => {
+            console.log(res)
+            callback(res)
+          });
+          return d_appoint;
+
+        }
+        const processAll = async function() {
+          return await processA()
+        }
+        processAll()
+      } catch(error){
+        console.log(error)
+      }
   },
   addUser: (store,{params,callback}) => {
-      // ランダム整数発行
-      var _code = getRandomInt(1,9999)
-      var _name='susturesusture2525'+params.email;
-      // console.log('p name.',_name);
 
-      ////////////////////////
-      // supersass新規追加
-      ////////////////////////
+    // ランダム整数発行
+    var _code = getRandomInt(1,9999)
+    // var _name='susturesusture2525'+params.email;
+    // // console.log('p name.',_name);
 
-      // TODO: checksum不具合解消までの間コメント=========================
-      // md5
-      axios.post('/gcf',{
-        name: _name
-      }
-      ).then((response) => {
-        console.log('ハッシュ値',response.data)
-        store.commit('SET_AUTH_CHECKSUM', response.data.result)
+    // ////////////////////////
+    // // supersass新規追加
+    // ////////////////////////
 
-        // supersass
-        axios.post('/schedule/users/'+_code+'fk.json',{
-          account:'susture',
-          password:'jmlLq1BhwucEkul_WgmSOA',
-          user: {
-            full_name: params.displayName,
-            name: params.email,
-            password: params.displayName,
-            super_field: response.data.result,
+    try {
+      console.log('user!',params, _code)
+      const processA = async function() {
+        const httpEvent = firebase.functions().httpsCallable('postSSass');
+        await httpEvent({ 
+          path: '/users/'+_code+'fk.json',
+          method: 'POST',
+          params: {
+            account:'susture',
+            password:'jmlLq1BhwucEkul_WgmSOA',
+            'user[full_name]': params.displayName,
+            'user[name]': params.email,
+            'user[password]': params.email,
           },
-        }).then((response2) => {
-          // console.log('success');
-          callback(response2);
-        }).catch((error) => {
-            console.log(error);
-        });  
+          headers: {
+            "Accept": "*/*",
+            "Contsent-Type": "application/json; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
+          }
+        }).then((res) => {
+          console.log('user',res);
+          callback(res)
+        });
+      }
+      const processAll = async function() {
+        await processA()
+      }
+      processAll()
+    } catch(error){
+      console.log(error)
+    }
+      // // md5
+      // axios.post('/gcf/getMD5',{
+      //   name: _name
+      // }
+      // ).then((response) => {
+      //   console.log('ハッシュ値',response.data)
+      //   store.commit('SET_AUTH_CHECKSUM', response.data.result)
 
-        // callback(response)
-      }).catch((error) => {
-          console.log(error);
-      });
-      // TODO: checksum不具合解消までの間コメント=========================
+      //   // // supersass
+      //   // axios.post('/schedule/users/'+_code+'fk',{
+      //   //   account:'susture',
+      //   //   password:'jmlLq1BhwucEkul_WgmSOA',
+      //   //   user: {
+      //   //     full_name: params.displayName,
+      //   //     name: params.email,
+      //   //     password: params.displayName,
+      //   //     super_field: response.data.result,
+      //   //   },
+      //   // }).then((response2) => {
+      //   //   // console.log('success');
+      //   //   callback(response2);
+      //   // }).catch((error) => {
+      //   //     console.log(error);
+      //   // });  
+
+      //   // callback(response)
+      // }).catch((error) => {
+      //     console.log(error);
+      // });
 
       // // supersass
       // axios.post('/api/users/'+_code+'fk.json',{
@@ -327,6 +697,41 @@ const actions = {
       // });  
 
   },
+  // saveUser: (store,{params,callback}) => {
+  //   try {
+  //     store.state.auth.credit += params.price;
+  //     console.log('user!',store.state.auth)
+  //     const processA = async function() {
+  //       const httpEvent = firebase.functions().httpsCallable('postSSass');
+  //       await httpEvent({ 
+  //         path: '/users/'+ store.state.auth.user_id+'.json',
+  //         method: 'PUT',
+  //         params: {
+  //           notfound: 'ignore',
+  //           'user[name]': store.state.auth.email,
+  //           'user[email]': store.state.auth.email,
+  //           'user[credit]': store.state.auth.credit,
+  //         },
+  //         headers: {
+  //           "Access-Control-Allow-Credentials": "true",
+  //           "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
+  //           "Accept": "*/*",
+  //           "Contsent-Type": "application/json; charset=utf-8",
+  //           "Access-Control-Allow-Origin": "*",
+  //         }
+  //       }).then((res) => {
+  //         console.log('apo',res);
+  //         callback(res)
+  //       });
+  //     }
+  //     const processAll = async function() {
+  //       await processA()
+  //     }
+  //     processAll()
+  //   } catch(error){
+  //     console.log(error)
+  //   }
+  // }
 }
 
 function getRandomInt(min, max) {
@@ -341,6 +746,9 @@ const mutations = {
     state.auth.username=''
     state.auth.email=''
     state.auth.checksum=''
+    state.auth.isMember=false
+    state.auth.user_id='';
+    state.auth.credit=0;
   },
   onUserStatusChanged(state, status) {
     state.authStatus = status;
@@ -353,6 +761,9 @@ const mutations = {
   },
   SET_NONMEMBERS (state, data) {
     state.result.nonMembers = data
+  },
+  SET_SCHEDULES (state, data) {
+    state.result.schedules = data
   },
   SET_EVENTS (state, data) {
     state.result.events = data
@@ -369,6 +780,19 @@ const mutations = {
   SET_AUTH (state, auth){
     state.auth.username = auth.displayName;
     state.auth.email = auth.email
+
+    // イベント取得
+    let index = _.findIndex(state.result.users, function(o){
+      return o.email==auth.email;
+    });
+    if(index==-1) return;
+    // supersassアカウント
+    let supersassuser = state.result.users[index]
+    // console.log('super',supersassuser)  
+    state.auth.user_id = supersassuser.id
+    state.auth.credit = supersassuser.credit
+    // 権限
+    if(supersassuser.super_field==1) state.auth.isMember = true;
   },
   SET_AUTH_ROLE (state, general){
     state.auth.general = general;
@@ -382,7 +806,9 @@ const mutations = {
   RESET_VUEX_STATE(state) {
     // ローカルストレージ初期化
     Object.assign(state, JSON.parse(localStorage.getItem('state')));
-    
+  },
+  SET_SAFARI_LOGIN (state, is_login){
+    state.info.isSafariLogin = is_login
   },
 }
 

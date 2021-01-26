@@ -62,17 +62,17 @@
         </el-tab-pane>
       </el-tabs>
     </v-container>
-    <modal-shop-ticket ref="dialogShopTicket" :dialog-form-visible="modal_shop_visible" :close-modal="close_shop_modal" />
+    <!-- <modal-shop-ticket ref="dialogShopTicket" :dialog-form-visible="modal_shop_visible" :close-modal="close_shop_modal" /> -->
   </div>
 </template>
 
 <script>
   import store from '../store/app';
-  import ModalShopTicket from './ModalShopTicket'
+  // import ModalShopTicket from './ModalShopTicket'
 
   export default {
     components: {
-      ModalShopTicket
+      // ModalShopTicket
     },
     data: () => ({
       width: window.innerWidth,

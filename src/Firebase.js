@@ -1,5 +1,6 @@
 import firebase from "@firebase/app";
 import "@firebase/auth";
+import "@firebase/functions";
 import router from "./router"
 import store from "./store/app";
 import { firebaseConfig } from './config/firebase-config'
@@ -15,7 +16,6 @@ export default {
   init() {
     firebase.initializeApp(firebaseConfig);
     firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);
-
     // usersRef = firebase.database().ref("users");
   },
   auth(){

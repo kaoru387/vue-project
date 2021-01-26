@@ -1,16 +1,16 @@
   <template>
   <div>
     <div class="mx-auto pb-3" :style="{'max-width':'360px'}">
-      <el-alert
+      <!-- <el-alert
         v-if="isFirst"
         :closable="false"
         type="info"
         class="text-left"
         description="はじめてのお客様も登録情報をご入力いただき、このままお進みください。"
         show-icon>
-      </el-alert>
+      </el-alert> -->
       <el-alert
-        v-else
+        v-if="!isFirst"
         :closable="false"
         type="warning"
         class="text-left"
@@ -127,19 +127,19 @@ export default {
             // 確認メールの有無
             const mailFlag = authResult.user.emailVerified;
             if (mailFlag === false) {
-
-                // 確認メール未時に確認メール送信
-                firebase.auth().currentUser.sendEmailVerification()
-                .then(function() {
-                    // alert('登録メールを送信しました。メールが届いているかをご確認ください。');
-                    // URLリロード
-                    that.$router.replace('/sendemail')
-                })
-                .catch(function(error) {
-                  console.log('error',error)
-                  alert('登録に失敗しました!');
-                  that.$router.replace('/')
-                });
+              
+              // 確認メール未時に確認メール送信
+              firebase.auth().currentUser.sendEmailVerification()
+              .then(function() {
+                  // alert('登録メールを送信しました。メールが届いているかをご確認ください。');
+                  // URLリロード
+                  that.$router.replace('/sendemail')
+              })
+              .catch(function(error) {
+                console.log('error',error)
+                alert('登録に失敗しました!');
+                that.$router.replace('/')
+              });
 
             } else {
               // 確認メール済時にメイン画面へ移動
@@ -147,7 +147,6 @@ export default {
             }
 
           // }
-
           // alert('管理者に通知されました。登録メールが届くまで、しばらくお待ち下さい...');
           // that.$router.replace('/')
         },

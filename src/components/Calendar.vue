@@ -2,7 +2,6 @@
   <div id="calendar">
     <!-- <h1 class="mt-2 mb-2">{{ msg }}</h1> -->
     <!-- <button @click="toggleWeekends">toggle weekends</button> -->
-
     <v-row class="fill-height">
       <v-col>
         <v-sheet height="64">
@@ -117,12 +116,6 @@
 </template>
 
 <script>
-// import FullCalendar from '@fullcalendar/vue'
-// import dayGridPlugin from '@fullcalendar/daygrid'
-// import interactionPlugin from '@fullcalendar/interaction'
-// import timeGridPlugin from "@fullcalendar/timegrid";
-// import ja from "@fullcalendar/core/locales/ja";
-// import { formatDate } from '@fullcalendar/vue'
 import store from '../store/app';
 import { mdiChevronRight } from '@mdi/js';
 import { mdiChevronLeft } from '@mdi/js';
@@ -130,7 +123,6 @@ import { mdiChevronLeft } from '@mdi/js';
 export default {
   components: {
     // FullCalendar,
-    
   },
   props: {
     msg: String,
@@ -144,8 +136,8 @@ export default {
       // events: [],
       mdiChevronRight: mdiChevronRight,
       mdiChevronLeft: mdiChevronLeft,
-      height: window.innerHeight-300,
-      width: window.innerWidth,
+      // height: window.innerHeight-300,
+      // width: window.innerWidth,
       focus: '',
       type: 'month',
       typeToLabel: {
@@ -160,7 +152,6 @@ export default {
       // events: [],
       // colors: ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey darken-1'],
       names: ['Meeting', 'Holiday', 'PTO', 'Travel', 'Event', 'Birthday', 'Conference', 'Party'],
-
       // calendarOptions: {
       //   plugins: [ dayGridPlugin, timeGridPlugin, interactionPlugin ],
       //   initialView: 'dayGridMonth',
@@ -181,6 +172,9 @@ export default {
     }
   },
   computed: {
+    height() {
+      return window.screen.height;
+    }
     // events() {
     //   return store.state.result.events;
     // },
@@ -233,7 +227,6 @@ export default {
       },
       updateRange ({ start, end }) {
         const events = []
-
         // const min = new Date(`${start.date}T00:00:00`)
         // const max = new Date(`${end.date}T23:59:59`)
         // const days = (max.getTime() - min.getTime()) / 86400000
@@ -254,7 +247,6 @@ export default {
         //     timed: !allDay,
         //   })
         // }
-
         this.events = events
       },
       rnd (a, b) {

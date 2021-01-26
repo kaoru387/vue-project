@@ -14,7 +14,8 @@ module.exports = {
   entry: './src/index.js',
   output: {
     filename: 'app.js',
-    path: path.resolve(__dirname, '../public_html/dist'),
+    // path: path.resolve(__dirname, '../public_html/dist'),
+    path: path.resolve(__dirname, './firebase/public'),
   },
   mode: env,
   module: {
@@ -78,7 +79,8 @@ module.exports = {
     // minimizer: [new TerserPlugin({}), new OptimizeCSSAssetsPlugin({})],
   },
   devServer: {
-    contentBase: '../public_html/dist',
+    // contentBase: '../public_html/dist',
+    contentBase: './firebase/public',
     // port: 4005,
     // headers: {
     //     'X-Frame-Options': "allow-from *"
@@ -96,20 +98,36 @@ module.exports = {
       //     changeOrigin: true,
       //     'pathRewrite': {'^/google/': ''}
       // },
-      '/api': {
-          target: "https://supersaas.com/api",
-          changeOrigin: true,
-          'pathRewrite': {'^/api/': ''}
-      },
       '/schedule': {
-          target: "https://schedule.kdev.page",
+          target: "https://www.supersaas.com",
           changeOrigin: true,
           'pathRewrite': {'^/schedule/': ''}
       },
-      '/gcf': {
+      // '/schedule': {
+      //     target: "http://localhost:5000",
+      //     changeOrigin: true,
+      //     'pathRewrite': {'^/schedule/': ''}
+      // },
+      // '/cloud': {
+      //     target: "https://us-central1-vue-authentification-b7a7a.cloudfunctions.net/api",
+      //     changeOrigin: true,
+      //     'pathRewrite': {'^/cloud/': ''}
+      // },
+      // '/schedule': {
+      //     target: "https://schedule.kdev.page",
+      //     changeOrigin: true,
+      //     'pathRewrite': {'^/schedule/': ''}
+      // },
+      '/supersass': {
           target: "https://asia-northeast2-quickstart-1604473380297.cloudfunctions.net",
           changeOrigin: true,
-          'pathRewrite': {'^/gcf/': ''}
+          'pathRewrite': {'^/supersass/': ''}
+      },
+      '/gcf': {
+          target: "https://us-central1-vue-authentification-b7a7a.cloudfunctions.net",
+          // target: "https://gcf.kdev.page",
+          changeOrigin: true,
+          'pathRewrite': {'^/gcf': ''}
       },
     }
   },

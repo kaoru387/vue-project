@@ -1,46 +1,118 @@
 <template>
-  <v-app>
-    <v-card flat>
-      <v-card-title>
-        <span class="headline">スタジオ予約</span>
+  <v-app id="app">
+    <v-card class="overflow-hidden">
+      <v-app-bar
+        absolute
+        color="blue"
+        elevate-on-scroll
+        scroll-target="#scrolling-techniques-7"
+      >
+        <!-- <v-app-bar-nav-icon></v-app-bar-nav-icon> -->
+        <v-toolbar-title class="p-0" :style="{'color':'white'}">スタジオ予約</v-toolbar-title>
         <v-spacer></v-spacer>
-        <el-dropdown trigger="click">
-          <span class="el-dropdown-link">
-            <span v-if="auth.username">{{ auth.username }}さん</span>
-            <v-icon color="darken-2">{{ mdiAccount }}</v-icon>
-            <i class="el-icon-arrow-down el-icon--right"></i>
-          </span>
-          <el-dropdown-menu slot="dropdown">
-            <!-- <el-dropdown-item @click.native="login">ログイン</el-dropdown-item> -->
-            <el-dropdown-item @click.native="logout">ログアウト</el-dropdown-item>
-            <!-- <el-dropdown-item @click.native="test">テスト</el-dropdown-item> -->
-            <!-- <el-dropdown-item icon="el-icon-circle-plus">Action 2</el-dropdown-item>
-            <el-dropdown-item icon="el-icon-circle-plus-outline">Action 3</el-dropdown-item>
-            <el-dropdown-item icon="el-icon-check">Action 4</el-dropdown-item>
-            <el-dropdown-item icon="el-icon-circle-check">Action 5</el-dropdown-item> -->
-          </el-dropdown-menu>
-        </el-dropdown>
-      </v-card-title>
-      <!-- <v-card-text>Lorem Ipsum</v-card-text> -->
-    </v-card>
-    <v-main>
-      <!-- <v-container fluid> -->
-      <router-view v-loading="loading"/>  
+        <!--  -->
+        <v-btn
+          v-if="auth.username"
+          class="ma-2"
+          text
+          icon
+          color="orange lighten-2"
+          @click="openShop"
+        >
+          <v-icon>{{ mdiCartVariant }}</v-icon>
+        </v-btn>
+        <v-icon v-if="auth.username==''" class="mr-3">{{ mdiCartVariant }}</v-icon>
+        
+        <v-menu
+          bottom
+          left
+        >
+          <template v-slot:activator="{ on, attrs }">
+            <div class="outer">
+              <div class="sample" :style="{'color':'white'}">
+                <!-- <v-icon color="darken-2">{{ mdiAccount }}</v-icon> -->
+                <!-- <span class="mr-2" v-if="auth.username">{{ auth.username }}さん</span>
+                <span class="mr-2" v-if="auth.username">{{ auth.credit }}</span> -->
+                <div v-if="auth.username" class="d-flex align-items-start flex-column bd-highlight">
+                  <div class="p-0 bd-highlight">{{ auth.username }}<span class="ml-1">さん</span></div>
+                  <div class="p-0 bd-highlight ml-auto">ポイント：<span>{{ auth.credit.toLocaleString() }}</span></div>
+                </div>
+                <a　v-else class="text-decoration-underline" :style="{'color':'white !important'}" @click="openModal">
+                  会員になる
+                </a>
+              </div>
+              <v-btn
+                dark
+                icon
+                v-bind="attrs"
+                v-on="on"
+              >
+                <v-icon>mdi-dots-vertical</v-icon>
+              </v-btn>
+            </div>
+          </template>
 
-      <!-- </v-container> -->
-    </v-main>
-  
+          <!-- <v-icon color="darken-2">mdi-cart-variant</v-icon> -->
+
+          <v-list class="text-left pl-2">
+            <!-- <v-list-item
+              v-for="(item, i) in items"
+              :key="i"
+            >
+              <v-list-item-title class="p-2" @click="logout">{{ item.title }}</v-list-item-title>
+            </v-list-item> -->
+            <v-list-item>
+              <v-list-item-title class="p-2" @click="openModal">ログイン</v-list-item-title>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-title class="p-2" @click="logout">ログアウト</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
+      </v-app-bar>
+      <v-sheet
+        id="scrolling-techniques-7"
+        class="overflow-y-auto"
+      >
+        <v-container :style="{'margin-top':'55px','height':height+'px'}">
+          <router-view v-loading="loading"/>
+        </v-container>
+      </v-sheet>
+    </v-card>
+    <!-- <transition name="fade">
+      <v-btn 
+        v-scroll="onScroll"
+        v-show="fab"
+        fab
+        dark
+        fixed
+        bottom
+        right
+        color="primary"
+        @click="toTop">
+        <v-icon>mdi-chevron-up</v-icon>
+      </v-btn>
+    </transition> -->
+    <!-- チケット -->
+   <modal-shop 
+    ref="dialogCourse"
+    :dialog-form-visible="modal_shop_visible" 
+    :close-modal="close_modal"
+   />
   </v-app>
 </template>
 
 <script>
   import store from './store/app';
-  import { mdiAccount,mdiKey } from '@mdi/js'
+  import { mdiAccount, mdiKey, mdiCartVariant } from '@mdi/js'
   import firebase from "Firebase";
+  import ModalShop from './components/ModalShop'
 
 export default {
   name: 'App',
   components: {
+    ModalShop,
     // VCard,
     // VCardText,
     // VCardMedia
@@ -52,16 +124,42 @@ export default {
       text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
       modal_login_visible: false,
       mdiAccount,
-      // username:'',
+      mdiCartVariant,
+      items: [
+        {
+          title: 'ログアウト',
+        }
+      ],
+      fab: false,
+      // modal_visible: false,
+      modal_shop_visible: false
     }
   },
   computed: {
+    // height () {
+    //   switch (this.$vuetify.breakpoint.name) {
+    //     case 'xs': return 220
+    //     case 'sm': return 400
+    //     case 'md': return 500
+    //     case 'lg': return 600
+    //     case 'xl': return 800
+    //   }
+    // },
+    height() {
+      return window.innerHeight;
+    },
     loading() {
       return store.state.isLoading;
     },
     auth() {
       return store.state.auth;
     },
+    info() {
+      return store.state.info;
+    },
+  },
+  mounted() {
+    // console.log('mute',window.screen.height)
   },
   created: function () {
 
@@ -84,52 +182,45 @@ export default {
         // console.log('そんなブラウザは知らん');
     }
     store.commit('SET_INFO_BROUSER', browser)
-    
+    // console.log("browser",browser);
 
     let that = this;
     // ログインチェック
     firebase.auth().onAuthStateChanged(function(user) {
       if (user) {
-        // console.log('singin',user.displayName)
-        // that.username = user.displayName;
         store.commit('SET_AUTH', user)
       } else {
         console.log('no singin')
-        // that.username='';
       }
     });
 
-    // // サービスリソース取得
-    // store.dispatch('getServiceResources')
-    // // 一般会員取得
-    // store.dispatch('getNonMembers')
-
     // 初期化
     store.commit('SET_EVENTS', [])
-
     // 予約取得
-    store.dispatch('getDatas')
-    // store.dispatch('getDatas', function(e){
-    //     let books = _.forEach(e.data, function(v, key) {
-    //       store.dispatch('getBookings',{ 
-    //         schedule_id: v.id,
-    //         name: v.name,
-    //         slot: true
-    //       });
-    //     });
-    // });
-
+    store.dispatch('getBookings')
+    // クラス取得
+    store.dispatch('getClass',{})
+    
     // 状態ストレージ保有
     // console.log('state!',store.state)
     localStorage.setItem('state', JSON.stringify(store.state));
-    store.commit('SET_ISLOADING', false)
+    // store.commit('SET_ISLOADING', false)
     // 今日の日付取得
     store.commit('SET_SELECT_DATE', this.$moment().format('YYYY-MM-DD'))
     
   },
   methods: {
+    onScroll(e){
+      if (typeof window === 'undefined') return
+      const top = window.pageYOffset ||   e.target.scrollTop || 0
+      // console.log(top)
+      this.fab = top > 50
+    },
+    toTop() {
+      this.$vuetify.goTo("#app")
+    },
     close_login_modal: function() {
-        this.modal_login_visible = false;
+      this.modal_login_visible = false;
     },
     handleSelect(key, keyPath) {
       console.log(key, keyPath)
@@ -137,7 +228,7 @@ export default {
       this.activeIndex = key;
     },
     logout: function () {
-      if(this.username=="") return;
+      if(this.auth.username=="") return;
 
       // ログアウト処理
       firebase.logOut();
@@ -155,6 +246,24 @@ export default {
       if(this.$route.path=='/') return;
       this.$router.replace('/')
     },
+    openModal(){
+     // ログインチェック
+     var that = this;
+     let currentUserStatus = firebase.auth().currentUser;
+     // console.log('current',currentUserStatus)
+     if(currentUserStatus===null) {
+       // ログイン未だの場合
+       that.$router.push({path: '/login'});
+       return;
+     }
+    },
+    openShop() {
+      this.modal_shop_visible = true;
+    },
+    close_modal: function() {
+        console.log('close')
+        this.modal_shop_visible = false;
+    }
   }
 };
 </script>

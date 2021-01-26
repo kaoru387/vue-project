@@ -3,8 +3,8 @@
     <!-- <h1 class="mt-2 mb-2">{{ msg }}</h1> -->
     <!-- <button @click="toggleWeekends">toggle weekends</button> -->
     <FullCalendar
+      :style="{'min-height':height-adjust+'px','height':height+'px'}"
       ref="fullCalendar"
-      :style="{'min-height':height-180+'px','height':height+'px'}"
       defaultView="dayGridMonth"
       :options="calendarOptions">
        <!-- <template #eventContent="arg">
@@ -40,10 +40,9 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import timeGridPlugin from "@fullcalendar/timegrid";
 import ja from "@fullcalendar/core/locales/ja";
-// import { formatDate } from '@fullcalendar/vue'
-import store from '../store/app';
 
-// import { mdiCircle } from '@mdi/js'
+import store from '../store/app';
+import moment from "moment"
 import { BPopover } from 'bootstrap-vue'
 
 export default {
@@ -60,15 +59,16 @@ export default {
   },
   data() {
     return {
-      width: window.innerWidth,
-      height: window.innerHeight,
+      // width: window.innerWidth,
+      // height: window.innerheight,
       calendarOptions: {
+        timeZone: 'UTC',
         plugins: [ dayGridPlugin, timeGridPlugin, interactionPlugin ],
         initialView: 'dayGridMonth',
         headerToolbar: {
           left:   'title',
           // center: 'myCustomButton',
-          right:  'myCustomButton dayGridMonth prev,next',
+          right:  'today dayGridMonth prev,next',
           // left: 'prev,next today',
           // center: 'title',
           // right: 'dayGridMonth,timeGridWeek,timeGridDay'
@@ -79,10 +79,10 @@ export default {
         dateClick: this.handleDateClick,
         locale:ja,
         // editable: true,
-        // eventClick: this.changeEvent,
+        eventClick: this.changeEvent,
         // eventChange: this.changeEvent,
         weekends: true,
-        eventDidMount: this.eventDidMount,
+        // eventDidMount: this.eventDidMount,
         customButtons: {
           myCustomButton: {
             text: '今日',
@@ -96,11 +96,24 @@ export default {
     }
   },
   computed: {
+    height() {
+      return window.screen.height;
+    },
     selectDate() {
       return store.state.selectDate;
     },
+    adjust () {
+      switch (this.$vuetify.breakpoint.name) {
+        case 'xs': return 220
+        case 'sm': return 400
+        case 'md': return 500
+        case 'lg': return 600
+        case 'xl': return 800
+      }
+    },
   },
   created: function () {
+    store.commit('SET_ISLOADING', false)
   },
   watch: {
     // events:  function(newEvents) {
@@ -117,47 +130,55 @@ export default {
       this.calendarOptions.weekends = !this.calendarOptions.weekends // update a property
     },
     handleDateClick(arg) {  // 日付選択
-      
-      if(arg.dateStr<this.$moment().format('YYYY-MM-DD')) {
-        // alert('選択できません。');
-        return;
-      }
 
+      // 当日の背景色クリア
       var cells = document.getElementsByTagName("td");
       for (var i = 0; i < cells.length; i++) {
-        if(cells[i].getAttribute('data-date')==this.$moment().format('YYYY-MM-DD')){
+        if(cells[i].getAttribute('data-date')==this.$moment().utc().format('YYYY-MM-DD')){
           cells[i].classList.remove('fc-day-today');
         }
       }
-
 
       // 選択日付の背景色を変更する ====
       if(this.elDay.style!==undefined) this.elDay.style.backgroundColor = 'white';
       this.elDay = arg.dayEl;
       // arg.dayEl.style.backgroundColor = 'rgba(255,0,0,0.15)';
       arg.dayEl.style.backgroundColor = 'rgba(255, 220, 40, 0.15)';
-      // ==================
+      // ==========================
 
+      // 選択日付更新
       store.commit('SET_SELECT_DATE', arg.dateStr);
       
       // 週表示
       // this.$refs.fullCalendar.getApi().gotoDate(arg.dateStr)
       // this.$refs.fullCalendar.getApi().changeView('timeGridDay');
+
+      // 詳細表示
+      this.$emit('date-selected',arg.dateStr);
+
     },
     changeEvent: function(eventInfo) {
+      //イベント選択
       event = eventInfo.event.toJSON()
-      if(event.extendedProps.isGoogle) {
-        alert('管理者のスケジュールです。')
-        return
-      }
-      if(event.extendedProps.description!=='一般') {
-        alert('会員専用ページにてご確認ください。')
-        return
-      }
       this.$emit('eventChange',event)
+
+      // 選択日付更新
+      let date = moment(event.start).utc().format('YYYY-MM-DD')
+      var result = event.start.indexOf('Z');
+      if(result==-1) date = moment(event.start).format('YYYY-MM-DD')  
+      store.commit('SET_SELECT_DATE', date);
+
+      // 背景色
+      var cells = document.getElementsByTagName("td");
+      for (var i = 0; i < cells.length; i++) {
+        cells[i].classList.remove('fc-day-today');
+        if(cells[i].getAttribute('data-date')==date){
+          cells[i].classList.add('fc-day-today');
+        }
+      }
+
     },
-    eventDidMount: function(info) {
-      // console.log(info.event)
+    eventDidMount: function(info) { // 詳細表示
       var tooltip = new BPopover({
         propsData: {
           html: true,
@@ -175,33 +196,27 @@ export default {
           target: info.el,
         }
       }).$mount()
-
-      // if (info.event.extendedProps.status === 'done') {
-      //   console.log('done')
-      // }
     },
     viewDidMount: function(e){
-      
       // 今日の日付の背景色をリセット
       let that = this
       var cells = document.getElementsByTagName("td");
       for (var i = 0; i < cells.length; i++) {
-        if(cells[i].getAttribute('data-date')==this.$moment().format('YYYY-MM-DD')){
+        if(cells[i].getAttribute('data-date')==this.$moment().utc().format('YYYY-MM-DD')){
           // cells[i].classList.remove('fc-day-today');
           that.elToday=cells[i];
         }
         // 過去の日付は選択できないため背景色を変更
-        if(cells[i].getAttribute('data-date')<this.$moment().format('YYYY-MM-DD')){
+        if(cells[i].getAttribute('data-date')<this.$moment().utc().format('YYYY-MM-DD')){
           cells[i].style.backgroundColor = 'rgba(128,128,128,0.08)';
         }
       }
-
     },
     todayEvent: function(){
       // 今日にリセット
       this.elDay.style.backgroundColor = 'white';
       this.elToday.classList.add('fc-day-today');
-      store.commit('SET_SELECT_DATE', this.$moment().format('YYYY-MM-DD'));
+      store.commit('SET_SELECT_DATE', this.$moment().utc().format('YYYY-MM-DD'));
     },
   }
 };

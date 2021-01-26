@@ -80,21 +80,21 @@ const routes = [
     name: 'verifyemail',   
     component: () =>import("../views/VerifyEmail.vue")
   },
-  {
-    path: "/useconfirm", 
-    name: 'useconfirm',   
-    component: () =>import("../views/About.vue"),
-    beforeEnter(to, from, next) {　//追記
-      // ログイン確認
-      var currentUser = Firebase.auth().currentUser;
-      if (!currentUser) {  
-        // 未だの場合
-        next("/");
-      } else {  
-        next();
-      }
-    },
-  },
+  // {
+  //   path: "/useconfirm", 
+  //   name: 'useconfirm',   
+  //   component: () =>import("../views/About.vue"),
+  //   beforeEnter(to, from, next) {　//追記
+  //     // ログイン確認
+  //     var currentUser = Firebase.auth().currentUser;
+  //     if (!currentUser) {  
+  //       // 未だの場合
+  //       next("/");
+  //     } else {  
+  //       next();
+  //     }
+  //   },
+  // },
 ]
 
 const router = new VueRouter({
@@ -136,12 +136,13 @@ router.beforeEach((to, from, next) => {
       break;
     case 'signedIn':
       // ログイン後
-      let currentUserStatus = Firebase.auth().currentUser;
-      if(to.fullPath !== '/useconfirm'){
-        store.commit('SET_BACK_URI', to.fullPath)
-        // next({ name: 'useconfirm' });
-        next();
-      }
+      // let currentUserStatus = Firebase.auth().currentUser;
+      // if(to.fullPath !== '/useconfirm'){
+      //   store.commit('SET_BACK_URI', to.fullPath)
+      //   // next({ name: 'useconfirm' });
+      //   next();
+      // }
+      next();
       break;
     default:
       // Error: invalid mode.
