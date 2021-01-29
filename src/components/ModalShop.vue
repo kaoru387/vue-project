@@ -28,8 +28,13 @@
         description="ご希望の商品をお選びいただき、決済購入お願いいたします。"
         show-icon>
     </el-alert>
-    <div class="text-right mb-1">
+    <!-- <div class="text-right mb-1">
       <button type="button" class="btn btn-light" @click="close">キャンセル</button>
+    </div> -->
+    <div class="text-center mb-1">
+      <a class="text-decoration-underline" :style="{'color':'blue !important'}" rel="noreferrer" @click="onLinkClick">
+        キャンセル
+      </a>
     </div>
     <iframe :src='supersass.host+"/login?account="+supersass.account+"&after=/shop/buy/susture&user[name]="+auth.email+"&checksum="+auth.checksum' frameborder="0" width="100%" :height=height></iframe>
   </div>
@@ -86,8 +91,8 @@
         this.$el.scrollTo(0,0);
       },
       onLinkClick() {
-        store.commit('SET_SAFARI_LOGIN', true)
-        this.closeModal();
+        this.close()
+        this.$emit('reLoad');
       }
     },
   }

@@ -68,6 +68,8 @@ Firebase.init();
 // });
 
 firebase.auth().onAuthStateChanged(user => {
+	console.log('yaho')
+	store.commit('SET_ISLOADING', true)
 	if (user) {
 		// ログイン情報
 		if (user.ma) {
@@ -87,7 +89,6 @@ firebase.auth().onAuthStateChanged(user => {
 		        });
 		      	if(list.length==0){
 		      		// 存在しない場合、新規登録する
-		      		store.commit('SET_ISLOADING', true)
 		      		store.dispatch('addUser',{
 		      			params: user,
 		      			// {
@@ -98,7 +99,7 @@ firebase.auth().onAuthStateChanged(user => {
 		      			// },
 		      			callback: function(res){
 		      				console.log('新規登録に成功しました!!',res)
-		      				store.commit('SET_ISLOADING', false) 
+		      				// store.commit('SET_ISLOADING', false) 
 		      			}
 		      		});
 		      		return;
@@ -114,7 +115,7 @@ firebase.auth().onAuthStateChanged(user => {
 			      			store.commit('SET_AUTH_CHECKSUM', res) 
 			      		}
 			      	});
-		      		store.commit('SET_ISLOADING', false)
+		      		// store.commit('SET_ISLOADING', false)
 
 		      		// 失敗
 		      		// supersassログイン

@@ -9,8 +9,17 @@
       >
         <!-- <v-app-bar-nav-icon></v-app-bar-nav-icon> -->
         <v-toolbar-title class="p-0" :style="{'color':'white'}">スタジオ予約</v-toolbar-title>
-        <v-spacer></v-spacer>
         <!--  -->
+        <div class="text-left ml-1">
+            <v-btn
+              icon
+              color="green"
+              @click="reLoad"
+            >
+              <v-icon>mdi-cached</v-icon>
+            </v-btn>
+        </div>
+        <v-spacer></v-spacer>
         <v-btn
           v-if="auth.username"
           class="ma-2"
@@ -21,8 +30,16 @@
         >
           <v-icon>{{ mdiCartVariant }}</v-icon>
         </v-btn>
-        <v-icon v-if="auth.username==''" class="mr-3">{{ mdiCartVariant }}</v-icon>
-        
+        <v-tooltip v-if="auth.username==''" top>
+          <template v-slot:activator="{ on, attrs }" >
+            <v-icon class="mr-3"
+              v-bind="attrs"
+              v-on="on"
+            >{{ mdiCartVariant }}</v-icon>
+          </template>
+          <span>会員様のみ</span>
+        </v-tooltip>
+
         <v-menu
           bottom
           left
@@ -34,11 +51,13 @@
                 <!-- <span class="mr-2" v-if="auth.username">{{ auth.username }}さん</span>
                 <span class="mr-2" v-if="auth.username">{{ auth.credit }}</span> -->
                 <div v-if="auth.username" class="d-flex align-items-start flex-column bd-highlight">
-                  <div class="p-0 bd-highlight">{{ auth.username }}<span class="ml-1">さん</span></div>
-                  <div class="p-0 bd-highlight ml-auto">ポイント：<span>{{ auth.credit.toLocaleString() }}</span></div>
+                  <div class="p-0 bd-highlight ml-auto">{{ auth.username }}</div>
+                  <div class="p-0 bd-highlight ml-auto"><span class="sample ml-1">さん</span></div>
+                  <div class="p-0 bd-highlight">ポイント:</div>
+                  <div class="p-0 bd-highlight ml-auto"><span class="ml-1">{{ auth.credit.toLocaleString() }}</span></div>
                 </div>
-                <a　v-else class="text-decoration-underline" :style="{'color':'white !important'}" @click="openModal">
-                  会員になる
+                <a v-else class="text-decoration-underline" :style="{'color':'white !important'}" @click="openModal">
+                  会員登録
                 </a>
               </div>
               <v-btn
@@ -99,6 +118,7 @@
     ref="dialogCourse"
     :dialog-form-visible="modal_shop_visible" 
     :close-modal="close_modal"
+    @reLoad="reLoad"
    />
   </v-app>
 </template>
@@ -182,24 +202,25 @@ export default {
         // console.log('そんなブラウザは知らん');
     }
     store.commit('SET_INFO_BROUSER', browser)
-    // console.log("browser",browser);
+    console.log("browser",browser);
+    store.commit('SET_ISLOADING', true)
 
     let that = this;
-    // ログインチェック
-    firebase.auth().onAuthStateChanged(function(user) {
-      if (user) {
-        store.commit('SET_AUTH', user)
-      } else {
-        console.log('no singin')
-      }
-    });
-
-    // 初期化
-    store.commit('SET_EVENTS', [])
-    // 予約取得
-    store.dispatch('getBookings')
-    // クラス取得
-    store.dispatch('getClass',{})
+    const processA = async function() {
+      // ログインチェック
+      await firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+          store.commit('SET_AUTH', user)
+        } else {
+          console.log('no singin')
+        }
+        that.reLoad();
+      });
+    }
+    const processAll = async function() {
+      await processA()
+    }
+    processAll()
     
     // 状態ストレージ保有
     // console.log('state!',store.state)
@@ -261,8 +282,23 @@ export default {
       this.modal_shop_visible = true;
     },
     close_modal: function() {
-        console.log('close')
-        this.modal_shop_visible = false;
+      console.log('close')
+      this.modal_shop_visible = false;
+    },
+    reLoad() {
+      let that = this;
+      const processA = async function() {
+        await store.commit('SET_ISLOADING', true)
+        await store.commit('SET_EVENTS', []);
+        // 予約取得
+        await store.dispatch('getBookings')
+        // クラス取得
+        await store.dispatch('getClass',{})
+      }
+      const processAll = async function() {
+        await processA()
+      }
+      processAll()
     }
   }
 };

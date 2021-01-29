@@ -12,48 +12,37 @@
     :style = "{'max-width':'375px','margin': '20px auto'}"
     center
   >
-  <!-- {{ info.isPersonal + '/' + auth.isMember }} -->
-  
-  <!-- <div class="sample text-right mb-3">
-    <span v-if="auth.username">{{ auth.username }}さん</span>
-    <span v-else>ログインなし</span>
-  </div> -->
-  <!-- <div class="d-flex justify-content-between">
-    <h6 class="text-center text-primary mt-2 ml-2">
-      <strong>{{ selectDate }}</strong><span class="sample ml-1">のご予約</span>
-    </h6>
-    <button type="button" class="btn btn-light" @click="close">キャンセル</button>
-  </div> -->
-  
-  <!-- <el-alert
-    :closable="false"
-    type="success"
-    :title=title
-    description="ご利用のタイプをお選びください。"
-    show-icon>
-  </el-alert> -->
+  <!-- {{ info.browser+'/'+info.isPersonal + '/' + info.isSafariLogin  + '/' + auth.email}} -->
+    <!-- <div class="text-center mb-1">
+      <a class="text-decoration-underline" :style="{'color':'blue !important'}" rel="noreferrer" @click="onLinkClick">
+        キャンセル
+      </a>
+    </div> -->
 
-    <div v-if="info.browser=='safari' && !info.isSafariLogin" class="mb-5">
+    <div v-if="info.browser=='safari' && !info.isSafariLogin && auth.email!==''" class="mb-5">
       <el-alert
         class="mt-3 mb-3"
         type="error"
         description="申し訳ありません、ご使用のsafariブラウザでは再ログインが必要です。"
         show-icon>
       </el-alert>
-      <a :href='supersass.host+"/login?m=1&account="+supersass.account+"&after=/form/susture/ss_login&user[name]="+auth.email+"&checksum="+auth.checksum' @click="onLinkClick" target="_blank" rel="noreferrer" class="text-primary mb-3">こちらから再ログインお願いいたします。</a>
+      <a :href='supersass.host+"/login?m=1&account="+supersass.account+"&after=/form/susture/ss_login&user[name]="+auth.email+"&checksum="+auth.checksum' @click="onLinkClick" rel="noreferrer" class="text-primary mb-3">こちらから再ログインお願いいたします。</a>
     </div>
-    <div v-if="auth.isMember">
-      <!-- ログイン必須 -->
-      <iframe v-if="info.isPersonal" :src='supersass.host+"/login?m=1&account="+supersass.account+"&after=StudioReservation&user[name]="+auth.email+"&checksum="+auth.checksum' frameborder="0" width="100%" :height=height></iframe>
-      <iframe v-else-if="!info.isPersonal" :src='supersass.host+"/login?m=1&account="+supersass.account+"&after=GroupLessons&user[name]="+auth.email+"&checksum="+auth.checksum' frameborder="0" width="100%" :height=height></iframe>
+    <div v-else-if="auth.isMember">
+      <!-- 会員専用：個人利用 -->
+      <iframe v-if="info.isPersonal" :src='supersass.host+"/login?m=1&account="+supersass.account+"&after=%E3%82%B9%E3%82%BF%E3%82%B8%E3%82%AA%E3%83%AC%E3%83%B3%E3%82%BF%E3%83%AB%EF%BC%88%E5%80%8B%E4%BA%BA%E5%88%A9%E7%94%A8%EF%BC%89&user[name]="+auth.email+"&checksum="+auth.checksum' frameborder="0" width="100%" :height=height></iframe>
+      <!-- 会員専用：団体利用 -->
+      <iframe v-else-if="!info.isPersonal" :src='supersass.host+"/login?m=1&account="+supersass.account+"&after=%E3%82%B9%E3%82%BF%E3%82%B8%E3%82%AA%E3%83%AC%E3%83%B3%E3%82%BF%E3%83%AB%EF%BC%88%E5%9B%A3%E4%BD%93%E5%88%A9%E7%94%A8%EF%BC%89&user[name]="+auth.email+"&checksum="+auth.checksum' frameborder="0" width="100%" :height=height></iframe>
     </div>
     <div v-else>
-      <!-- アカウントなし：ログイン不要 -->
-      <iframe v-if="info.isPersonal && auth.email==''" :src='supersass.schedulePath+"/General?m=1"' frameborder="0" width="100%" :height=height @load="onLoad"></iframe>
-      <iframe v-else-if="!info.isPersonal && auth.email==''" :src='supersass.schedulePath+"/General2?m=1"' frameborder="0" width="100%" :height=height @load="onLoad"></iframe>
-      <!-- アカウントあり -->
-      <iframe v-else-if="info.isPersonal && auth.email!=''" :src='supersass.host+"/login?m=1&account="+supersass.account+"&after=General&user[name]="+auth.email+"&checksum="+auth.checksum' frameborder="0" width="100%" :height=height></iframe>
-      <iframe v-else-if="!info.isPersonal && auth.email!=''" :src='supersass.host+"/login?m=1&account="+supersass.account+"&after=General2&user[name]="+auth.email+"&checksum="+auth.checksum' frameborder="0" width="100%" :height=height></iframe>
+      <!-- ログイン不要：個人利用 -->
+      <iframe v-if="info.isPersonal && auth.email==''" :src='supersass.schedulePath+"/%E5%80%8B%E4%BA%BA%E5%88%A9%E7%94%A8?m=1"' frameborder="0" width="100%" :height=height></iframe>
+      <!-- ログイン不要：団体利用 -->
+      <iframe v-else-if="!info.isPersonal && auth.email==''" :src='supersass.schedulePath+"/%E5%9B%A3%E4%BD%93%E5%88%A9%E7%94%A8?m=1"' frameborder="0" width="100%" :height=height></iframe>
+      <!-- ログインあり：個人利用 -->
+      <iframe v-else-if="info.isPersonal && auth.email!=''" :src='supersass.host+"/login?m=1&account="+supersass.account+"&after=%E5%80%8B%E4%BA%BA%E5%88%A9%E7%94%A8&user[name]="+auth.email+"&checksum="+auth.checksum' frameborder="0" width="100%" :height=height></iframe>
+      <!-- ログインあり：団体利用 -->
+      <iframe v-else-if="!info.isPersonal && auth.email!=''" :src='supersass.host+"/login?m=1&account="+supersass.account+"&after=%E5%9B%A3%E4%BD%93%E5%88%A9%E7%94%A8&user[name]="+auth.email+"&checksum="+auth.checksum' frameborder="0" width="100%" :height=height></iframe>
     </div>
   </el-dialog>
   
@@ -149,18 +138,16 @@
       login(){
         this.$router.push({path: '/login'});
       },
-      general1(){
-        this.$router.push({path: '/general1'});
-      },
-      general2(){
-        this.$router.push({path: '/general2'});
-      },
-      onLoad() {
-        
-      },
+      // general1(){
+      //   this.$router.push({path: '/general1'});
+      // },
+      // general2(){
+      //   this.$router.push({path: '/general2'});
+      // },
       onLinkClick() {
+        this.close()
         store.commit('SET_SAFARI_LOGIN', true)
-        this.closeModal();
+        this.$emit('reLoad');
       }
     },
   }

@@ -50,7 +50,7 @@ export default {
 	},
 	created () {
 		console.log('kai')
-		store.commit('SET_ISLOADING', true)
+		// store.commit('SET_ISLOADING', true)
     	// // トークンが存在、かつログイン有効期限を過ぎてない場合、またはログイン画面の場合
 	    // if (!store.state.auth.login.token) {
 	    //     // ログイン画面に飛ばす。ログイン後に元の画面に戻れるよう、backuriパラメーターにリダイレクト前のURLを入れる

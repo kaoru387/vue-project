@@ -101,7 +101,7 @@ export default {
     // }
   },
   created: function () {
-    store.commit('SET_ISLOADING', false)
+    // store.commit('SET_ISLOADING', false)
     // this.ui = new firebaseui.auth.AuthUI(firebase.auth());
   },
   mounted() {
@@ -206,7 +206,7 @@ export default {
       if (user) {
         ui.reset();
         this.isFirst=false;
-        store.commit('SET_ISLOADING', false)
+        // store.commit('SET_ISLOADING', false)
       }else{
         firebase.onAuth();
         ui.start("#firebaseui-auth-container", uiConfig);

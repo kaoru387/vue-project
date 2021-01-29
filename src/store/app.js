@@ -248,7 +248,7 @@ const actions = {
   },
   getUserAgenda: (store,{params, callback}) => {  // ユーザー予約を取得
     // console.log("get user agenda", params);
-    store.commit('SET_ISLOADING', false)
+    // store.commit('SET_ISLOADING', false)
     try {
       const processA = async function() {
         const httpEvent2 = firebase.functions().httpsCallable('getSSass');
@@ -281,63 +281,6 @@ const actions = {
     } catch(error){
       console.log(error)
     }
-
-  },
-  getCapaExperience: (store) => {
-      // console.log("free!",store.state.selectDate)
-      store.commit('SET_ISLOADING', true)
-      try {
-        const processA = async function() {
-          const httpEvent = firebase.functions().httpsCallable('getSSass');
-          await httpEvent({ 
-            path: '/free/536129.json',
-            params: {
-              from: store.state.selectDate + ' 00:00:00',
-              checksum: '09f6be878d92eba5cccd8f61923fd24d',
-            },
-            headers: {
-              "Accept": "application/json",
-              "Content-Type": "application/json; charset=utf-8",
-              "Access-Control-Allow-Origin": "*",
-            }
-          }).then((res) => {
-            // console.log('free',res);
-            _.forEach(res.data.slots, function(v, k) {
-
-              let description = v.description;
-              let iconColor = '#ffb6c1'
-              let color = '#ffb6c1'
-              let isMember=false;
-
-              let datetime = +moment(v.start).format("h:mm")+'〜'+moment(v.finish).format("h:mm:ss a");
-              store.state.result.events.push({
-                id: v.id,
-                title: v.title,
-                start: v.start,
-                end: v.finish,
-                datetime: datetime,
-                description: description,
-                isMember:isMember,
-                studioName: '',
-                iconColor: iconColor,
-                color: color,
-                fontColor: 'black',
-                display: '',
-                isReserve: false,
-                allDay: true
-              })
-            });
-            // callback(res.data)
-            // store.commit('SET_USERS', res.data)
-          });
-        }
-        const processAll = async function() {
-          await processA()
-        }
-        processAll()
-      } catch(error){
-        console.log(error)
-      }
 
   },
   getClass: (store, {params}) => { //クラスのレッスン
@@ -382,7 +325,7 @@ const actions = {
               isReserve: false,
               allDay: true
             })
-            store.commit('SET_ISLOADING', false)
+            // store.commit('SET_ISLOADING', false)
           });
           // callback(res.data)
           // store.commit('SET_USERS', res.data)
@@ -393,12 +336,18 @@ const actions = {
         await processA(535055,'コザスタジオ','#F3C857')
       }
       processAll()
-      // ナゴクラス
-      const processAll2 = async function() {
-        await processA(548481,'ナゴスタジオ','#9DC0AC')
-      }
-      processAll2()
-
+        .then(code => {
+          // ナゴクラス
+          const processAll2 = async function() {
+            await processA(548481,'ナゴスタジオ','#9DC0AC')
+          }
+          processAll2().then(code2 => {
+            store.commit('SET_ISLOADING', false)
+            console.log('success')
+            return 'success';
+          })
+        })
+      
     } catch(error){
       console.log(error)
     }
@@ -427,8 +376,9 @@ const actions = {
               if(_datas==undefined) _datas =  result.appointments;
               _.forEach(_datas, function(reservations, k) {
                 _.forEach(reservations, function(v, key) {
-                  // console.log('bookings.',v)
                   if(!v['res-name']) return;  // 削除された場合、表示しない
+
+                  // console.log('bookings.',v)
 
                   let description = v['status-message'];
                   let _start = moment(v['start']['_']).utc().format("HH:mm");

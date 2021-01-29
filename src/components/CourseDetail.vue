@@ -116,7 +116,7 @@ export default {
           type: 'warning',
           center: true,
         }).then(() => {
-          store.commit('SET_ISLOADING', true)
+          // store.commit('SET_ISLOADING', true)
           store.dispatch('deleteAppointment',{
             params: {
               id: that.item.id,
@@ -126,14 +126,14 @@ export default {
               resource_id: that.item.resource_id,
             },
             callback: function(res){
-
-              // 予約情報初期化
-              store.commit('SET_EVENTS', [])
-              // 予約取得
-              store.dispatch('getBookings')
-              // コザクラス
-              store.dispatch('getCapaKozaclass')
-              store.commit('SET_ISLOADING', false) 
+              that.$emit('reLoad');
+              // // 予約情報初期化
+              // store.commit('SET_EVENTS', [])
+              // // 予約取得
+              // store.dispatch('getBookings')
+              // // コザクラス
+              // store.dispatch('getCapaKozaclass')
+              // store.commit('SET_ISLOADING', false) 
 
               // 完了メッセージ
               that.$message({

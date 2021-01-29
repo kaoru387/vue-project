@@ -82,7 +82,7 @@ export default {
         eventClick: this.changeEvent,
         // eventChange: this.changeEvent,
         weekends: true,
-        // eventDidMount: this.eventDidMount,
+        eventDidMount: this.eventDidMount,
         customButtons: {
           myCustomButton: {
             text: '今日',
@@ -113,7 +113,7 @@ export default {
     },
   },
   created: function () {
-    store.commit('SET_ISLOADING', false)
+    // store.commit('SET_ISLOADING', false)
   },
   watch: {
     // events:  function(newEvents) {
@@ -179,12 +179,14 @@ export default {
 
     },
     eventDidMount: function(info) { // 詳細表示
+      
+      if(!info.event.allDay) return;
+      // console.log(info.event.extendedProps.description)
       var tooltip = new BPopover({
         propsData: {
           html: true,
           container: 'body',
           title: info.timeText+' '+info.event.title,
-          // content: info.event.extendedProps.studioName+' '+ '\n' +info.event.extendedProps.description,
           content: info.event.extendedProps.description,
           placement: 'auto',
           boundary: 'scrollParent',

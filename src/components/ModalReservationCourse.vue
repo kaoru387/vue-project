@@ -12,21 +12,19 @@
     :style = "{'max-width':'375px','margin': '20px auto'}"
     center
   >
-
-  <div class="text-right mb-1">
-    <a class="text-decoration-underline" :style="{'color':'blue !important'}" @click="close">
+  <!-- <div class="text-center mb-2">
+    <a class="text-decoration-underline" :style="{'color':'blue !important'}" rel="noreferrer" @click="onLinkClick">
       キャンセル
     </a>
-  </div>
-
-  <div v-if="info.browser=='safari' && !info.isSafariLogin" class="mb-5">
+  </div> -->
+  <div v-if="info.browser=='safari' && !info.isSafariLogin && auth.email!==''" class="mb-5">
     <el-alert
       class="mt-3 mb-3"
       type="error"
       description="申し訳ありません、ご使用のsafariブラウザでは再ログインが必要です。"
       show-icon>
     </el-alert>
-    <a :href='supersass.host+"/login?m=1&account="+supersass.account+"&user[name]="+auth.email+"&checksum="+auth.checksum+"&after=/schedule/susture/kozaclass/"+reservationId+"?m=1"' @click="onLinkClick" target="_blank" rel="noreferrer" class="text-primary mb-3">こちらから再ログインお願いいたします。</a>
+    <a :href='supersass.host+"/login?m=1&account="+supersass.account+"&user[name]="+auth.email+"&checksum="+auth.checksum+"&after=/schedule/susture/"+studioName+"/"+reservationId+"?m=1"' @click="onLinkClick" rel="noreferrer" class="text-primary mb-3">こちらから再ログインお願いいたします。</a>
   </div>
   <div v-else>
     <el-alert
@@ -36,41 +34,8 @@
         description="新規予約作成してください。"
         show-icon>
     </el-alert>
-    <!-- <iframe :src='supersass.host+"/login?m=1&account="+supersass.account+"&user[name]="+auth.email+"&checksum="+auth.checksum+"&after=/schedule/susture/kozaclass/"+reservationId' frameborder="0" width="100%" :height=height></iframe> -->
-    <iframe :src='supersass.schedulePath+"/kozaclass/"+reservationId+"?m=1"' frameborder="0" width="100%" :height=height></iframe>
+    <iframe :src='supersass.schedulePath+"/"+studioName+reservationId+"?m=1"' frameborder="0" width="100%" :height=height></iframe>
   </div>
-
-  <!-- <iframe :src='"https://www.supersaas.com/schedule/susture/StudioReservation?&day=3&month=2&view=day"' frameborder="0" width="100%" :height=height></iframe> -->
-
-    <!-- <v-app>
-      <v-card>
-        <v-card-title>{{ title }}</v-card-title>
-        <v-card-text>
-          <v-text-field
-            v-model="text1"
-            label="お名前"
-            :rules="[required, limit_length]"
-            counter="10"
-          >
-          </v-text-field>
-          <v-text-field
-            v-model="text2"
-            label="入力必須のみあるテキストフィールド"
-            :rules="[required]"
-          >
-          </v-text-field>
-          <v-text-field
-            v-model="text3"
-            label="なんの制約もないテキストフィールド"
-          >
-          </v-text-field>
-        </v-card-text>
-        <v-divider></v-divider>
-        <v-card-actions>
-          <span v-if="success">送信成功！</span>
-        </v-card-actions>
-      </v-card>
-    </v-app> -->
   </el-dialog>
 </template>
 
@@ -98,9 +63,10 @@
     data () {
       return {
         reservationId: 0,
-        year: '',
-        month: '',
-        day: '',
+        studioName: '%E3%82%B3%E3%82%B6%E3%82%AF%E3%83%A9%E3%82%B9/',
+        // year: '',
+        // month: '',
+        // day: '',
         // 入力規則
         required: value => !!value || "必ず入力してください", // 入力必須の制約
         limit_length: value => value.length <= 10 || "10文字以内で入力してください" // 文字数の制約
@@ -142,7 +108,9 @@
       //   this.height = window.innerHeight;
       // },
       ready(item) {
+        // console.log(item)
         this.reservationId=item.id;
+        if(item.studioName=="ナゴスタジオ") this.studioName="%E3%83%8A%E3%82%B4%E3%82%AF%E3%83%A9%E3%82%B9/";
         // // 選択日付
         // this.year = this.$moment(this.selectDate).format('yyyy');
         // this.month = this.$moment(this.selectDate).format('MM');
@@ -153,8 +121,9 @@
         this.$el.scrollTo(0,0);
       },
       onLinkClick() {
+        this.close()
         store.commit('SET_SAFARI_LOGIN', true)
-        this.closeModal();
+        this.$emit('reLoad');
       }
     },
   }

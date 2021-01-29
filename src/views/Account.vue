@@ -138,7 +138,7 @@ export default {
   //   lock: mdiKey,
   // }),
   created: function () {
-    store.commit('SET_ISLOADING', false)
+    // store.commit('SET_ISLOADING', false)
   },
   mounted() {
     console.log("account! muted");

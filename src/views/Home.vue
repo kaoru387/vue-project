@@ -1,16 +1,7 @@
 <template>
   <div id="home">
-  	<!-- <a :href='"https://www.supersaas.com/api/login?account=susture&after=experience&user[name]=susture387@gmail.com&checksum="+auth.checksum'>Log in</a> -->
   	<!-- <b-badge class="sample mr-1 badge-success" pill>スタジオ予約</b-badge>個人利用 -->
   	<!-- 再読み込み -->
-  	<!-- <div class="text-right">
-	  	<v-btn
-	      icon
-	      color="green"
-	    >
-	      <v-icon>mdi-cached</v-icon>
-	    </v-btn>
-	</div> -->
   	<el-alert
   		:closable="false"
   		class="text-left pt-1 pb-1 mt-1"
@@ -64,7 +55,8 @@
 			    v-for="(item, index) in contens"
 				:key="'course-detail'+item.id" :item="item"
 				:ref="'courseDetail'+item.id"
-				@apply="apply" />
+				@apply="apply"
+				@reLoad="reLoad" />
 		<el-alert
 			v-if="contens.length==0"
 	  		:closable="false"
@@ -80,12 +72,14 @@
 		ref="dialogFullscreen"
 		:dialog-form-visible="modal_visible" 
 		:close-modal="close_modal"
+		@reLoad="reLoad"
 	 />
-	 <!-- 参加申込み -->
+	 <!-- 申込み -->
 	 <modal-reservation-course 
 		ref="dialogCourse"
 		:dialog-form-visible="modal_course_visible" 
 		:close-modal="close_modal"
+		@reLoad="reLoad"
 	 />
   </div>
 </template>
@@ -289,35 +283,47 @@ export default {
 	    	this.modal_visible = false;
 	    	this.modal_course_visible = false;
 
-	    	store.commit('SET_ISLOADING', true)
+	    	// this.reLoad();
+	    	// store.commit('SET_ISLOADING', true)
 	    	
-		    // ユーザー情報更新
-			store.commit('SET_EVENTS', []);	// 初期化
-		    var that = this;
-		    store.dispatch('getUsers',function(users){
-		    	let _id = store.state.auth.user_id
-		    	let index =_.findIndex(users, function(o) { 
-	                return o.id == _id; 
-	            })
-	            if(index != -1){
-	              	// 保有ポイント更新
-	                store.state.auth.credit = users[index].credit
-	            }
-			    // 予約取得
-			    store.dispatch('getBookings')
-			    // クラス取得
-			    store.dispatch('getClass',{})
-			    // 予約詳細
-			    that.filterContents(that.selectDate);
-			    store.commit('SET_ISLOADING', false)
-		    });
+		 //    // ユーザー情報更新
+			// store.commit('SET_EVENTS', []);	// 初期化
+		 //    var that = this;
+		 //    store.dispatch('getUsers',function(users){
+		 //    	let _id = store.state.auth.user_id
+		 //    	let index =_.findIndex(users, function(o) { 
+	  //               return o.id == _id; 
+	  //           })
+	  //           if(index != -1){
+	  //             	// 保有ポイント更新
+	  //               store.state.auth.credit = users[index].credit
+	  //           }
+			//     // that.reLoad();
+			//     // 予約詳細
+			//     that.filterContents(that.selectDate);
+			//     // store.commit('SET_ISLOADING', false)
+		 //    });
 	    },
 	    apply: function(item){
 	    	// alert('yaho'+item.id)
 	    	this.$refs.dialogCourse.ready(item);
 	    	this.modal_course_visible=true;
+	    },
+	    reLoad() {
+	      let that = this;
+	      const processA = async function() {
+	        await store.commit('SET_ISLOADING', true)
+	        await store.commit('SET_EVENTS', []);
+	        // 予約取得
+	        await store.dispatch('getBookings')
+	        // クラス取得
+	        await store.dispatch('getClass',{})
+	      }
+	      const processAll = async function() {
+	        await processA()
+	      }
+	      processAll()
 	    }
-
 	}
 }
 </script>
