@@ -82,6 +82,9 @@ export default {
         });
         this.onAuth()
         // store.commit('SET_ISLOADING', false);
+
+        // セッションクリア
+        localStorage.clear()
       })
       .catch((err) => {
         console.log("err",err);
@@ -92,8 +95,8 @@ export default {
   //jwtの状態、ユーザーの状態を更新する。
   onAuth() {
     firebase.auth().onAuthStateChanged(user => {
-      // console.log('onAuth!!!',user)
       if (user) {
+        // console.log('onAuth!!!',user)
         if (user.ma) {
           localStorage.setItem('jwt', user.ma);
         } 

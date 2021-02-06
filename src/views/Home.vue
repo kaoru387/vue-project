@@ -2,21 +2,14 @@
   <div id="home">
   	<!-- <b-badge class="sample mr-1 badge-success" pill>スタジオ予約</b-badge>個人利用 -->
   	<!-- 再読み込み -->
-  	<el-alert
+  	<!-- <el-alert
   		:closable="false"
   		class="text-left pt-1 pb-1 mt-1"
 	    type="success"
 	    description="どなたでもお気軽にご予約ください。会員登録いただくとお得なチケット購入できます！"
 	    show-icon>
-	</el-alert>
- 	<v-container class="pt-1">
-	    <calendar ref="calendar" 
-	    	v-if="events.length" :events="events" 
-		    @date-selected="dateSelected"
-		    @eventChange="eventChange">    	
-		</calendar>
-	</v-container>
-	<el-dropdown @command="storeFunc" trigger="click">
+	</el-alert> -->
+	<el-dropdown class="mt-3" @command="storeFunc" trigger="click">
 	  <el-button v-if="auth.username==''" type="warning">
 	    + ログインなしで新規予約する<i class="el-icon-arrow-down el-icon--right"></i>
 	  </el-button>
@@ -49,7 +42,19 @@
 	  </el-dropdown-menu>
 	</el-dropdown>
 
-	<v-container v-if="!loading">
+	<v-container class="mt-3">
+	    <!-- <calendar ref="calendar" 
+	    	v-if="events.length" :events="events" 
+		    @date-selected="dateSelected"
+		    @eventChange="eventChange">    	
+		</calendar> -->
+		<calendar ref="calendar" 
+	    	v-if="events.length" :events="events" 
+		    @eventChange="eventChange">    	
+		</calendar>
+	</v-container>
+
+	<!-- <v-container v-if="!loading">
 		<h4 class="mt-1 mb-4" ref="courseContents">{{ selectDate }}</h4>
 		<course-detail 
 			    v-for="(item, index) in contens"
@@ -65,7 +70,7 @@
 		    description="選択日付の予定はありません。"
 		    show-icon>
 		</el-alert>
-	</v-container>
+	</v-container> -->
 
 	<!-- 予約 -->
 	<modal-reservation-studio 
@@ -155,24 +160,56 @@ export default {
 	    // ログイン後か判定
 	    let that = this;
 	    next(vm => {
-	    	// console.log("vm",store.state.backuri)
+	    	// console.log("vm",store.state.auth)
 	    	if(store.state.backuri=='/?mode=signedIn') {
 		      // ログイン後フラグを初期化
 		      store.commit('SET_BACK_URI', '');
 		      vm.$router.push({path: '/useconfirm'})
 		      // vm.$router.push({path: '/'})
+		      // return;
+		      // that.reLoad();
 		    }
+
+		    // ログインチェック
+		    const processA = async function() {
+		      await firebase.auth().onAuthStateChanged(function(user) {
+		        if (user) {
+		          	store.commit('SET_AUTH', user)
+
+		          	 // イベント取得
+				    let index = _.findIndex(store.state.result.users, function(o){
+				      return o.name==user.email;
+				    });
+				    if(index==-1) return;
+				    // supersassアカウント
+				    let supersassuser = store.state.result.users[index]
+
+		          	// 入会金支払い状況
+				    if(supersassuser.super_field==null){
+				    	vm.$router.push({path: '/useconfirm'})
+				    }
+
+		        } else {
+		          console.log('no singin')
+		        }
+		        // that.reLoad();
+		      });
+		    }
+		    const processAll = async function() {
+		      await processA()
+		    }
+		    processAll()
 	    });
 	    // next()
 	},
 	created: function () {
 		// console.log('mute',this.selectDate)
-		// 予約詳細
-		let that = this;
-		setTimeout(function(){
-			// console.log('set')
-			that.filterContents(that.selectDate);
-	    },3000);
+		// // 予約詳細
+		// let that = this;
+		// setTimeout(function(){
+		// 	// console.log('set')
+		// 	that.filterContents(that.selectDate);
+	 //    },3000);
 	},
 	watch: {
 	  
@@ -193,82 +230,82 @@ export default {
 		    this.modal_visible = true;
 		    
 	    },
-	    dateSelected(select_date){
+	 //    dateSelected(select_date){
 
-	    	////////////////////////////////
-	    	// 選択された日付のイベントを表示する
-	    	////////////////////////////////
-	    	// let date = moment(select_date).utc().format('YYYY-MM-DD')
-			this.filterContents(select_date);
+	 //    	////////////////////////////////
+	 //    	// 選択された日付のイベントを表示する
+	 //    	////////////////////////////////
+	 //    	// let date = moment(select_date).utc().format('YYYY-MM-DD')
+		// 	this.filterContents(select_date);
 
-        	// データなしの場合、日付までスクロール移動
-        	if(this.contens.length==0) {
-        		this.$refs.courseContents.scrollIntoView({block: "center"});
-        		return;
-        	}
+  //       	// データなしの場合、日付までスクロール移動
+  //       	if(this.contens.length==0) {
+  //       		this.$refs.courseContents.scrollIntoView({block: "center"});
+  //       		return;
+  //       	}
             
-            let that = this;
-            this.$nextTick(function() {
-            	// 先頭へ移動
-            	that.$refs['courseDetail'+that.contens[0].id][0].$el.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"})
-            });
-		},
-		eventChange(eventInfo){	
+  //           let that = this;
+  //           this.$nextTick(function() {
+  //           	// 先頭へ移動
+  //           	that.$refs['courseDetail'+that.contens[0].id][0].$el.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"})
+  //           });
+		// },
+		eventChange(eventInfo){
 			
-			////////////////////////////////
-			// イベント選択
-			////////////////////////////////
+			// ////////////////////////////////
+			// // イベント選択
+			// ////////////////////////////////
 
-			let date = moment(eventInfo.start).utc().format('YYYY-MM-DD')
-			var result = eventInfo.start.indexOf('Z');
-			if(result==-1) date = moment(eventInfo.start).format('YYYY-MM-DD')	
-			this.filterContents(date);
+			// let date = moment(eventInfo.start).utc().format('YYYY-MM-DD')
+			// var result = eventInfo.start.indexOf('Z');
+			// if(result==-1) date = moment(eventInfo.start).format('YYYY-MM-DD')	
+			// this.filterContents(date);
 
-            let that = this;
-            this.$nextTick(function() {
+   //          let that = this;
+   //          this.$nextTick(function() {
 
-            	// 初期化
-            	_.forEach(that.contens, function(v, k) {
-		      		that.$refs['courseDetail'+v.id][0].$el.style.border='thin solid rgba(0,0,0,0.12)';
-		      		that.$refs['courseDetail'+v.id][0].$el.classList.remove('shadow-lg');
-	        	});
+   //          	// 初期化
+   //          	_.forEach(that.contens, function(v, k) {
+		 //      		that.$refs['courseDetail'+v.id][0].$el.style.border='thin solid rgba(0,0,0,0.12)';
+		 //      		that.$refs['courseDetail'+v.id][0].$el.classList.remove('shadow-lg');
+	  //       	});
 	      		
-            	// イベント取得
-            	let index = _.findIndex(store.state.result.events, function(o){
-	        		return o.id==eventInfo.id;
-	        	});
-	        	if(index==-1) return;
-	        	let e = store.state.result.events[index]
+   //          	// イベント取得
+   //          	let index = _.findIndex(store.state.result.events, function(o){
+	  //       		return o.id==eventInfo.id;
+	  //       	});
+	  //       	if(index==-1) return;
+	  //       	let e = store.state.result.events[index]
 
-            	//移動
-            	that.$refs['courseDetail'+e.id][0].$el.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"})
+   //          	//移動
+   //          	that.$refs['courseDetail'+e.id][0].$el.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"})
 
-            	// 選択枠線変更
-            	that.$refs['courseDetail'+eventInfo.id][0].$el.style.borderColor=e.iconColor;
-            	that.$refs['courseDetail'+eventInfo.id][0].$el.classList.add('shadow-lg');
+   //          	// 選択枠線変更
+   //          	that.$refs['courseDetail'+eventInfo.id][0].$el.style.borderColor=e.iconColor;
+   //          	that.$refs['courseDetail'+eventInfo.id][0].$el.classList.add('shadow-lg');
 
-            	// 背景色までいいかな・・保留
-       //      	that.$refs['courseDetail'+eventInfo.id][0].$el.style.backgroundColor=e.iconColor;
-       //      	setTimeout(() => {
-			    //     that.$refs['courseDetail'+eventInfo.id][0].$el.style.backgroundColor="white";
-			    // }, 1000);
+   //          	// 背景色までいいかな・・保留
+   //     //      	that.$refs['courseDetail'+eventInfo.id][0].$el.style.backgroundColor=e.iconColor;
+   //     //      	setTimeout(() => {
+			//     //     that.$refs['courseDetail'+eventInfo.id][0].$el.style.backgroundColor="white";
+			//     // }, 1000);
             	
-            });
+   //          });
 
 		},
-		filterContents(select_date) {	// 対象データ抽出
-			// 初期化
-			this.contens = [];
-   			let contens=[];
-      		_.forEach(store.state.result.events, function(v, k) {
-      			let _d = moment(v.start).format('YYYY-MM-DD');
-      			var result = v.start.indexOf('Z');
-      			if(result!==-1) _d = moment(v.start).utc().format('YYYY-MM-DD');
-	      		if(select_date==_d) contens.push(v);
-        	});
-            this.contens=contens;
-            // console.log(contens)
-		},
+		// filterContents(select_date) {	// 対象データ抽出
+		// 	// 初期化
+		// 	this.contens = [];
+  //  			let contens=[];
+  //     		_.forEach(store.state.result.events, function(v, k) {
+  //     			let _d = moment(v.start).format('YYYY-MM-DD');
+  //     			var result = v.start.indexOf('Z');
+  //     			if(result!==-1) _d = moment(v.start).utc().format('YYYY-MM-DD');
+	 //      		if(select_date==_d) contens.push(v);
+  //       	});
+  //           this.contens=contens;
+  //           // console.log(contens)
+		// },
 		close_shop_modal: function() {
 	        this.modal_shop_visible = false;
 	    },

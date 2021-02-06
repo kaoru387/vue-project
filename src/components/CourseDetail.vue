@@ -45,7 +45,7 @@
       >
         予約取消
       </v-btn>
-      <v-btn
+      <!-- <v-btn
         v-if="!item.isReserve"
         color="warning"
         dark
@@ -53,7 +53,7 @@
         @click="applyExperience"
       >
         体験レッスン申し込み
-      </v-btn>
+      </v-btn> -->
     </v-card-actions>
   </v-card>
 </template>

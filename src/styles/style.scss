@@ -77,12 +77,12 @@ a{
 // original
 // 小さい文字
 .sample {
-  font-size:11px;
-  -webkit-transform:scale(0.8);
-  -moz-transform:scale(0.8);
-  -ms-transform:scale(0.8);
-  -o-transform:scale(0.8);
-  transform:scale(0.8);
+  font-size:14px;
+  -webkit-transform:scale(0.9);
+  -moz-transform:scale(0.9);
+  -ms-transform:scale(0.9);
+  -o-transform:scale(0.9);
+  transform:scale(0.9);
 }
 .outer{
   display: flex;
@@ -96,7 +96,7 @@ a{
   margin: 0 !important;
 }
 .fade-enter-active, .fade-leave-active {
-  transition: 0.5s;
+  transition: 0.5;
 } 
 .fade-enter, .fade-leave-to {
   opacity: 0;
@@ -168,11 +168,11 @@ a{
   // 小さい文字
   .sample {
     font-size:11px;
-    -webkit-transform:scale(0.8);
-    -moz-transform:scale(0.8);
-    -ms-transform:scale(0.8);
-    -o-transform:scale(0.8);
-    transform:scale(0.8);
+    -webkit-transform:scale(0.7);
+    -moz-transform:scale(0.7);
+    -ms-transform:scale(0.7);
+    -o-transform:scale(0.7);
+    transform:scale(0.7);
   }
 
   .container .container-fluid {
@@ -190,6 +190,10 @@ a{
   }
   .el-alert .el-alert__description{
     font-size: 10px !important;
+  }
+  .v-toolbar__content .v-btn.v-btn--icon.v-size--default {
+    height: 38px !important;
+    width: 38px !important;
   }
 
   // fullcalendar
@@ -230,6 +234,12 @@ a{
   .fc-center h2{ /*-- 年月表示 --*/
       margin-top:10px;
   }
+  .fc-toolbar-title {
+    font-size: 0.8em !important;
+  }
+  .fc table{
+    font-size: 0.8em;
+  }
   /*-- カレンダーヘッダ Sun to Sat --*/
   .fc-head{
       position: -webkit-sticky;
@@ -244,55 +254,65 @@ a{
 }
 
 
-// .cal-title{
-//   font-size: 9pt;
-// }
+.cal-title{
+  font-size: 9pt;
+}
 
-// .cal-description{
-//   margin-top: 0 !important;
-//   margin-bottom: 0 !important;
-//   font-size: 8pt;
-// }
+.cal-description{
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  font-size: 8pt;
+}
 
-// .circle-icon{
-//   width: 10px;
-//   height: 10px;
-//   border-radius: 50%;
-//   float: left;
-//   margin: unset;
-//   margin-right: 5px;
-//   margin-top: 3px;
-// }
+.circle-icon{
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  float: left;
+  margin: unset;
+  // margin-right: 5px;
+  margin-top: 3px;
+  -webkit-transform:scale(0.8);
+  -moz-transform:scale(0.8);
+  -ms-transform:scale(0.8);
+  -o-transform:scale(0.8);
+  transform:scale(0.8);
+}
 
-// .circle-koza{
-//   width: 10px;
-//   height: 10px;
-//   border-radius: 50%;
-//   background: #67C23A;/*背景色*/
-//   float: left;
-//   margin: unset;
-//   margin-right: 5px;
-//   margin-top: 3px;
-// }
+.circle-koza{
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #67C23A;/*背景色*/
+  float: left;
+  margin: unset;
+  margin-right: 5px;
+  margin-top: 3px;
+}
 
-// .circle-nago{
-//   width: 10px;
-//   height: 10px;
-//   border-radius: 50%;
-//   background: #409EFF;
-//   float: left;
-//   margin: unset;
-//   margin-right: 5px;
-//   margin-top: 3px;
-// }
+.circle-nago{
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #409EFF;
+  float: left;
+  margin: unset;
+  margin-right: 5px;
+  margin-top: 3px;
+}
 
-// .circle-nonmember{
-//   width: 10px;
-//   height: 10px;
-//   border-radius: 50%;
-//   background: pink;/*背景色*/
-//   float: left;
-//   margin: unset;
-//   margin-right: 5px;
-//   margin-top: 3px;
-// }
+.circle-nonmember{
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: pink;/*背景色*/
+  float: left;
+  margin: unset;
+  margin-right: 5px;
+  margin-top: 3px;
+}
+
+// カレンダーの詳細表示
+.popover-body{
+  width: 200px;
+}

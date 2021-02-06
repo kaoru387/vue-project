@@ -18,18 +18,19 @@
         キャンセル
       </a>
     </div> -->
-
-    <div v-if="info.browser=='safari' && !info.isSafariLogin && auth.email!==''" class="mb-5">
+    <div v-if="info.browser=='safari' && !isSafariLogin && auth.email!==''" class="mb-5">
       <el-alert
         class="mt-3 mb-3"
         type="error"
         description="申し訳ありません、ご使用のsafariブラウザでは再ログインが必要です。"
         show-icon>
       </el-alert>
-      <a :href='supersass.host+"/login?m=1&account="+supersass.account+"&after=/form/susture/ss_login&user[name]="+auth.email+"&checksum="+auth.checksum' @click="onLinkClick" rel="noreferrer" class="text-primary mb-3">こちらから再ログインお願いいたします。</a>
+      <!-- <a :href='supersass.host+"/login?m=1&account="+supersass.account+"&after=/form/susture/ss_login&user[name]="+auth.email+"&checksum="+auth.checksum' @click="onLinkClick" rel="noreferrer" class="text-primary mb-3">こちらから再ログインお願いいたします。</a> -->
+      <a :href='supersass.host+"/login?m=1&account="+supersass.account+"&after=/form/"+supersass.account+"/login_form&user[name]="+auth.email+"&checksum="+auth.checksum' @click="onLinkClick" target="_blank" rel="noreferrer" class="text-primary mb-3">こちらから再ログインお願いいたします。</a>
     </div>
     <div v-else-if="auth.isMember">
       <!-- 会員専用：個人利用 -->
+      <!-- <iframe v-if="info.isPersonal" :src='supersass.host+"/login?m=1&account="+supersass.account+"&after=%E3%82%B9%E3%82%BF%E3%82%B8%E3%82%AA%E3%83%AC%E3%83%B3%E3%82%BF%E3%83%AB%EF%BC%88%E5%80%8B%E4%BA%BA%E5%88%A9%E7%94%A8%EF%BC%89&user[name]="+auth.email+"&checksum="+auth.checksum' frameborder="0" width="100%" :height=height></iframe> -->
       <iframe v-if="info.isPersonal" :src='supersass.host+"/login?m=1&account="+supersass.account+"&after=%E3%82%B9%E3%82%BF%E3%82%B8%E3%82%AA%E3%83%AC%E3%83%B3%E3%82%BF%E3%83%AB%EF%BC%88%E5%80%8B%E4%BA%BA%E5%88%A9%E7%94%A8%EF%BC%89&user[name]="+auth.email+"&checksum="+auth.checksum' frameborder="0" width="100%" :height=height></iframe>
       <!-- 会員専用：団体利用 -->
       <iframe v-else-if="!info.isPersonal" :src='supersass.host+"/login?m=1&account="+supersass.account+"&after=%E3%82%B9%E3%82%BF%E3%82%B8%E3%82%AA%E3%83%AC%E3%83%B3%E3%82%BF%E3%83%AB%EF%BC%88%E5%9B%A3%E4%BD%93%E5%88%A9%E7%94%A8%EF%BC%89&user[name]="+auth.email+"&checksum="+auth.checksum' frameborder="0" width="100%" :height=height></iframe>
@@ -77,6 +78,7 @@
         year: '',
         month: '',
         day: '',
+        isSafariLogin: false,
       }
     },
     computed: {
@@ -103,6 +105,7 @@
       // window.addEventListener('resize', this.handleResize)
     },
     created: function () {
+      this.isSafariLogin = localStorage.getItem('isSafariLogin');
       // firebase.auth().onAuthStateChanged(function(user) {
       //   if (user) {
       //     // console.log('singin',user)

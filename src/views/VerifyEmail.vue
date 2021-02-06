@@ -14,9 +14,10 @@
         </el-alert>
       </v-card-title> 
       <div class="text-center p-3">
-        <!-- <router-link to="/login" class="text-primary">ログイン画面</router-link> -->
+        <router-link to="/reservation/login" class="text-primary">ログイン画面</router-link>
         <!-- <router-link to="https://dev2.fandangos-okinawa.com/reservation/" class="text-primary">ログイン画面</router-link> -->
-        <a href='https://dev2.fandangos-okinawa.com/reservation/' target="_blank" @rel="noreferrer" class="text-primary mb-3">ログイン画面</a>
+        <!-- <a href='https://dev2.fandangos-okinawa.com/reservation/' target="_blank" @rel="noreferrer" class="text-primary mb-3">ログイン画面</a> -->
+        <!-- <a href='https://fandangos-okinawa.com/reservation/' target="_blank" @rel="noreferrer" class="text-primary mb-3">ログイン画面</a> -->
       </div>
     </v-card>
     

@@ -15,7 +15,7 @@ const axios = axiosBase.create({
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    Authorization: "Basic " + btoa("susture" + ":" + "susture2525"),
+    // Authorization: "Basic " + btoa("susture" + ":" + "susture2525"),
   },
   responseType: 'json',
   // responseType: 'text/xml'
@@ -75,7 +75,8 @@ const state = {
       checksum: '',
       isMember: false,
       credit: 0,
-      supersass: supersassConfig
+      supersass: supersassConfig,
+      isAdmissionFee: true,
     },
     authStatus: false,
     info: {
@@ -92,10 +93,13 @@ const actions = {
       const processA = async function() {
         const httpEvent = firebase.functions().httpsCallable('getHash');
         await httpEvent({ 
-          name: 'susturesusture2525'+store.state.auth.email,
+          // name: 'susturesusture2525'+store.state.auth.email,
+          name: supersassConfig.account+supersassConfig.password+store.state.auth.email,
           headers: {
-            "Access-Control-Allow-Credentials": "true",
-            "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
+            // "Access-Control-Allow-Credentials": "true",
+            // "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
+            // "Authorization": "Basic " + btoa("okaflamencoarts" + ":" + "L7*R3=k<e8b"),
+            // "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.apiKey),
             "Accept": "application/json",
             "Content-Type": "application/json; charset=utf-8",
             "Access-Control-Allow-Origin": "*",
@@ -122,20 +126,21 @@ const actions = {
           // path: '/resources',
           path: '/schedules',
           params: {
-            // schedule_id: 535588,
-            // schedule_id: 535588,
-            account: 'susture',
-            api_key: 'jmlLq1BhwucEkul_WgmSOA'
+            // account: 'susture',
+            // api_key: 'jmlLq1BhwucEkul_WgmSOA'
+            account: supersassConfig.account,
+            api_key: supersassConfig.apiKey,
           },
           headers: {
             "Access-Control-Allow-Credentials": "true",
-            "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
+            // "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
+            "Authorization": "Basic " + btoa("okaflamencoarts" + ":" + "L7*R3=k<e8b"),
             "Accept": "application/json",
             "Content-Type": "application/json; charset=utf-8",
             "Access-Control-Allow-Origin": "*",
           }
         }).then((res) => {
-          // console.log('schedules',res);
+          console.log('schedules',res);
           // callback(res.data)
           // store.commit('SET_USERS', res.data)
         });
@@ -148,71 +153,6 @@ const actions = {
       console.log(error)
     }
   },
-  loginSupersass: (store,{params}) => {
-    // axios.get('/api/login?account=susture&after=General&user[name]=susture387@gmail.com&checksum='+state.auth.checksum,
-    // axios.post('/api/login',
-    // {
-    //   account:'susture',
-    //   checksum: params.checksum,
-    //   user: {
-    //     name: params.email
-    //   },
-    //   withCredentials: true,
-    //   // responseType : 'document',
-    // }).then((response) => {
-    //   console.log('login??',response)
-    //   // store.commit('SET_USERS', response.data)
-    //   // callback(response)
-    // }).catch((error) => {
-    //     console.log(error);
-    // });
-    try {
-        const processA = async function() {
-          
-          // const httpEvent = firebase.functions().httpsCallable('httpEvent');
-          // const httpEvent = await axios.post('/httpEvent',{
-          //   account:'susture',
-          // }).then((response) => {
-          //   console.log(response)
-          // }).catch((error) => {
-          //   console.log(error)
-          // });
-
-          const httpEvent = await axios.post('/httpEvent',{
-            account:'susture',
-          }).then((response) => {
-            console.log(response)
-          }).catch((error) => {
-            console.log(error)
-          });
-
-          // await httpEvent({ 
-          //   path: '/login',
-          //   params: {
-          //     account:'susture',
-          //     checksum: params.checksum,
-          //     user: {
-          //       name: params.email
-          //     }
-          //   },
-          //   headers: {
-          //     "Accept": "text/html",
-          //     "Content-Type": "text/html",
-          //     "Access-Control-Allow-Origin": "*",
-          //   }
-          // }).then((res) => {
-          //   console.log('login',res);
-          // });
-        }
-        const processAll = async function() {
-          await processA()
-        }
-        processAll()
-      } catch(error){
-        console.log(error)
-      }
-
-  },
   getUsers: (store,callback) => {
     // console.log("get users");
     try {
@@ -220,13 +160,15 @@ const actions = {
         const httpEvent = firebase.functions().httpsCallable('getSSass');
         await httpEvent({ 
           path: '/users',
-          params: {
-            username: 'susture',
-            password: 'jmlLq1BhwucEkul_WgmSOA',
-          },
+          // params: {
+          //   username: supersassConfig.account,
+          //   password: supersassConfig.apiKey,
+          // },
           headers: {
             "Access-Control-Allow-Credentials": "true",
-            "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
+            // "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
+            // "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.password),
+            "Authorization": "Basic " + btoa("okaflamencoarts" + ":" + supersassConfig.apiKey),
             "Accept": "application/json",
             "Content-Type": "application/json; charset=utf-8",
             "Access-Control-Allow-Origin": "*",
@@ -292,7 +234,7 @@ const actions = {
           path: '/free/'+schedule_id+'.json',
           params: {
             from: store.state.selectDate + ' 00:00:00',
-            checksum: '09f6be878d92eba5cccd8f61923fd24d',
+            checksum: supersassConfig.checksum,
           },
           headers: {
             "Accept": "application/json",
@@ -323,7 +265,7 @@ const actions = {
               fontColor: 'black',
               display: '',
               isReserve: false,
-              allDay: true
+              // allDay: true
             })
             // store.commit('SET_ISLOADING', false)
           });
@@ -333,13 +275,15 @@ const actions = {
       }
       // コザクラス
       const processAll = async function() {
-        await processA(535055,'コザスタジオ','#F3C857')
+        // await processA(535055,'コザスタジオ','#F3C857')
+        await processA(550120,'コザクラス','tomato')
       }
       processAll()
         .then(code => {
           // ナゴクラス
           const processAll2 = async function() {
-            await processA(548481,'ナゴスタジオ','#9DC0AC')
+            // await processA(548481,'ナゴスタジオ','#9DC0AC')
+            await processA(550127,'ナゴクラス','blue')
           }
           processAll2().then(code2 => {
             store.commit('SET_ISLOADING', false)
@@ -360,7 +304,7 @@ const actions = {
             path: '/bookings',
             params: {
               schedule_id: schedule_id,
-              checksum: '09f6be878d92eba5cccd8f61923fd24d',
+              checksum: supersassConfig.checksum,
             },
             headers: {
               "Accept": "application/xml",
@@ -368,7 +312,7 @@ const actions = {
               "Access-Control-Allow-Origin": "*",
             }
           }).then((res) => {
-            // console.log('book',res);
+            // console.log('booktest!',res);
             // xml to json
             parser.parseString(res.data, function (err, result) {
               // 個人と団体データ様式が異なるため！
@@ -421,22 +365,38 @@ const actions = {
             });
           });
         }
+
         // 個人利用
         const processAll = async function() {
-          await processA(534330,'個人利用')
+          // await processA(534330,'個人利用')
+          await processA(549839,'個人利用')
         }
         processAll()
         // 団体利用
         const processAll2 = async function() {
-          await processA(542652,'団体利用')
+          // await processA(542652,'団体利用')
+          await processA(550108,'団体利用')
         }
         processAll2()
+
+        // // 個人利用
+        // const processAll3 = async function() {
+        //   // await processA(534330,'個人利用')
+        //   await processA(550111,'個人利用')
+        // }
+        // processAll3()
+        // // 団体利用
+        // const processAll4 = async function() {
+        //   // await processA(542652,'団体利用')
+        //   await processA(550114,'団体利用')
+        // }
+        // processAll4()
       } catch(error){
         console.log(error)
       }
   },
   getBooking: (store,{params,callback}) => {  //単一
-    // console.log("get book",params);
+    console.log("get book",params);
     // store.commit('SET_ISLOADING', false)
     try {
       const processA = async function() {
@@ -445,8 +405,9 @@ const actions = {
           path: '/bookings/'+ params.id +'.json',
           method: 'GET',
           params: {
-            schedule_id: 534330,
-            checksum: '09f6be878d92eba5cccd8f61923fd24d',
+            // schedule_id: 534330,
+            schedule_id: supersassConfig.resourceId,
+            checksum: supersassConfig.checksum,
           },
           headers: {
             // "Access-Control-Allow-Credentials": "true",
@@ -470,67 +431,69 @@ const actions = {
     }
 
   },
-  addAppointment: (store,{params,callback}) => {
-      // 予約追加
-      // console.log(store.state.auth)
-      try {
-        const processA = async function() {
+  // addAppointment: (store,{params,callback}) => {
+  //     // 予約追加
+  //     // console.log(store.state.auth)
+  //     try {
+  //       const processA = async function() {
           
-          const httpEvent = firebase.functions().httpsCallable('postSSass');
-          await httpEvent({ 
-            path: '/bookings.json',
-            method: 'POST',
-            params: {
-              account: "susture",
-              user_id: store.state.auth.user_id,
-              after: "experience",
-              'user[name]': store.state.auth.email,
-              checksum:  store.state.auth.checksum,
-              // schedule_id: 536129,
-              // user_id: store.state.auth.user_id,
-              // checksum: "09f6be878d92eba5cccd8f61923fd24d",
-              // 'booking[slot_id]': 35868655,
-              // 'booking[full_name]': "test6",
-              // 'booking[email]': "kaoru1225@gmail.com",
-              // booking: {
-              //   slot_id: '35868655',
-              //   full_name: "test5",
-              //   email: "kaoru1225@gmail.com",
-              // },
-              // form:true,
-            },
-            headers: {
-              // cookie: 'account=susture;'+'checksum='+store.state.auth.checksum,
-              // "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
-              // "Access-Control-Allow-Origin": "*",
-              // "Access-Control-Allow-Credentials": "true",
-              // "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
-              // 'X-Requested-With': 'XMLHttpRequest',
-              // 'Accept': 'text/plain',
-              // "Contsent-Type": "application/xml",
+  //         const httpEvent = firebase.functions().httpsCallable('postSSass');
+  //         await httpEvent({ 
+  //           path: '/bookings.json',
+  //           method: 'POST',
+  //           params: {
+  //             account: supersassConfig.account,
+  //             user_id: store.state.auth.user_id,
+  //             after: "experience",
+  //             'user[name]': store.state.auth.email,
+  //             checksum:  store.state.auth.checksum,
+  //             // schedule_id: 536129,
+  //             // user_id: store.state.auth.user_id,
+  //             // checksum: "09f6be878d92eba5cccd8f61923fd24d",
+  //             // 'booking[slot_id]': 35868655,
+  //             // 'booking[full_name]': "test6",
+  //             // 'booking[email]': "kaoru1225@gmail.com",
+  //             // booking: {
+  //             //   slot_id: '35868655',
+  //             //   full_name: "test5",
+  //             //   email: "kaoru1225@gmail.com",
+  //             // },
+  //             // form:true,
+  //           },
+  //           headers: {
+  //             // cookie: 'account=susture;'+'checksum='+store.state.auth.checksum,
+  //             // "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
+  //             // "Access-Control-Allow-Origin": "*",
+  //             // "Access-Control-Allow-Credentials": "true",
+  //             // "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
+  //             // 'X-Requested-With': 'XMLHttpRequest',
+  //             // 'Accept': 'text/plain',
+  //             // "Contsent-Type": "application/xml",
 
-              "Accept": "*/*",
-              // "Contsent-Type": "application/json; charset=utf-8",
-              "Access-Control-Allow-Origin": "*",
-            }
-          }).then((res) => {
-            // console.log('apo',res);
-            // callback(res)
-          });
-        }
-        const processAll = async function() {
-          await processA()
-        }
-        processAll()
-      } catch(error){
-        console.log(error)
-      }
-  },
+  //             "Accept": "*/*",
+  //             // "Contsent-Type": "application/json; charset=utf-8",
+  //             "Access-Control-Allow-Origin": "*",
+  //           }
+  //         }).then((res) => {
+  //           // console.log('apo',res);
+  //           // callback(res)
+  //         });
+  //       }
+  //       const processAll = async function() {
+  //         await processA()
+  //       }
+  //       processAll()
+  //     } catch(error){
+  //       console.log(error)
+  //     }
+  // },
   deleteAppointment: (store,{params,callback}) => {
       try {
         // スタジオリソース
-        let _schedule_id = '534330'
-        let _checksum = '09f6be878d92eba5cccd8f61923fd24d';
+        // let _schedule_id = '534330'
+        // let _checksum = '09f6be878d92eba5cccd8f61923fd24d';
+        // let _schedule_id = '549839'
+        // let _checksum = 'f7e678ba113d5789a3cf35a53171f721';
 
         // 予約削除
         const processA = async function() {
@@ -538,8 +501,8 @@ const actions = {
           const d_appoint = httpEvent2({ 
             path: '/bookings/'+ params.id +'.json',
             params: {
-              schedule_id: _schedule_id,
-              checksum: _checksum,
+              schedule_id: supersassConfig.resourceId,
+              checksum: supersassConfig.checksum,
             },
             headers: {
               "Accept": "*/*",
@@ -580,8 +543,10 @@ const actions = {
           path: '/users/'+_code+'fk.json',
           method: 'POST',
           params: {
-            account:'susture',
-            password:'jmlLq1BhwucEkul_WgmSOA',
+            // account:'susture',
+            // password:'jmlLq1BhwucEkul_WgmSOA',
+            account: supersassConfig.account,
+            password: supersassConfig.apiKey,
             'user[full_name]': params.displayName,
             'user[name]': params.email,
             'user[password]': params.email,
@@ -592,7 +557,7 @@ const actions = {
             "Access-Control-Allow-Origin": "*",
           }
         }).then((res) => {
-          console.log('user',res);
+          // console.log('user',res);
           callback(res)
         });
       }
@@ -699,6 +664,8 @@ const mutations = {
     state.auth.isMember=false
     state.auth.user_id='';
     state.auth.credit=0;
+    state.auth.supersass = supersassConfig;
+    state.info.isSafariLogin = false
   },
   onUserStatusChanged(state, status) {
     state.authStatus = status;
@@ -728,19 +695,28 @@ const mutations = {
     state.selectDate = data
   },
   SET_AUTH (state, auth){
+    // console.log('get auth',auth)
     state.auth.username = auth.displayName;
     state.auth.email = auth.email
+    state.auth.isAdmissionFee = true;
+    // state.info.isSafariLogin = false;
 
     // イベント取得
     let index = _.findIndex(state.result.users, function(o){
-      return o.email==auth.email;
+      return o.name==auth.email;
     });
     if(index==-1) return;
     // supersassアカウント
     let supersassuser = state.result.users[index]
-    // console.log('super',supersassuser)  
     state.auth.user_id = supersassuser.id
     state.auth.credit = supersassuser.credit
+
+    // 初回の入会金チェック
+    if(supersassuser.super_field==null){
+      state.auth.isAdmissionFee = false;
+      return;
+    }
+    // console.log('super',supersassuser)
     // 権限
     if(supersassuser.super_field==1) state.auth.isMember = true;
   },

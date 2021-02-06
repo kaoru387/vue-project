@@ -205,7 +205,7 @@ export default {
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
         ui.reset();
-        this.isFirst=false;
+        that.isFirst=false;
         // store.commit('SET_ISLOADING', false)
       }else{
         firebase.onAuth();
