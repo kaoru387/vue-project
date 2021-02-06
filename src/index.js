@@ -68,7 +68,7 @@ Firebase.init();
 // });
 
 firebase.auth().onAuthStateChanged(user => {
-	console.log('yaho')
+	// console.log('yaho')
 	store.commit('SET_ISLOADING', true)
 	if (user) {
 		// ログイン情報
@@ -83,22 +83,17 @@ firebase.auth().onAuthStateChanged(user => {
 		 	store.dispatch('getUsers',function(e){
 		 		// supersassに存在するかチェック
 		      	let list = _.filter(e, function(o) {
-		            if(user.email==o.email){
+		            if(user.email==o.name){
 		              return o;
 		            }
 		        });
+		        // console.log(user,e)
 		      	if(list.length==0){
 		      		// 存在しない場合、新規登録する
 		      		store.dispatch('addUser',{
 		      			params: user,
-		      			// {
-		      			// 	full_name: user.displayName,
-	      				// 	name: user.email,
-	      				// 	password: user.displayName,
-		      			// 	id: user.uid
-		      			// },
 		      			callback: function(res){
-		      				console.log('新規登録に成功しました!!',res)
+		      				console.log('新規登録に成功しました!!')
 		      				// store.commit('SET_ISLOADING', false) 
 		      			}
 		      		});
@@ -112,27 +107,11 @@ firebase.auth().onAuthStateChanged(user => {
 		      		store.dispatch('getMD5',{
 			      		params: list[0],
 			      		callback: function(res){
+			      			console.log('md5',res)
 			      			store.commit('SET_AUTH_CHECKSUM', res) 
 			      		}
 			      	});
-		      		// store.commit('SET_ISLOADING', false)
-
-		      		// 失敗
-		      		// supersassログイン
-		      		// store.dispatch('loginSupersass',{
-			      	// 	params: {
-			      	// 		email: list[0].email,
-			      	// 		checksum: list[0].super_field,
-			      	// 	}
-			      	// });
 		      	}
-		      	// ハッシュ値取得：検証用
-		      	// store.dispatch('getMD5',{
-		      	// 	params: {
-		      	// 		'user_name':user.email
-		      	// 	}
-		      	// });
-
 		 	});
 			
 		} else {

@@ -22,7 +22,7 @@
         <v-spacer></v-spacer>
         <v-btn
           v-if="auth.username"
-          class="ma-2"
+          class="ma-1"
           text
           icon
           color="orange lighten-2"
@@ -51,10 +51,10 @@
                 <!-- <span class="mr-2" v-if="auth.username">{{ auth.username }}さん</span>
                 <span class="mr-2" v-if="auth.username">{{ auth.credit }}</span> -->
                 <div v-if="auth.username" class="d-flex align-items-start flex-column bd-highlight">
-                  <div class="p-0 bd-highlight ml-auto">{{ auth.username }}</div>
-                  <div class="p-0 bd-highlight ml-auto"><span class="sample ml-1">さん</span></div>
-                  <div class="p-0 bd-highlight">ポイント:</div>
-                  <div class="p-0 bd-highlight ml-auto"><span class="ml-1">{{ auth.credit.toLocaleString() }}</span></div>
+                  <div class="p-0 bd-highlight ml-auto">{{ auth.username }}<span class="sample">さん</span></div>
+                  <!-- <div class="p-0 bd-highlight ml-auto"><span class="sample ml-1">さん</span></div> -->
+                  <div class="p-0 bd-highlight">ポイント:<span class="ml-1">{{ auth.credit.toLocaleString() }}</span></div>
+                  <!-- <div class="p-0 bd-highlight ml-auto"><span class="ml-1">{{ auth.credit.toLocaleString() }}</span></div> -->
                 </div>
                 <a v-else class="text-decoration-underline" :style="{'color':'white !important'}" @click="openModal">
                   会員登録
@@ -221,10 +221,19 @@ export default {
       await processA()
     }
     processAll()
+
+    // safariブラウザの場合、本家へログイン必須
+    if(localStorage.getItem('isSafariLogin')){
+      store.commit('SET_SAFARI_LOGIN', true)
+      // console.log('st',localStorage.getItem('isSafariLogin'))  
+    }
     
     // 状態ストレージ保有
     // console.log('state!',store.state)
     localStorage.setItem('state', JSON.stringify(store.state));
+    
+    // localStorage.removeItem('state');
+    // window.localStorage.clear();
     // store.commit('SET_ISLOADING', false)
     // 今日の日付取得
     store.commit('SET_SELECT_DATE', this.$moment().format('YYYY-MM-DD'))
@@ -286,6 +295,7 @@ export default {
       this.modal_shop_visible = false;
     },
     reLoad() {
+      // console.log('relo');
       let that = this;
       const processA = async function() {
         await store.commit('SET_ISLOADING', true)

@@ -11,14 +11,20 @@
     :style = "{'max-width':'375px','margin': '20px auto'}"
     center
   >
-  <div v-if="info.browser=='safari' && !info.isSafariLogin" class="mb-5">
+  <div class="text-center mb-1">
+    <a class="text-decoration-underline" :style="{'color':'blue !important'}" rel="noreferrer" @click="onLinkClick">
+      キャンセル
+    </a>
+  </div>
+  <div v-if="info.browser=='safari' && !isSafariLogin" class="mb-5">
     <el-alert
       class="mt-3 mb-3"
       type="error"
       description="申し訳ありません、ご使用のsafariブラウザでは再ログインが必要です。"
       show-icon>
     </el-alert>
-    <a :href='supersass.host+"/login?m=1&account="+supersass.account+"&user[name]="+auth.email+"&checksum="+auth.checksum+"&after=/shop/buy/susture"' @click="onLinkClick" target="_blank" rel="noreferrer" class="text-primary mb-3">こちらから再ログインお願いいたします。</a>
+    <!-- <a :href='supersass.host+"/login?m=1&account="+supersass.account+"&user[name]="+auth.email+"&checksum="+auth.checksum+"&after=/shop/buy/susture"' @click="onLinkClick" target="_blank" rel="noreferrer" class="text-primary mb-3">こちらから再ログインお願いいたします。</a> -->
+    <a :href='supersass.host+"/login?m=1&account="+supersass.account+"&after=/form/"+supersass.account+"/login_form&user[name]="+auth.email+"&checksum="+auth.checksum' @click="onLinkClick" target="_blank" rel="noreferrer" class="text-primary mb-3">こちらから再ログインお願いいたします。</a>
   </div>
   <div v-else>
     <el-alert
@@ -31,12 +37,7 @@
     <!-- <div class="text-right mb-1">
       <button type="button" class="btn btn-light" @click="close">キャンセル</button>
     </div> -->
-    <div class="text-center mb-1">
-      <a class="text-decoration-underline" :style="{'color':'blue !important'}" rel="noreferrer" @click="onLinkClick">
-        キャンセル
-      </a>
-    </div>
-    <iframe :src='supersass.host+"/login?account="+supersass.account+"&after=/shop/buy/susture&user[name]="+auth.email+"&checksum="+auth.checksum' frameborder="0" width="100%" :height=height></iframe>
+    <iframe :src='supersass.host+"/login?account="+supersass.account+"&after=/shop/buy/"+supersass.account+"&user[name]="+auth.email+"&checksum="+auth.checksum' frameborder="0" width="100%" :height=height></iframe>
   </div>
   </el-dialog>
 </template>
@@ -58,6 +59,7 @@
     },
     data () {
       return {
+        isSafariLogin: false,
       }
     },
     computed: {
@@ -80,6 +82,10 @@
     mounted: function () {
       // window.addEventListener('resize', this.handleResize)
     },
+    created: function() {
+      // console.log(localStorage.getItem('isSafariLogin'));
+      this.isSafariLogin = localStorage.getItem('isSafariLogin');
+    },
     methods: {
       // handleResize: function() {
       //   // resizeのたびにこいつが発火するので、ここでやりたいことをやる
@@ -92,6 +98,8 @@
       },
       onLinkClick() {
         this.close()
+        store.commit('SET_SAFARI_LOGIN', true)
+        localStorage.setItem('isSafariLogin', true);
         this.$emit('reLoad');
       }
     },
