@@ -44,11 +44,10 @@ const state = {
     result:{
       events: [],
       users: [],
+      bookings: [],
       schedules: [],
-      service_resources: [],
-      // nonMembers: []
-      // list:{},
-      // pagenate:{},
+      resources: [],
+      myschedules: [],
     },
     master:{},
     form:{
@@ -77,13 +76,18 @@ const state = {
       credit: 0,
       supersass: supersassConfig,
       isAdmissionFee: true,
+      verifyEmail: false
     },
     authStatus: false,
     info: {
       browser:'',
       isPersonal: true,
       isSafariLogin: false,
-    }
+      actionCode: '',
+      accountEmail: '',
+      isResetPassword: false
+    },
+    search: {}
 }
 
 const actions = {
@@ -94,19 +98,14 @@ const actions = {
         const httpEvent = firebase.functions().httpsCallable('getHash');
         await httpEvent({ 
           // name: 'susturesusture2525'+store.state.auth.email,
-          name: supersassConfig.account+supersassConfig.password+store.state.auth.email,
+          name: supersassConfig.account+supersassConfig.password+params.email,
           headers: {
-            // "Access-Control-Allow-Credentials": "true",
-            // "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
-            // "Authorization": "Basic " + btoa("okaflamencoarts" + ":" + "L7*R3=k<e8b"),
-            // "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.apiKey),
             "Accept": "application/json",
             "Content-Type": "application/json; charset=utf-8",
             "Access-Control-Allow-Origin": "*",
           }
         }).then((res) => {
           callback(res.data)
-          // store.commit('SET_USERS', res.data)
         });
       }
       const processAll = async function() {
@@ -116,39 +115,47 @@ const actions = {
     } catch(error){
       console.log(error)
     }
-
   },
-  getInfo: (store) => {
+  getInfo: (store,{params,callback}) => {
     try {
-      const processA = async function() {
-        const httpEvent = firebase.functions().httpsCallable('getSSass');
-        await httpEvent({ 
-          // path: '/resources',
-          path: '/schedules',
-          params: {
-            // account: 'susture',
-            // api_key: 'jmlLq1BhwucEkul_WgmSOA'
-            account: supersassConfig.account,
-            api_key: supersassConfig.apiKey,
-          },
-          headers: {
-            "Access-Control-Allow-Credentials": "true",
-            // "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
-            "Authorization": "Basic " + btoa("okaflamencoarts" + ":" + "L7*R3=k<e8b"),
-            "Accept": "application/json",
-            "Content-Type": "application/json; charset=utf-8",
-            "Access-Control-Allow-Origin": "*",
-          }
-        }).then((res) => {
-          console.log('schedules',res);
-          // callback(res.data)
-          // store.commit('SET_USERS', res.data)
-        });
-      }
-      const processAll = async function() {
-        await processA()
-      }
-      processAll()
+
+      // console.log('wa')
+        // const sessionId=session.sessionData.id;
+        // console.log(session.sessionData)
+        // const result = stripe.redirectToCheckout({
+        //   sessionId: sessionId,
+        // });
+        // if (result.error) {
+        //   console.log(result.error.message);
+        // }
+
+        // const httpEvent = firebase.functions().httpsCallable('getSSass');
+        // await httpEvent({ 
+        //   path: '/resources',
+        //   // path: '/schedules',
+        //   params: {
+        //     schedule_id: supersassConfig.resourceId,
+        //     account: supersassConfig.account,
+        //     api_key: supersassConfig.apiKey,
+        //   },
+        //   headers: {
+        //     "Access-Control-Allow-Credentials": "true",
+        //     "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.password),
+        //     "Accept": "application/json",
+        //     "Content-Type": "application/json; charset=utf-8",
+        //     "Access-Control-Allow-Origin": "*",
+        //   }
+        // }).then((res) => {
+        //   console.log('schedules',res);
+        //   callback(res.data)
+        //   // store.commit('SET_USERS', res.data)
+        // });
+        callback(params);
+      // }
+      // const processAll = async function() {
+      //   await processA()
+      // }
+      // processAll()
     } catch(error){
       console.log(error)
     }
@@ -166,17 +173,15 @@ const actions = {
           // },
           headers: {
             "Access-Control-Allow-Credentials": "true",
-            // "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
-            // "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.password),
-            "Authorization": "Basic " + btoa("okaflamencoarts" + ":" + supersassConfig.apiKey),
+            "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.apiKey),
             "Accept": "application/json",
             "Content-Type": "application/json; charset=utf-8",
             "Access-Control-Allow-Origin": "*",
           }
         }).then((res) => {
           // console.log('get',res);
-          callback(res.data)
           store.commit('SET_USERS', res.data)
+          callback(res.data)
         });
       }
       const processAll = async function() {
@@ -188,9 +193,8 @@ const actions = {
     }
 
   },
-  getUserAgenda: (store,{params, callback}) => {  // ユーザー予約を取得
+  getUserAgenda: (store,{params}) => {  // ユーザー予約を取得
     // console.log("get user agenda", params);
-    // store.commit('SET_ISLOADING', false)
     try {
       const processA = async function() {
         const httpEvent2 = firebase.functions().httpsCallable('getSSass');
@@ -198,7 +202,7 @@ const actions = {
           path: '/agenda',
           method: 'GET',
           params: {
-            user: params.email,
+            user: 0,
             api_key: supersassConfig.apiKey,
             account: supersassConfig.account,
             from: params.from_date,
@@ -211,9 +215,33 @@ const actions = {
           }
         }).then((res2) => {
           // xml to json
+          let my=[];
           parser.parseString(res2.data, function (err, result) {
-            callback(result.bookings);
+            _.forEach(result.bookings, function(booking, k) {
+              _.forEach(booking, function(v, k2) {
+                if(params.user_email==v.full_name){
+                  // console.log(v)
+                  let _start = moment(v.start._).format("HH:mm");
+                  let _finish = moment(v.finish._).format("HH:mm");
+                  my.push({
+                    id: v.$.id,
+                    title: v.full_name,
+                    start: v.start._,
+                    end: v.finish._,
+                    datetime: _start+'〜'+_finish,
+                    studioName: v.resource_name._,
+                    price: v.price[0],
+                    created: v.created_on._,
+                    resource_id: v.schedule.$.id
+                  })
+
+                }
+              })
+              
+            });
           })
+          store.state.result.myschedules=my;
+          // callback(my);
         });
       }
       const processAll = async function() {
@@ -227,14 +255,100 @@ const actions = {
   },
   getClass: (store, {params}) => { //クラスのレッスン
     // store.commit('SET_ISLOADING', true)
+    // console.log(params)
+
+    // try {
+    //   const processA = async function(schedule_id,studio_name,color) {
+    //     const httpEvent = firebase.functions().httpsCallable('getSSass');
+    //     await httpEvent({ 
+    //       path: '/free/'+schedule_id+'.json',
+    //       params: {
+    //         from: store.state.selectDate + ' 00:00:00',
+    //         // from: params.date,
+    //         checksum: supersassConfig.checksum,
+    //       },
+    //       headers: {
+    //         "Accept": "application/json",
+    //         "Content-Type": "application/json; charset=utf-8",
+    //         "Access-Control-Allow-Origin": "*",
+    //       }
+    //     }).then((res) => {
+    //       // console.log('free',res);
+    //       _.forEach(res.data.slots, function(v, k) {
+    //         // console.log('free',v);
+    //         let description = v.description;
+    //         let isMember = false;
+
+    //         // description = description + ' ' +moment(v.start).format("h:mm")+'〜'+moment(v.finish).format("h:mm:ss a");
+    //         let _start = moment(v.start).format("HH:mm");
+    //         let _finish = moment(v.finish).format("HH:mm");
+    //         store.state.result.events.push({
+    //           id: v.id,
+    //           title: v.title,
+    //           start: v.start,
+    //           end: v.finish,
+    //           datetime: _start+'〜'+_finish,
+    //           description: description,
+    //           isMember:isMember,
+    //           studioName: studio_name,
+    //           iconColor: color,
+    //           color: color,
+    //           fontColor: 'black',
+    //           display: '',
+    //           isReserve: false,
+    //           // allDay: true
+    //         })
+    //         // store.commit('SET_ISLOADING', false)
+    //       });
+
+    //       // callback(res.data)
+    //       // store.commit('SET_USERS', res.data)
+    //     });
+    //   }
+
+    //   // コザクラス
+    //   const processAll = async function() {
+    //     // await processA(535055,'コザスタジオ','#F3C857')
+    //     await processA(550120,'コザクラス','tomato')
+    //     // await processA(549839,'コザクラス','tomato')
+    //   }
+    //   processAll()
+    //   .then(code => {
+
+    //     // ナゴクラス
+    //     const processAll2 = async function() {
+    //       // await processA(548481,'ナゴスタジオ','#9DC0AC')
+    //       await processA(550127,'ナゴクラス','blue')
+    //     }
+    //     processAll2().then(code2 => {
+    //       store.commit('SET_ISLOADING', false)
+    //       console.log('success')
+    //       return 'success';
+    //     })
+    //   })
+      
+    // } catch(error){
+    //   console.log(error)
+    // }
+  },
+  getFree: (store, {params,callback}) => { //空き状況：利用可能時間
+
+    store.commit('SET_ISLOADING', true)
+    let dt = moment(params.date).format("YYYY-MM-DD");
+    let dt2 = moment(dt + " " + params.time +":00").format("YYYY-MM-DD HH:mm:ss");  
+    // 初期化
+    store.commit('SET_SELECT_RESOURCES', [])
     try {
-      const processA = async function(schedule_id,studio_name,color) {
+      const processA = async function(schedule_id,color) {
         const httpEvent = firebase.functions().httpsCallable('getSSass');
         await httpEvent({ 
           path: '/free/'+schedule_id+'.json',
           params: {
-            from: store.state.selectDate + ' 00:00:00',
+            from: dt2,
             checksum: supersassConfig.checksum,
+            length: params.time_zone,
+            resource: params.studio,
+            // maxresults: 20,
           },
           headers: {
             "Accept": "application/json",
@@ -242,24 +356,19 @@ const actions = {
             "Access-Control-Allow-Origin": "*",
           }
         }).then((res) => {
-          // console.log('free',res);
+          let _resources = [];
           _.forEach(res.data.slots, function(v, k) {
-            // console.log('free',v);
-            let description = v.description;
-            let isMember = false;
-
-            // description = description + ' ' +moment(v.start).format("h:mm")+'〜'+moment(v.finish).format("h:mm:ss a");
             let _start = moment(v.start).format("HH:mm");
-            let _finish = moment(v.finish).format("HH:mm");
-            store.state.result.events.push({
+            let _finish = moment(v.start).add(Number(params.hour), 'h').format("HH:mm");
+            _resources.push({
               id: v.id,
-              title: v.title,
+              title: v.name,
               start: v.start,
               end: v.finish,
               datetime: _start+'〜'+_finish,
-              description: description,
-              isMember:isMember,
-              studioName: studio_name,
+              description: 'ok',
+              // isMember:isMember,
+              studioName: v.name,
               iconColor: color,
               color: color,
               fontColor: 'black',
@@ -267,38 +376,42 @@ const actions = {
               isReserve: false,
               // allDay: true
             })
-            // store.commit('SET_ISLOADING', false)
           });
-          // callback(res.data)
+
+          store.commit('SET_SELECT_RESOURCES', _resources)
+          callback(res.data)
           // store.commit('SET_USERS', res.data)
         });
       }
+
       // コザクラス
       const processAll = async function() {
         // await processA(535055,'コザスタジオ','#F3C857')
-        await processA(550120,'コザクラス','tomato')
+        // await processA(550120,'コザクラス','tomato')
+        await processA(549839, '#F3C857')
       }
       processAll()
-        .then(code => {
-          // ナゴクラス
-          const processAll2 = async function() {
-            // await processA(548481,'ナゴスタジオ','#9DC0AC')
-            await processA(550127,'ナゴクラス','blue')
-          }
-          processAll2().then(code2 => {
-            store.commit('SET_ISLOADING', false)
-            console.log('success')
-            return 'success';
-          })
-        })
+      .then(code => {
+        // // ナゴクラス
+        // const processAll2 = async function() {
+        //   // await processA(548481,'ナゴスタジオ','#9DC0AC')
+        //   await processA(550127,'ナゴクラス','blue')
+        // }
+        // processAll2().then(code2 => {
+        //   store.commit('SET_ISLOADING', false)
+        //   console.log('success')
+        //   return 'success';
+        // })
+      })
       
     } catch(error){
       console.log(error)
     }
   },
-  getBookings: (store) => {
+  getBookings: (store, {callback}) => {
+    store.commit('SET_ISLOADING', true)
       try {
-        const processA = async function(schedule_id, use_type) {
+        const processA = async function(schedule_id) {
           const httpEvent = firebase.functions().httpsCallable('getSSass');
           await httpEvent({ 
             path: '/bookings',
@@ -312,115 +425,168 @@ const actions = {
               "Access-Control-Allow-Origin": "*",
             }
           }).then((res) => {
-            // console.log('booktest!',res);
             // xml to json
             parser.parseString(res.data, function (err, result) {
               // 個人と団体データ様式が異なるため！
-              let _datas =  result.reservations;
-              if(_datas==undefined) _datas =  result.appointments;
+              let _datas=result.reservations;
+              if(_datas==undefined) _datas = result.appointments;
+
+              store.state.result.bookings=[];
               _.forEach(_datas, function(reservations, k) {
                 _.forEach(reservations, function(v, key) {
+                  // console.log('booking-',v['field-2'])
                   if(!v['res-name']) return;  // 削除された場合、表示しない
-
-                  // console.log('bookings.',v)
 
                   let description = v['status-message'];
                   let _start = moment(v['start']['_']).utc().format("HH:mm");
                   let _finish = moment(v['finish']['_']).utc().format("HH:mm");
-                  let iconColor = '#ffb6c1'  // 一般
-                  let color = '#ffb6c1'
-                  let isMember=false;
 
                   // コザが含まれているか検索
-                  iconColor = '#9DC0AC';
-                  color = '#9DC0AC';
+                  let iconColor = '#9DC0AC';
+                  let color = '#9DC0AC';
                   var result = v['res-name'].indexOf('コザ');
                   if(result==-1) {
                     // コザ
                     iconColor = '#F3C857';
                     color = '#F3C857';
                   }
+                  let allDay=false;
+                  let title=v['full-name'];
 
+                  // 一般か会員かチェック
+                  let index = _.findIndex(store.state.result.users, function(o) { 
+                    return o.name == v['full-name']; 
+                  })
+                  if(index==-1) {
+                    // 一般
+                    iconColor = '#ffb6c1'
+                    color = '#ffb6c1'
+                    // title = "一般"
+                    // // 一般且つ承認待ちの場合
+                    // if(v['status-message']=='承認待ち') {
+                    //   title = _start + " 承認待ち"
+                    //   allDay=true;
+                    // }
+                  };
+
+                  // Firestore更新用-start
+                  let product_name = 'スタジオ予約グループ';
+                  let obj = Object.prototype.toString.call(v['field-2'])
+                  if(obj == '[object String]') product_name = v['field-2'];
+
+                  let price = 0;
+                  let obj2 = Object.prototype.toString.call(v['field-1'])
+                  if(obj2 == '[object String]') price = v['field-1'];
+                  
+                  store.state.result.bookings.push({
+                    id: v['id']['_'],
+                    email: v['full-name'],
+                    product_name: product_name,
+                    price: price,
+                    date: moment(v['start']['_']).utc().format("YYYY-MM-DD"),
+                    start: _start,
+                    finish: _finish,
+                    created: moment(v['created-on']['_']).utc().format("YYYY-MM-DD"),
+                  });
+                  // Firestore更新用-end
+                  
                   store.state.result.events.push({
                     id: v['id']['_'],
-                    title: v['full-name'],
+                    title: title,
                     start: v['start']['_'],
                     end: v['finish']['_'],
                     description: description,
                     datetime: _start+'〜'+_finish,
-                    isMember:isMember,
+                    // isMember:isMember,
                     studioName: v['res-name'],
                     iconColor: iconColor,
                     color: color,
                     fontColor: 'black',
                     display: '',
-                    isReserve: true,
+                    // isReserve: true,
                     created: v['created-on']['_'],
                     user_id: v['user-id']['_'],
-                    use_type: use_type
+                    allDay: allDay
                   })
-
+                  
                 })
               })
             });
+            callback(true)
           });
         }
 
         // 個人利用
         const processAll = async function() {
-          // await processA(534330,'個人利用')
-          await processA(549839,'個人利用')
+          await processA(549839)
         }
         processAll()
-        // 団体利用
-        const processAll2 = async function() {
-          // await processA(542652,'団体利用')
-          await processA(550108,'団体利用')
-        }
-        processAll2()
-
-        // // 個人利用
-        // const processAll3 = async function() {
-        //   // await processA(534330,'個人利用')
-        //   await processA(550111,'個人利用')
-        // }
-        // processAll3()
-        // // 団体利用
-        // const processAll4 = async function() {
-        //   // await processA(542652,'団体利用')
-        //   await processA(550114,'団体利用')
-        // }
-        // processAll4()
       } catch(error){
         console.log(error)
       }
   },
-  getBooking: (store,{params,callback}) => {  //単一
-    console.log("get book",params);
-    // store.commit('SET_ISLOADING', false)
+  // getBooking: (store,{params,callback}) => {  //単一
+  //   console.log("get book",params);
+  //   // store.commit('SET_ISLOADING', false)
+  //   try {
+  //     const processA = async function() {
+  //       const httpEvent2 = firebase.functions().httpsCallable('getSSass');
+  //       const d_appoint = httpEvent2({ 
+  //         path: '/bookings/'+ params.id +'.json',
+  //         method: 'GET',
+  //         params: {
+  //           // schedule_id: 534330,
+  //           schedule_id: supersassConfig.resourceId,
+  //           checksum: supersassConfig.checksum,
+  //         },
+  //         headers: {
+  //           "Accept": "*/*",
+  //           "Contsent-Type": "application/json; charset=utf-8",
+  //           "Access-Control-Allow-Origin": "*",
+  //         }
+  //       }).then((res2) => {
+  //         console.log('apoi',res2)
+  //         callback(res2);
+  //       });
+
+  //     }
+  //     const processAll = async function() {
+  //       await processA()
+  //     }
+  //     processAll()
+  //   } catch(error){
+  //     console.log(error)
+  //   }
+
+  // },
+  addAppointment: (store,{params,callback}) => {
+    // 予約追加
     try {
-      const processA = async function() {
-        const httpEvent2 = firebase.functions().httpsCallable('getSSass');
-        const d_appoint = httpEvent2({ 
-          path: '/bookings/'+ params.id +'.json',
-          method: 'GET',
+      const processA = async function() {  
+        const httpEvent = firebase.functions().httpsCallable('postSSass');
+        await httpEvent({ 
+          path: '/bookings.json',
+          method: 'POST',
           params: {
-            // schedule_id: 534330,
             schedule_id: supersassConfig.resourceId,
-            checksum: supersassConfig.checksum,
+            api_key: supersassConfig.apiKey,
+            'booking[full_name]': params.email,
+            'booking[email]': params.email,
+            'booking[start]': params.start,
+            'booking[finish]': params.finish,
+            'booking[resource_id]': params.resource_id,
+            'booking[field_1]': params.price,
           },
           headers: {
-            // "Access-Control-Allow-Credentials": "true",
-            // "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
-            "Accept": "*/*",
-            "Contsent-Type": "application/json; charset=utf-8",
+            "Access-Control-Allow-Credentials": "true",
+            "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.apiKey),
+            "Accept": "application/json",
             "Access-Control-Allow-Origin": "*",
           }
-        }).then((res2) => {
-          console.log('apoi',res2)
-          callback(res2);
+        }).then((res) => {
+          console.log('apo',res);
+          callback(res)
         });
-
       }
       const processAll = async function() {
         await processA()
@@ -429,72 +595,9 @@ const actions = {
     } catch(error){
       console.log(error)
     }
-
   },
-  // addAppointment: (store,{params,callback}) => {
-  //     // 予約追加
-  //     // console.log(store.state.auth)
-  //     try {
-  //       const processA = async function() {
-          
-  //         const httpEvent = firebase.functions().httpsCallable('postSSass');
-  //         await httpEvent({ 
-  //           path: '/bookings.json',
-  //           method: 'POST',
-  //           params: {
-  //             account: supersassConfig.account,
-  //             user_id: store.state.auth.user_id,
-  //             after: "experience",
-  //             'user[name]': store.state.auth.email,
-  //             checksum:  store.state.auth.checksum,
-  //             // schedule_id: 536129,
-  //             // user_id: store.state.auth.user_id,
-  //             // checksum: "09f6be878d92eba5cccd8f61923fd24d",
-  //             // 'booking[slot_id]': 35868655,
-  //             // 'booking[full_name]': "test6",
-  //             // 'booking[email]': "kaoru1225@gmail.com",
-  //             // booking: {
-  //             //   slot_id: '35868655',
-  //             //   full_name: "test5",
-  //             //   email: "kaoru1225@gmail.com",
-  //             // },
-  //             // form:true,
-  //           },
-  //           headers: {
-  //             // cookie: 'account=susture;'+'checksum='+store.state.auth.checksum,
-  //             // "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
-  //             // "Access-Control-Allow-Origin": "*",
-  //             // "Access-Control-Allow-Credentials": "true",
-  //             // "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
-  //             // 'X-Requested-With': 'XMLHttpRequest',
-  //             // 'Accept': 'text/plain',
-  //             // "Contsent-Type": "application/xml",
-
-  //             "Accept": "*/*",
-  //             // "Contsent-Type": "application/json; charset=utf-8",
-  //             "Access-Control-Allow-Origin": "*",
-  //           }
-  //         }).then((res) => {
-  //           // console.log('apo',res);
-  //           // callback(res)
-  //         });
-  //       }
-  //       const processAll = async function() {
-  //         await processA()
-  //       }
-  //       processAll()
-  //     } catch(error){
-  //       console.log(error)
-  //     }
-  // },
   deleteAppointment: (store,{params,callback}) => {
       try {
-        // スタジオリソース
-        // let _schedule_id = '534330'
-        // let _checksum = '09f6be878d92eba5cccd8f61923fd24d';
-        // let _schedule_id = '549839'
-        // let _checksum = 'f7e678ba113d5789a3cf35a53171f721';
-
         // 予約削除
         const processA = async function() {
           const httpEvent2 = firebase.functions().httpsCallable('deleteSSass');
@@ -536,10 +639,10 @@ const actions = {
     // ////////////////////////
 
     try {
-      console.log('user!',params, _code)
+      // console.log('user!',params, _code)
       const processA = async function() {
         const httpEvent = firebase.functions().httpsCallable('postSSass');
-        await httpEvent({ 
+        await httpEvent({
           path: '/users/'+_code+'fk.json',
           method: 'POST',
           params: {
@@ -547,9 +650,11 @@ const actions = {
             // password:'jmlLq1BhwucEkul_WgmSOA',
             account: supersassConfig.account,
             password: supersassConfig.apiKey,
-            'user[full_name]': params.displayName,
+            'user[full_name]': params.username,
             'user[name]': params.email,
-            'user[password]': params.email,
+            'user[password]': params.password,
+            'user[phone]': params.phone,
+            'user[address]': params.address,
           },
           headers: {
             "Accept": "*/*",
@@ -568,85 +673,106 @@ const actions = {
     } catch(error){
       console.log(error)
     }
-      // // md5
-      // axios.post('/gcf/getMD5',{
-      //   name: _name
-      // }
-      // ).then((response) => {
-      //   console.log('ハッシュ値',response.data)
-      //   store.commit('SET_AUTH_CHECKSUM', response.data.result)
-
-      //   // // supersass
-      //   // axios.post('/schedule/users/'+_code+'fk',{
-      //   //   account:'susture',
-      //   //   password:'jmlLq1BhwucEkul_WgmSOA',
-      //   //   user: {
-      //   //     full_name: params.displayName,
-      //   //     name: params.email,
-      //   //     password: params.displayName,
-      //   //     super_field: response.data.result,
-      //   //   },
-      //   // }).then((response2) => {
-      //   //   // console.log('success');
-      //   //   callback(response2);
-      //   // }).catch((error) => {
-      //   //     console.log(error);
-      //   // });  
-
-      //   // callback(response)
-      // }).catch((error) => {
-      //     console.log(error);
-      // });
-
-      // // supersass
-      // axios.post('/api/users/'+_code+'fk.json',{
-      //   account:'susture',
-      //   password:'jmlLq1BhwucEkul_WgmSOA',
-      //   checksum: response.data.result,
-      //   user: params.user,
-      // }).then((response2) => {
-      //   // console.log('success');
-      //   callback(response2);
-      // }).catch((error) => {
-      //     console.log(error);
-      // });  
 
   },
-  // saveUser: (store,{params,callback}) => {
-  //   try {
-  //     store.state.auth.credit += params.price;
-  //     console.log('user!',store.state.auth)
-  //     const processA = async function() {
-  //       const httpEvent = firebase.functions().httpsCallable('postSSass');
-  //       await httpEvent({ 
-  //         path: '/users/'+ store.state.auth.user_id+'.json',
-  //         method: 'PUT',
-  //         params: {
-  //           notfound: 'ignore',
-  //           'user[name]': store.state.auth.email,
-  //           'user[email]': store.state.auth.email,
-  //           'user[credit]': store.state.auth.credit,
-  //         },
-  //         headers: {
-  //           "Access-Control-Allow-Credentials": "true",
-  //           "Authorization": "Basic " + btoa("susture" + ":" + "susture2525"),
-  //           "Accept": "*/*",
-  //           "Contsent-Type": "application/json; charset=utf-8",
-  //           "Access-Control-Allow-Origin": "*",
-  //         }
-  //       }).then((res) => {
-  //         console.log('apo',res);
-  //         callback(res)
-  //       });
-  //     }
-  //     const processAll = async function() {
-  //       await processA()
-  //     }
-  //     processAll()
-  //   } catch(error){
-  //     console.log(error)
-  //   }
-  // }
+  saveUser: (store,{params, callback}) => {
+    try {
+      const processA = async function() {
+        const httpEvent = firebase.functions().httpsCallable('postSSass');
+        await httpEvent({ 
+          path: '/users/'+ store.state.auth.user_id+'.json',
+          method: 'PUT',
+          params: {
+            notfound: 'ignore',
+            'user[name]': store.state.auth.email,
+            'user[email]': store.state.auth.email,
+            'user[credit]': params.credit.toLocaleString(),
+          },
+          headers: {
+            "Access-Control-Allow-Credentials": "true",
+            "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.apiKey),
+            "Accept": "*/*",
+            "Contsent-Type": "application/json; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
+          }
+        }).then((res) => {
+          console.log('success!',res);
+          callback(res)
+        });
+      }
+      const processAll = async function() {
+        await processA()
+      }
+      processAll()
+    } catch(error){
+      console.log(error)
+    }
+  },
+  updateUser: (store,{params, callback}) => {
+    try {
+      const processA = async function() {
+        const httpEvent = firebase.functions().httpsCallable('postSSass');
+        await httpEvent({ 
+          path: '/users/'+ store.state.auth.user_id+'.json',
+          method: 'PUT',
+          params: {
+            notfound: 'ignore',
+            'user[email]': store.state.auth.email,
+            'user[address]': params.address,
+            'user[phone]': params.phone,
+          },
+          headers: {
+            "Access-Control-Allow-Credentials": "true",
+            "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.apiKey),
+            "Accept": "*/*",
+            "Contsent-Type": "application/json; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
+          }
+        }).then((res) => {
+          console.log('success!',res);
+          callback(res)
+        });
+      }
+      const processAll = async function() {
+        await processA()
+      }
+      processAll()
+    } catch(error){
+      console.log(error)
+    }
+  },
+  saveUserAdmission: (store,{params, callback}) => {
+    try {
+      const processA = async function() {
+        const httpEvent = firebase.functions().httpsCallable('postSSass');
+        await httpEvent({ 
+          path: '/users/'+ store.state.auth.user_id+'.json',
+          method: 'PUT',
+          params: {
+            notfound: 'ignore',
+            'user[name]': store.state.auth.email,
+            'user[super_field]': params.group_id,
+          },
+          headers: {
+            "Access-Control-Allow-Credentials": "true",
+            "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.apiKey),
+            "Accept": "*/*",
+            "Contsent-Type": "application/json; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
+          }
+        }).then((res) => {
+          console.log('success!',res);
+          callback(res)
+        });
+      }
+      const processAll = async function() {
+        await processA()
+      }
+      processAll()
+    } catch(error){
+      console.log(error)
+    }
+  }
 }
 
 function getRandomInt(min, max) {
@@ -666,6 +792,8 @@ const mutations = {
     state.auth.credit=0;
     state.auth.supersass = supersassConfig;
     state.info.isSafariLogin = false
+    state.auth.emailVerified=false
+    state.result.myschedules=[]
   },
   onUserStatusChanged(state, status) {
     state.authStatus = status;
@@ -695,28 +823,35 @@ const mutations = {
     state.selectDate = data
   },
   SET_AUTH (state, auth){
-    // console.log('get auth',auth)
+    
     state.auth.username = auth.displayName;
     state.auth.email = auth.email
     state.auth.isAdmissionFee = true;
+    state.auth.emailVerified=auth.emailVerified;
     // state.info.isSafariLogin = false;
+    // console.log('get auth',auth)
 
     // イベント取得
     let index = _.findIndex(state.result.users, function(o){
       return o.name==auth.email;
     });
     if(index==-1) return;
+
     // supersassアカウント
     let supersassuser = state.result.users[index]
     state.auth.user_id = supersassuser.id
     state.auth.credit = supersassuser.credit
+    state.auth.address = supersassuser.address
+    state.auth.phone = supersassuser.phone
+    state.auth.password = supersassuser.password
+    // console.log('super',supersassuser)
 
     // 初回の入会金チェック
-    if(supersassuser.super_field==null){
+    if(supersassuser.super_field==null || supersassuser.super_field==''){
       state.auth.isAdmissionFee = false;
       return;
     }
-    // console.log('super',supersassuser)
+    
     // 権限
     if(supersassuser.super_field==1) state.auth.isMember = true;
   },
@@ -735,6 +870,22 @@ const mutations = {
   },
   SET_SAFARI_LOGIN (state, is_login){
     state.info.isSafariLogin = is_login
+  },
+  SET_SELECT_SEARCH (state, search){
+    state.search = search
+  },
+  SET_SELECT_RESOURCES (state, resources){
+    state.result.resources = resources
+  },
+  SET_RESET_PASSWORD (state, is_reset){
+    state.info.isResetPassword = is_reset
+  },
+  SET_ACTIONCODE (state, actionCode){
+    console.log('get actioncode')
+    state.info.actionCode = actionCode
+  },
+  SET_ACTIONEMAIL (state, email){
+    state.info.accountEmail = email
   },
 }
 

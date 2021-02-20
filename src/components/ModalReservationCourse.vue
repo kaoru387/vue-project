@@ -123,7 +123,7 @@
       onLinkClick() {
         this.close()
         store.commit('SET_SAFARI_LOGIN', true)
-        this.$emit('reLoad');
+        this.$emit('reload');
       }
     },
   }

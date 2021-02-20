@@ -1,7 +1,5 @@
 <template>
   <div id="calendar">
-    <!-- <h1 class="mt-2 mb-2">{{ msg }}</h1> -->
-    <!-- <button @click="toggleWeekends">toggle weekends</button> -->
     <FullCalendar
       :style="{'min-height':height-adjust+'px','height':height+'px'}"
       ref="fullCalendar"
@@ -11,8 +9,8 @@
         <b>{{ arg.timeText }}</b>
         <i>{{ arg.event.title }}</i>
       </template> -->
-       <template #eventContent="arg">
-        <interactive-content ref="interactiveContent" :item=arg.event  :dialog-form-visible="content_visible" :close-content="closeContent" />
+      <!--  <template #eventContent="arg">
+        <interactive-content ref="interactiveContent" :item=arg.event  :dialog-form-visible="content_visible" :close-content="closeContent" :style="{'x-index': 1060}" /> -->
         <!-- <v-list-item three-line>
           <v-list-item-content>
             <v-list-item-subtitle>
@@ -21,9 +19,11 @@
             </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item> -->
-      </template>
+      <!-- </template> -->
     </FullCalendar>
-    
+    <!-- <interactive-content ref="interactiveContent" 
+      :dialog-form-visible="content_visible" 
+      :close-content="closeContent" /> -->
     <!-- <FullCalendar :events="events" @eventClick="removeEvent" @eventChange="changeEvent">
       <template v-slot:eventContent='arg'>
         <b>{{ arg.timeText }}</b>
@@ -65,14 +65,16 @@ export default {
   data() {
     return {
       content_visible: false,
+      item: {},
       calendarOptions: {
         timeZone: 'UTC',
         plugins: [ dayGridPlugin, timeGridPlugin, interactionPlugin ],
         initialView: 'dayGridMonth',
+        // initialDate: this.iniDate,
         headerToolbar: {
           left:   'title',
           // center: 'myCustomButton',
-          right:  'today dayGridMonth,timeGridWeek prev,next',
+          right:  'today prev,next',
           // left: 'prev,next today',
           // center: 'title',
           // right: 'dayGridMonth,timeGridWeek,timeGridDay'
@@ -96,6 +98,7 @@ export default {
       },
       elDay: '',
       elToday: '',
+      viewName: 'dayGridMonth'
     }
   },
   computed: {
@@ -133,7 +136,7 @@ export default {
       this.calendarOptions.weekends = !this.calendarOptions.weekends // update a property
     },
     handleDateClick(arg) {  // 日付選択
-      console.log('day')
+      // console.log('day', arg.dateStr)
       
       // // 当日の背景色クリア
       // var cells = document.getElementsByTagName("td");
@@ -153,24 +156,26 @@ export default {
       // // 選択日付更新
       // store.commit('SET_SELECT_DATE', arg.dateStr);
       
-      // 表示切り替え
-      this.$refs.fullCalendar.getApi().gotoDate(arg.dateStr)
-      // this.$refs.fullCalendar.getApi().changeView('timeGridWeek');
-      this.$refs.fullCalendar.getApi().changeView('timeGridDay');
-
+      // // 表示切り替え
+      // this.$refs.fullCalendar.getApi().gotoDate(arg.dateStr)
+      // // this.$refs.fullCalendar.getApi().changeView('timeGridWeek');
+      // this.$refs.fullCalendar.getApi().changeView('timeGridDay');
+      // this.viewName = 'timeGridDay';
+      
       // // 詳細表示
       // this.$emit('date-selected',arg.dateStr);
-
     },
     changeEvent: function(eventInfo) {
+      // console.log('change event')
       // //イベント選択
       // let event = eventInfo.event.toJSON()
-      // console.log('event',event)
+      // this.item = event;
+      // this.content_visible = true
+
       // // this.$emit('eventChange',event)
       // // 選択日付更新
       // let date = moment(event.start).utc().format('YYYY-MM-DD')
 
-      
       // var result = event.start.indexOf('Z');
       // if(result==-1) date = moment(event.start).format('YYYY-MM-DD')  
       // store.commit('SET_SELECT_DATE', date);
@@ -191,33 +196,46 @@ export default {
     },
     eventDidMount: function(info) { // 詳細表示
       // console.log('mount',info)
-      
       // if(!info.event.allDay) return;
-      // // console.log(info.event.extendedProps.description)
-      // var tooltip = new BPopover({
-      //   propsData: {
-      //     title : 'test',
-      //     html: true,
-      //     container: 'body',
-      //     template: '<div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>',
-      //     target: info.el,
-      //     // container: 'tests',
-      //     // title: info.timeText+' '+info.event.title,
-      //     // content: info.event.extendedProps.description,
-      //     // placement: 'auto',
-      //     boundary: 'viewport',
-      //     // boundaryPadding: 5,
-      //     // delay: 500,
-      //     // offset: 0,
-      //     // triggers: 'hover',
-      //     // target: info.el,
-      //   }
-      // }).$mount()
+      // console.log(info.event.extendedProps)
 
+      let title = '一般利用';
+      if(info.event.title!=='*') title = info.event.title+'さん';
+      // if(info.event.extendedProps.title=="*") title = '一般利用';
+      var tooltip = new BPopover({
+        propsData: {
+          // placement: 'bottom',
+          html: true,
+          container: 'body',
+          template: '<div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>',
+          target: info.el,
+          // title: info.timeText+' '+info.event.title,
+          title: info.timeText+' '+info.event.extendedProps.studioName,
+          // content: info.event.title+' '+info.event.extendedProps.description,
+          content: title,
+          boundary: 'viewport',
+          triggers: "hover focus",
+          placement: "bottomright",
+          // boundaryPadding: 5,
+          // delay: 500,
+          // offset: 0,
+          // triggers: 'hover',
+        }
+      }).$mount()
     },
     viewDidMount: function(e){
-      // 今日の日付の背景色をリセット
+      // console.log('vi',e.view.type)
       let that = this
+      // 週から月への場合再読み込み
+      // if(e.view.type == "dayGridMonth") {
+      //   if(that.viewName == 'timeGridDay'){
+      //     store.commit('SET_ISLOADING', true)
+      //     that.$emit('reLoad');
+      //     return;
+      //   }
+      // }
+
+      // 今日の日付の背景色をリセット
       var cells = document.getElementsByTagName("td");
       for (var i = 0; i < cells.length; i++) {
         if(cells[i].getAttribute('data-date')==this.$moment().utc().format('YYYY-MM-DD')){

@@ -85,12 +85,18 @@ module.exports = {
     //     'X-Frame-Options': "allow-from *"
     // },
     proxy: {
-      // '/api': {
-      //     target: "https://dev.fandangos-okinawa.com/koza.php",
-      //     // target: "https://script.google.com/macros/s/AKfycbzZ033TdCyxhAQJ7nss3K9skvrhKvb8KTmw2kqJK5OwbdQmyaIX/exec",
-      //     changeOrigin: true,
-      //     'pathRewrite': {'^/api/': ''}
-      // },
+      '/api': {
+          target: "http://localhost:4242",
+          // target: "https://script.google.com/macros/s/AKfycbzZ033TdCyxhAQJ7nss3K9skvrhKvb8KTmw2kqJK5OwbdQmyaIX/exec",
+          changeOrigin: true,
+          'pathRewrite': {'^/api/': ''}
+      },
+      '/stripe': {
+          target: "https://dashboard.stripe.com",
+          // target: "https://script.google.com/macros/s/AKfycbzZ033TdCyxhAQJ7nss3K9skvrhKvb8KTmw2kqJK5OwbdQmyaIX/exec",
+          changeOrigin: true,
+          'pathRewrite': {'^/stripe/': ''}
+      },
       // '/google': {
       //     target: "https://script.google.com/macros/s/AKfycbzZ033TdCyxhAQJ7nss3K9skvrhKvb8KTmw2kqJK5OwbdQmyaIX/exec",
       //     // target: 'https://script.googleapis.com',

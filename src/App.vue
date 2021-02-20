@@ -9,19 +9,20 @@
       >
         <!-- <v-app-bar-nav-icon></v-app-bar-nav-icon> -->
         <v-toolbar-title class="p-0" :style="{'color':'white'}">スタジオ予約</v-toolbar-title>
-        <!--  -->
-        <div class="text-left ml-1">
+        <!-- <div class="text-left ml-1">
             <v-btn
+              v-if="auth.emailVerified"
               icon
               color="green"
-              @click="reLoad"
+              @click="reload"
             >
               <v-icon>mdi-cached</v-icon>
             </v-btn>
-        </div>
+        </div> -->
         <v-spacer></v-spacer>
         <v-btn
-          v-if="auth.username"
+          :disabled="auth.username=='' || !auth.emailVerified"
+          v-if="auth.isAdmissionFee"
           class="ma-1"
           text
           icon
@@ -30,35 +31,51 @@
         >
           <v-icon>{{ mdiCartVariant }}</v-icon>
         </v-btn>
-        <v-tooltip v-if="auth.username==''" top>
+        <!-- <v-btn
+          v-if="auth.username!=='' && !auth.isAdmissionFee && auth.emailVerified"
+          class="ma-1"
+          text
+          icon
+          color="red lighten-2"
+          @click="checkoutAdmission"
+        >
+          <v-icon>{{ mdiCardAccountDetailsOutline }}</v-icon>
+        </v-btn> -->
+        <!-- <a v-if="auth.username!=='' && !auth.isAdmissionFee && auth.emailVerified" 
+          class="text-decoration-underline sample" :style="{'color':'white !important'}" @click="checkoutAdmission">
+          入会金
+        </a> -->
+        <!-- <v-tooltip v-if="auth.username && !auth.isAdmissionFee" top>
           <template v-slot:activator="{ on, attrs }" >
-            <v-icon class="mr-3"
-              v-bind="attrs"
-              v-on="on"
-            >{{ mdiCartVariant }}</v-icon>
+            <router-link class="nav-link" :to="{ name:'admission'}" active-class="active" exact>
+              <v-icon class="mr-3"
+              >{{ mdiCardAccountDetailsOutline }}</v-icon>
+            </router-link>
           </template>
-          <span>会員様のみ</span>
-        </v-tooltip>
-
+          <span>入会金</span>
+        </v-tooltip> -->
+        <!-- <a v-if="auth.username==''" class="text-decoration-underline sample" :style="{'color':'white !important'}" @click="openModal">
+          新規会員登録
+        </a> -->
+        <router-link class="nav-link" :to="{ name:'account'}" active-class="active" exact>
+          <a v-if="auth.username==''" class="text-decoration-underline sample" :style="{'color':'white !important'}">会員新規登録</a>
+        </router-link>
         <v-menu
+          :disabled="loading"
           bottom
           left
+          :style="{'z-index':1008}"
         >
           <template v-slot:activator="{ on, attrs }">
             <div class="outer">
               <div class="sample" :style="{'color':'white'}">
-                <!-- <v-icon color="darken-2">{{ mdiAccount }}</v-icon> -->
-                <!-- <span class="mr-2" v-if="auth.username">{{ auth.username }}さん</span>
-                <span class="mr-2" v-if="auth.username">{{ auth.credit }}</span> -->
-                <div v-if="auth.username" class="d-flex align-items-start flex-column bd-highlight">
+                <div v-if="auth.username!==''" class="d-flex align-items-start flex-column bd-highlight">
                   <div class="p-0 bd-highlight ml-auto">{{ auth.username }}<span class="sample">さん</span></div>
-                  <!-- <div class="p-0 bd-highlight ml-auto"><span class="sample ml-1">さん</span></div> -->
                   <div class="p-0 bd-highlight">ポイント:<span class="ml-1">{{ auth.credit.toLocaleString() }}</span></div>
-                  <!-- <div class="p-0 bd-highlight ml-auto"><span class="ml-1">{{ auth.credit.toLocaleString() }}</span></div> -->
                 </div>
-                <a v-else class="text-decoration-underline" :style="{'color':'white !important'}" @click="openModal">
-                  会員登録
-                </a>
+                <!-- <a v-else class="text-decoration-underline" :style="{'color':'white !important'}" @click="openModal">
+                  ログイン
+                </a> -->
               </div>
               <v-btn
                 dark
@@ -70,21 +87,15 @@
               </v-btn>
             </div>
           </template>
-
-          <!-- <v-icon color="darken-2">mdi-cart-variant</v-icon> -->
-
           <v-list class="text-left pl-2">
-            <!-- <v-list-item
-              v-for="(item, i) in items"
-              :key="i"
-            >
-              <v-list-item-title class="p-2" @click="logout">{{ item.title }}</v-list-item-title>
-            </v-list-item> -->
             <v-list-item>
-              <v-list-item-title class="p-2" @click="openModal">ログイン</v-list-item-title>
+              <v-list-item-title v-if="auth.username==''" @click="openModal">ログイン</v-list-item-title>
             </v-list-item>
             <v-list-item>
-              <v-list-item-title class="p-2" @click="logout">ログアウト</v-list-item-title>
+              <v-list-item-title v-if="auth.username!=='' && auth.emailVerified" @click="editAccount">会員情報</v-list-item-title>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-title v-if="auth.username!=='' && auth.emailVerified" @click="logout">ログアウト</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -94,7 +105,7 @@
         id="scrolling-techniques-7"
         class="overflow-y-auto"
       >
-        <v-container :style="{'margin-top':'55px','height':height+'px'}">
+        <v-container :style="{'margin-top':'55px', 'height':height+'px'}">
           <router-view v-loading="loading"/>
         </v-container>
       </v-sheet>
@@ -114,25 +125,31 @@
       </v-btn>
     </transition> -->
     <!-- チケット -->
-   <modal-shop 
+   <!-- <modal-shop 
     ref="dialogCourse"
     :dialog-form-visible="modal_shop_visible" 
     :close-modal="close_modal"
-    @reLoad="reLoad"
-   />
+    @reload="reload"
+   /> -->
   </v-app>
 </template>
 
 <script>
   import store from './store/app';
-  import { mdiAccount, mdiKey, mdiCartVariant } from '@mdi/js'
-  import firebase from "Firebase";
-  import ModalShop from './components/ModalShop'
+  import axios from "axios"
+  import { mdiAccount, mdiKey, mdiCartVariant, mdiCardAccountDetailsOutline } from '@mdi/js'
+  import Firebase from "Firebase";
+  import firebase from "@firebase/app";
+  // import ModalShop from './components/ModalShop'
+  import { loadStripe } from '@stripe/stripe-js';
+  // const stripePromise = loadStripe('pk_test_51HU17xEL8vDvw6C3KK8sAW82ZkUnlLo7pRjQWkoiMNjjJiiaHOsL6uEpaO7URE55CGJAu3KIxOIy06azOtFVxp8J006cwjspAu');
+  const stripePromise = loadStripe('pk_test_51I1LTfAXJN6gcxR4I1pw3tPbCXFUl8rnbbq0Wcl6dJhQkjb3ZuuASp8GlpCVTZLFfMn4TnWdkZm1nS52N99w5ch400f3oMXvxy');
+
 
 export default {
   name: 'App',
   components: {
-    ModalShop,
+    // ModalShop,
     // VCard,
     // VCardText,
     // VCardMedia
@@ -145,6 +162,7 @@ export default {
       modal_login_visible: false,
       mdiAccount,
       mdiCartVariant,
+      mdiCardAccountDetailsOutline,
       items: [
         {
           title: 'ログアウト',
@@ -179,10 +197,9 @@ export default {
     },
   },
   mounted() {
-    // console.log('mute',window.screen.height)
+    // console.log('mute')
   },
   created: function () {
-
     var userAgent = window.navigator.userAgent.toLowerCase();
     let browser='';
     if(userAgent.indexOf('msie') != -1 ||
@@ -202,42 +219,11 @@ export default {
         // console.log('そんなブラウザは知らん');
     }
     store.commit('SET_INFO_BROUSER', browser)
-    console.log("browser",browser);
-    store.commit('SET_ISLOADING', true)
-
-    let that = this;
-    const processA = async function() {
-      // ログインチェック
-      await firebase.auth().onAuthStateChanged(function(user) {
-        if (user) {
-          store.commit('SET_AUTH', user)
-        } else {
-          console.log('no singin')
-        }
-        that.reLoad();
-      });
-    }
-    const processAll = async function() {
-      await processA()
-    }
-    processAll()
-
-    // safariブラウザの場合、本家へログイン必須
-    if(localStorage.getItem('isSafariLogin')){
-      store.commit('SET_SAFARI_LOGIN', true)
-      // console.log('st',localStorage.getItem('isSafariLogin'))  
-    }
+    // console.log("browser",browser);
+    this.reload();
     
-    // 状態ストレージ保有
-    // console.log('state!',store.state)
-    localStorage.setItem('state', JSON.stringify(store.state));
-    
-    // localStorage.removeItem('state');
-    // window.localStorage.clear();
-    // store.commit('SET_ISLOADING', false)
     // 今日の日付取得
     store.commit('SET_SELECT_DATE', this.$moment().format('YYYY-MM-DD'))
-    
   },
   methods: {
     onScroll(e){
@@ -261,7 +247,7 @@ export default {
       if(this.auth.username=="") return;
 
       // ログアウト処理
-      firebase.logOut();
+      Firebase.logOut();
       this.$message({
         message: 'ログアウトに成功しました！',
         type: 'success'
@@ -279,8 +265,7 @@ export default {
     openModal(){
      // ログインチェック
      var that = this;
-     let currentUserStatus = firebase.auth().currentUser;
-     // console.log('current',currentUserStatus)
+     let currentUserStatus = Firebase.auth().currentUser;
      if(currentUserStatus===null) {
        // ログイン未だの場合
        that.$router.push({path: '/login'});
@@ -288,25 +273,112 @@ export default {
      }
     },
     openShop() {
-      this.modal_shop_visible = true;
+      // チケット購入
+      // this.modal_shop_visible = true;
+      store.commit('SET_ISLOADING', true)
+      
+      let that = this;
+      let parms = {
+        price: 4000,
+        email: that.auth.email
+      }
+      const processA = async function() {
+        const stripe = await stripePromise;
+        const response = await firebase.functions().httpsCallable('postStripe');
+        await response({
+          // path: '/create-checkout-session-ticket',
+          method: 'POST',
+          params: {
+            price: "price_1IJdUsAXJN6gcxR4UbytacgS",
+            quantity: 1,
+          },
+          mode: "payment",
+          // success_url: "https://localhost:4006/?mode=stripeSuccessPoint",
+          success_url: "https://kdev.page/?mode=stripeSuccessPoint",
+          cancel_url: "https://www.fandangos-okinawa.com/reservation/?mode=stripeCancel",
+          headers: {
+            "Accept": "*/*",
+            "Contsent-Type": "application/json; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
+          }
+        }).then((res) => {
+          console.log(res)
+          const session = res.data;
+          const sessionId = session.id;
+
+          // 一旦保持
+          Firebase.db().collection("sessions").doc(parms.email)
+          .set({
+            sessionId: sessionId,
+            params: parms,
+            status: 'checkout'
+          });
+
+          const result = stripe.redirectToCheckout({
+            sessionId: sessionId,
+          });
+          if (result.error) {
+            console.log(result.error.message);
+          }
+     
+        });
+      }
+      const processAll = async function() {
+        await processA()
+      }
+      processAll()
+
+    },
+    // resetPassword() {
+    //   // store.commit('SET_ISLOADING', true)
+    //   // this.$router.push({path: '/resetpassword'});
+    //   let that = this;
+    //   var auth = Firebase.auth();
+    //   var emailAddress = that.auth.email;
+    //   auth.sendPasswordResetEmail(emailAddress).then(function() {
+    //     // Email sent.
+    //     store.commit('SET_RESET_PASSWORD', true)
+    //     that.$message({
+    //       type: 'success',
+    //       message: 'パスワード再設定メールを送信しました。メールが届いているかをご確認ください。',
+    //     });
+    //   }).catch(function(error) {
+    //     // An error happened.
+    //   });
+
+    // },
+    editAccount() {
+      // store.commit('SET_ISLOADING', true)
+      this.$router.push({path: '/editaccount'});
     },
     close_modal: function() {
       console.log('close')
       this.modal_shop_visible = false;
     },
-    reLoad() {
-      // console.log('relo');
+    reload() {
+      // console.log('relo',this.$route.path);
       let that = this;
       const processA = async function() {
         await store.commit('SET_ISLOADING', true)
+        await store.dispatch('getUsers',function(e){
+          let currentUserStatus = Firebase.auth().currentUser;
+          if(!currentUserStatus) console.log('no singin');
+          else store.commit('SET_AUTH', currentUserStatus)
+        });
         await store.commit('SET_EVENTS', []);
         // 予約取得
-        await store.dispatch('getBookings')
+        await store.dispatch('getBookings',{
+          callback: function(res){
+            if(res) store.commit('SET_ISLOADING', false)
+          }
+        });
         // クラス取得
         await store.dispatch('getClass',{})
+        
       }
       const processAll = async function() {
         await processA()
+        if(that.$route.path!=='/') that.$router.push({path: '/'});
       }
       processAll()
     }

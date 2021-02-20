@@ -1,18 +1,4 @@
 <template>
-  <!-- <div class="login">
-    <form method="post" action="https://www.supersaas.com/api/users">
-      <input type="hidden" name="account" value="susture"/>
-      <input type="hidden" name="id" value="1234fk"/> 
-      <input type="hidden" name="user[name]" value="A@susture.com"/>
-      <input type="hidden" name="user[full_name]" value="生徒A"/>
-      <input type="hidden" name="user[email]" value="A@susture.com"/>
-      <input type="hidden" name="user[mobile]" value=""/>
-      <input type="hidden" name="user[address]" value=""/>
-      <input type="hidden" name="checksum" value="1e5dcff50bb5f9a5273602b25a2f0d41"/>
-      <input type="hidden" name="after" value="experience"/>
-      <input type="submit" value="Book now"/>
-    </form>
-  </div> -->
   <div>
     <!-- <div id="firebaseui-auth-container"></div> -->
     <!-- <div id="loader">Loading...</div> -->
@@ -20,42 +6,14 @@
       :tile="$vuetify.breakpoint.sm || $vuetify.breakpoint.xs"
       :style="{'margin':'0 auto'}"
       >
-      <!-- <v-card-title class="text-left pt-4 pb-5">
-        <v-row justify="center" align-content="center">
-          <h4 class="pt-2">会員新規登録</h4>
-        </v-row>
-      </v-card-title>  -->
       <div class="text-center pt-5 pb-0 text-primary">
-        <h4>会員新規登録</h4>
+        <h4>会員情報</h4>
       </div> 
       <v-card-text class="pt-0">
         <validation-observer ref="observer" v-slot="ObserverProps" tag="form" @submit.prevent="submit()">
           <div class="form-row">
-            <div class="col-12 p-2 pb-0">
-              <div class="filed">
-                <validation-provider name="email" rules="required|email|emailcheck" v-slot="prop">
-                  <v-text-field
-                    name="email"
-                    label="メールアドレス"
-                    type="email"
-                    v-model="form.email"
-                    :error-messages="prop.errors[0]"
-                  ></v-text-field>
-                </validation-provider> 
-              </div>
-            </div>
-            <div class="col-12 p-2 pb-0">
-              <div class="filed">
-                <validation-provider name="password" rules="required|min:6" v-slot="prop">
-                  <v-text-field
-                    label="パスワード"
-                    name="password"
-                    type="password"
-                    v-model="form.password"
-                    :error-messages="prop.errors[0]"
-                  ></v-text-field>
-                </validation-provider> 
-              </div>
+            <div class="col-12 p-2 pt-5 pb-3 text-left">
+              <h5>{{ form.email }}</h5>
             </div>
             <div class="col-12 p-2 pb-0">
               <div class="filed">
@@ -100,7 +58,7 @@
             <div class="col-12 p-2 pb-0">
               <div class="block">
                 <el-button class="m-0" type="success" :style="{'width': '100%'}" @click="submit">
-                  新規登録
+                  更新
                 </el-button>
                 <el-button type="secondary" class="m-0 mt-5 mb-3" :style="{'width': '100%'}" @click="cancel">キャンセル</el-button>
               </div>
@@ -170,18 +128,13 @@ export default {
     return {
       loading: false,
       form: {
+        providerId: "",
+        uid: "",
         email: "",
-        password: "",
         username: "",
         address:"",
         phone:"",
       },
-      // person: mdiAccount,
-      // lock: mdiKey,
-      passwordShow: false,
-      Validation:{
-        loginReult: "",
-      }
     }
   },
   computed: {
@@ -190,7 +143,14 @@ export default {
     },
   },
   created: function () {
-    // store.commit('SET_ISLOADING', false)
+    
+    let that = this;
+    let auth = store.state.auth;
+    that.form.email = auth.email;
+    that.form.username = auth.username;
+    that.form.address = auth.address;
+    that.form.phone = auth.phone;
+
   },
   mounted() { 
   },
@@ -203,48 +163,69 @@ export default {
         return;
       }
       store.commit('SET_ISLOADING', true) 
+      const user = await firebase.auth().currentUser;
 
       let that = this;
-      const save = await store.dispatch('addUser',{
+      const save = await store.dispatch('updateUser',{
         params: that.form,
         callback: function(res){
-          console.log('新規登録に成功しました!!')
+          // console.log('ユーザー更新に成功しました!!',res)
+          user.updateProfile({
+            displayName: that.form.username,
+          }).then(function() {
+            setTimeout(function(){
+              store.dispatch('getUsers',
+                function(e){
+                  // console.log('ユーザー再取得OK')
+                  store.commit('SET_AUTH', user)
+                  that.$message({
+                    type: 'success',
+                    message: '会員情報を更新しました。',
+                  });
+                  that.$router.replace('/')
+                  store.commit('SET_ISLOADING', false)
+              });
+           },1000);
+          }).catch(function(error) {
+            // An error happened.
+            console.log('error.')
+          });
           return res;
         }
       });
-      // console.log(save)
+      
 
-      const f = await firebase.auth().createUserWithEmailAndPassword(this.form.email, this.form.password).then(
-        (user) => {
+      
+
+      // const f = await firebase.auth().createUserWithEmailAndPassword(this.form.email, this.form.password).then(
+      //   (user) => {
           
-          let currentUser = firebase.auth().currentUser;
-          console.log('OK', currentUser);
-          currentUser.updateProfile({
-            displayName: that.form.username,
-          }).then(function() {
+      //     let currentUser = firebase.auth().currentUser;
+      //     console.log('OK', currentUser);
+      //     currentUser.updateProfile({
+      //           displayName: that.form.username,
+      //     }).then(function() {
            
-          }).catch(function(error) {
-            // An error happened.
-          });
-
-          // 保留
-          currentUser.sendEmailVerification()
-          .then(() => {
-            that.$router.replace('/sendemail')
-          }).catch((err) => {
-            alert('EmailVerificationでerrが発生しました。', err)
-          })
+      //     }).catch(function(error) {
+      //       // An error happened.
+      //     });
+      //     currentUser.sendEmailVerification()
+      //     .then(() => {
+      //       that.$router.replace('/sendemail')
+      //     }).catch((err) => {
+      //       alert('EmailVerificationでerrが発生しました。', err)
+      //     })
           
-        },
-        (err) => {
-          let errorCode = err.code
-          let errorMessage = err.message
-          // console.log(errorCode)
-          if(errorCode=='auth/email-already-in-use') {
-            alert('emailは既に存在しています！');
-          }
-        }
-      )
+      //   },
+      //   (err) => {
+      //     let errorCode = err.code
+      //     let errorMessage = err.message
+      //     // console.log(errorCode)
+      //     if(errorCode=='auth/email-already-in-use') {
+      //       alert('emailは既に存在しています！');
+      //     }
+      //   }
+      // )
       
     },
     cancel() {

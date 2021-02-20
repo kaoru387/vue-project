@@ -1,114 +1,31 @@
 <template>
   <div :id='"my-container"+item.id'>
-    <!-- Our triggering (target) element -->
-    <!-- <div class="my-3">
-      <b-button id="popover-reactive-1" variant="primary" ref="button">
-        Reactive Content Using Slots
-      </b-button>
-    </div> -->
+      <v-list-item three-line>
+        <v-list-item-content :id='"popover-reactive-"+item.id' :ref='"item"+item.id'>
+          <v-list-item-subtitle :class="[item._context.viewApi.type=='timeGridDay' ? 'd-flex justify-content-start' : '']">
+            <p class="circle-icon" :style="{'background':item.extendedProps.iconColor}"></p>
+            <p v-if="item._context.viewApi.type=='dayGridMonth'" class="sample">{{ item.extendedProps.datetime }}</p>
+            <p v-if="item._context.viewApi.type!='dayGridMonth'">
+              {{ item.extendedProps.datetime }}<span class="pl-2">{{ item.extendedProps.studioName }}</span>
+            </p>
+            <!-- <i v-if="item._context.viewApi.type=='timeGridDay'" class="el-icon-circle-plus-outline ml-2" :style="{'color':'#F56C6C','font-weight': 800}" @click="payment(item.extendedProps)"></i> -->
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
 
-    <v-list-item three-line>
-      <v-list-item-content :id='"popover-reactive-"+item.id' :ref='"item"+item.id'>
-        <v-list-item-subtitle>
-          <p class="circle-icon" :style="{'background':item.extendedProps.iconColor}"></p>
-          <p v-if="item._context.viewApi.type=='dayGridMonth'" class="sample">{{ item.extendedProps.datetime }}</p>
-
-          <p v-if="item._context.viewApi.type!='dayGridMonth'">
-            {{ item.extendedProps.datetime }}<span class="pl-2">{{ item.extendedProps.studioName }}</span>
-          </p>
-        </v-list-item-subtitle>
-        <p v-if="item._context.viewApi.type=='timeGridDay'" class="pl-2">{{ item.extendedProps.description }}</p>
-      </v-list-item-content>
-    </v-list-item>
-
-    <!-- Output from the popover interaction -->
-    <!-- <b-card title="Returned values:" v-if="input1Return && input2Return">
-      <p class="card-text" :style='{"max-width": "300px", "z-index": item.id}'>
-        Name: <strong>{{ input1Return }}</strong><br>
-        Color: <strong>{{ input2Return }}</strong>
-      </p>
-    </b-card> -->
-
-    <!-- Our popover title and content render container -->
-    <!-- We use placement 'auto' so popover fits in the best spot on viewport -->
-    <!-- We specify the same container as the trigger button, so that popover is close to button -->
-    <b-popover
-      :target='"popover-reactive-"+item.id'
-      triggers="click"
-      :show.sync="popoverShow"
-      placement="auto"
-      :container='"my-container"+item.id'
-      ref="popover"
-      @show="onShow"
-      @shown="onShown"
-      @hidden="onHidden"
-    >
-      <template #title>
-        <b-button @click="onClose" class="close" aria-label="Close">
-          <span class="d-inline-block" aria-hidden="true">&times;</span>
-        </b-button>
-        <div>
-          <span>{{item.title}}</span><span v-if="item.extendedProps.user_id" class="ml-1">さん</span>
-        </div>
-      </template>
-
-      <div>
-        <!-- <b-form-group
-          label="Name"
-          label-for="popover-input-1"
-          label-cols="3"
-          :state="input1state"
-          class="mb-1"
-          description="Enter your name"
-          invalid-feedback="This field is required"
-        >
-          <b-form-input
-            ref="input1"
-            id="popover-input-1"
-            v-model="input1"
-            :state="input1state"
-            size="sm"
-          ></b-form-input>
-        </b-form-group>
-
-        <b-form-group
-          label="Color"
-          label-for="popover-input-2"
-          label-cols="3"
-          :state="input2state"
-          class="mb-1"
-          description="Pick a color"
-          invalid-feedback="This field is required"
-        >
-          <b-form-select
-            id="popover-input-2"
-            v-model="input2"
-            :state="input2state"
-            :options="options"
-            size="sm"
-          ></b-form-select>
-        </b-form-group> -->
-
-        <b-alert show class="small">
-          <strong>{{item.extendedProps.datetime}}</strong><br>
-          <span>{{item.extendedProps.studioName}}</span><br>
-          <span>{{item.extendedProps.description}}</span>
-          <!-- Name: <strong>{{ input1 }}</strong><br>
-          Color: <strong>{{ input2 }}</strong> -->
-        </b-alert>
-        <div v-if="item.extendedProps.user_id" class="d-flex justify-content-end">
-          <!-- <b-button @click="onClose" size="sm" variant="danger" class="mr-1">閉じる</b-button> -->
-          <b-button :disabled="!isTarget" @click="onOk" size="sm" variant="warning">予約取消</b-button>
-        </div>
-      </div>
-    </b-popover>
   </div>
 </template>
 
 <script>
 import store from '../store/app';
-import axios from "axios"
 import moment from "moment"
+import _ from 'lodash';
+
+// import Firebase from 'Firebase'
+// import firebase from "@firebase/app";
+// import axios from 'axios';
+// import { loadStripe } from '@stripe/stripe-js';
+// const stripePromise = loadStripe('pk_test_51HU17xEL8vDvw6C3KK8sAW82ZkUnlLo7pRjQWkoiMNjjJiiaHOsL6uEpaO7URE55CGJAu3KIxOIy06azOtFVxp8J006cwjspAu');
 
 export default {
   props: {
@@ -119,15 +36,6 @@ export default {
   },
   data() {
     return {
-      isTarget: false,
-      input1: '',
-      input1state: null,
-      input2: '',
-      input2state: null,
-      options: [{ text: '- Choose 1 -', value: '' }, 'Red', 'Green', 'Blue'],
-      input1Return: '',
-      input2Return: '',
-      popoverShow: false
     }
   },
   watch: {
@@ -142,21 +50,27 @@ export default {
       }
     }
   },
+  mounted: function () {
+    
+  },
   computed: {
     auth() {
       return store.state.auth;
     },
+    search() {
+      return store.state.search;
+    }
   },
   created: function () {
     // console.log(this.item.title)
-    let today = this.$moment().format('YYYY-MM-DD');
-    let target_date = moment(this.item.start).utc().format("YYYY-MM-DD");
-    if(today<=target_date){
-      if(this.item.extendedProps.user_id==this.auth.user_id) this.isTarget=true;
-    }
-
+    // let today = this.$moment().format('YYYY-MM-DD');
+    // let target_date = moment(this.item.start).utc().format("YYYY-MM-DD");
+    // if(today<=target_date){
+    //   if(this.item.extendedProps.user_id==this.auth.user_id) this.isTarget=true;
+    // }
   },
   methods: {
+    
     onClose() {
       this.popoverShow = false
     },
@@ -189,13 +103,17 @@ export default {
             const processA = async function() {
               await store.commit('SET_EVENTS', []);
               // 予約取得
-              await store.dispatch('getBookings')
+              await store.dispatch('getBookings',{
+                callback: function(res){
+                  console.log(res)
+                  store.commit('SET_ISLOADING', false)
+                }
+              });
               // クラス取得
               await store.dispatch('getClass',{})
             }
             const processAll = async function() {
               await processA()
-              store.commit('SET_ISLOADING', false)
 
             }
             processAll()
@@ -208,19 +126,6 @@ export default {
           message: '予約取消キャンセルしました。'
         });          
       });
-
-      // if (!this.input1) {
-      //   this.input1state = false
-      // }
-      // if (!this.input2) {
-      //   this.input2state = false
-      // }
-      // if (this.input1 && this.input2) {
-      //   this.onClose()
-      //   // Return our popover form results
-      //   this.input1Return = this.input1
-      //   this.input2Return = this.input2
-      // }
     },
     onShow() {
       // This is called just before the popover is shown

@@ -82,11 +82,12 @@ export default {
 	    let that = this;
 	    next(vm => {
 	    	
-	    	// 入会金支払い済の場合、戻る
-	    	if(store.state.auth.isAdmissionFee){
-	    		vm.$router.push({path: '/'})
-	    		return;
-	    	}
+	    	// console.log('入会金',store.state.auth.isAdmissionFee)
+	    	// // 入会金支払い済の場合、戻る
+	    	// if(store.state.auth.isAdmissionFee){
+	    	// 	vm.$router.push({path: '/'})
+	    	// 	return;
+	    	// }
 	    	// ログインチェック
 		    const processA = async function() {
 		      // ログインチェック
@@ -146,9 +147,14 @@ export default {
 	        await store.commit('SET_ISLOADING', true)
 	        await store.commit('SET_EVENTS', []);
 	        // 予約取得
-	        await store.dispatch('getBookings')
-	        // クラス取得
-	        await store.dispatch('getClass',{})
+	        await store.dispatch('getBookings',{
+	            callback: function(res){
+	              console.log(res)
+	              store.commit('SET_ISLOADING', false)
+	            }
+	          });
+	        // // クラス取得
+	        // await store.dispatch('getClass',{})
 	      }
 	      const processAll = async function() {
 	        await processA()

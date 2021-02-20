@@ -35,9 +35,8 @@
 <script>
 import store from '../store/app';
 import axios from "axios"
-
 import firebase from "../Firebase";
-// import firebase from "@firebase/app";
+import firebaseapp from "@firebase/app";
 // import firebaseui from "firebaseui-ja";
 
 // import { mdiAccount,mdiKey } from '@mdi/js'
@@ -106,7 +105,6 @@ export default {
   },
   mounted() {
     // console.log("Login_mounted");
-
     let that = this;
     var ui = firebase.authUI();
     var uiConfig = {
@@ -114,7 +112,7 @@ export default {
         signInSuccess: function(currentUser, credential, redirectUrl) {
           // サインイン成功時のコールバック関数
           // 戻り値で自動的にリダイレクトするかどうかを指定
-          alert('1')
+          console.log('1',currentUser)
           return true;
         },
         signInSuccessWithAuthResult: function(authResult, redirectUrl) {
@@ -124,35 +122,37 @@ export default {
           //     return true;
           // } else {
 
-            // 確認メールの有無
-            const mailFlag = authResult.user.emailVerified;
-            if (mailFlag === false) {
-              
-              // 確認メール未時に確認メール送信
-              firebase.auth().currentUser.sendEmailVerification()
-              .then(function() {
-                  // alert('登録メールを送信しました。メールが届いているかをご確認ください。');
-                  // URLリロード
-                  that.$router.replace('/sendemail')
-              })
-              .catch(function(error) {
-                console.log('error',error)
-                alert('登録に失敗しました!');
-                that.$router.replace('/')
-              });
+          // 確認メールの有無
+          const mailFlag = authResult.user.emailVerified;
+          if (mailFlag === false) {
+            
+            // 確認メール未時に確認メール送信
+            firebase.auth().currentUser.sendEmailVerification()
+            .then(function() {
+              // alert('登録メールを送信しました。メールが届いているかをご確認ください。');
+              // URLリロード
+              that.$router.replace('/sendemail')
+            })
+            .catch(function(error) {
+              console.log('error!',error)
+              // alert('登録に失敗しました!');
+              // that.$router.replace('/')
+            });
 
-            } else {
-              // 確認メール済時にメイン画面へ移動
-              return true;
-            }
+          } else {
+            // 確認メール済時にメイン画面へ移動
+            console.log('error')
+            return true;
+          }
 
           // }
           // alert('管理者に通知されました。登録メールが届くまで、しばらくお待ち下さい...');
           // that.$router.replace('/')
         },
         signInFailure: function(error) {
-          console.log('3')
-          alert('signin error')
+          console.log('not 3')
+
+          // alert('signin error')
           // Some unrecoverable error occurred during sign-in.
           // Return a promise when error handling is completed and FirebaseUI
           // will reset, clearing any UI. This commonly occurs for error code
@@ -161,7 +161,7 @@ export default {
           return handleUIError(error);
         },
         uiChanged: function (fromPageId, toPageId) {
-          // console.log('uiChanged isPendingRedirect: ', ui.isPendingRedirect())
+          console.log('uiChanged isPendingRedirect: ', ui.isPendingRedirect())
           // console.log('uiChanged fromPageId:', fromPageId)
           // console.log('uiChanged toPageId:', toPageId)
 
@@ -178,7 +178,6 @@ export default {
           //     that.$router.replace('/about');
           //   };
           // }
-
         },
         uiShown: function() {
           console.log('uiShown isPendingRedirect: ', ui.isPendingRedirect())
@@ -188,14 +187,18 @@ export default {
         }
       },
       // autoUpgradeAnonymousUsers: true,
-      // signInFlow: 'redirect',
-      signInFlow: 'popup',
+      signInFlow: 'redirect',
+      // signInFlow: 'popup',
       // Query parameter name for mode.
       queryParameterForWidgetMode: 'mode',
       // Query parameter name for sign in success url.
       queryParameterForSignInSuccessUrl: 'signInSuccessUrl',
       signInSuccessUrl: '/?mode=signedIn',
       signInOptions: firebase.signInOptions(),
+      // signInOptions: [
+      //   firebaseapp.auth.EmailAuthProvider.PROVIDER_ID,
+      //   firebaseapp.auth.PhoneAuthProvider.PROVIDER_ID,
+      // ],
       // tosUrl: '<your-tos-url>',
       // privacyPolicyUrl: '<your-privacy-policy-url>',
       // credentialHelper: firebase.credential()
@@ -206,6 +209,13 @@ export default {
       if (user) {
         ui.reset();
         that.isFirst=false;
+        // 最新取得
+        store.dispatch('getUsers',function(e){
+          setTimeout(function(){
+            store.commit('SET_AUTH', user)
+            store.commit('SET_ISLOADING', false)
+          },2000);
+        });
         // store.commit('SET_ISLOADING', false)
       }else{
         firebase.onAuth();

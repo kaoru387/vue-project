@@ -4,15 +4,10 @@ import router from './router'
 import store from "./store/app";
 
 require('./styles/style.scss')
-// require('@/assets/sass/main.scss')
 
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.min.css'
-// import '@mdi/font/css/materialdesignicons.css'
-// import 'material-design-icons-iconfont/dist/material-design-icons.css'
 Vue.use(Vuetify)
-
-// import vuetify from "./plugins/vuetify";
 
 import ElementUI from 'element-ui'
 import { Dialog } from 'element-ui'
@@ -20,64 +15,108 @@ import locale from 'element-ui/lib/locale/lang/ja'
 import 'element-ui/lib/theme-chalk/index.css'
 import 'element-ui/lib/theme-chalk/display.css'
 
-// import 'bootstrap/dist/css/bootstrap.css'
-// import 'bootstrap-vue/dist/bootstrap-vue.css'
 import BootstrapVue from "bootstrap-vue"
 import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap-vue/dist/bootstrap-vue.css"
 Vue.use(BootstrapVue)
 Vue.use(ElementUI, { locale })
-
-// import 'font-awesome/css/font-awesome.min.css'
-// import { library } from '@fortawesome/fontawesome-svg-core'
-// import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-// import { fas } from '@fortawesome/free-solid-svg-icons'
-// library.add(fas) // Include needed icons
-// Vue.component('font-awesome-icon', FontAwesomeIcon) // Register component globally
-
-// // iframe
-// import VueFriendlyIframe from 'vue-friendly-iframe';
-// Vue.use(VueFriendlyIframe);
-
-// カンマ区切り保留
-// Vue.filter('moneyDelimiter', function(value) {
-//  return value.toLocaleString();
-// });
-
-// import VueCookies from 'vue-cookies'
-// Vue.use(VueCookies)
-
 Vue.config.productionTip = false
 
-import Firebase from 'Firebase'
-import firebase from "@firebase/app";
-// import { firebaseConfig } from './config/firebase-config'
-// // import "firebaseui-ja/dist/firebaseui.css";
-// firebase.initializeApp(firebaseConfig)
-// Vue.use(firebase)
+// バリデーション
+import VeeValidate, { localize } from'vee-validate'
+import ja from 'vee-validate/dist/locale/ja.json';
+localize('ja',ja);
+Vue.use(localize)
+import { extend } from 'vee-validate';
+import { required, email, min } from 'vee-validate/dist/rules';
+extend('required', required);
+extend('email', email);
+extend('min', min);
 
+import firebase from "@firebase/app";
+import Firebase from 'Firebase'
 Firebase.init();
 
 // // 検証用
-// store.dispatch('getInfo',{
-// 	params: {},
+// store.dispatch('addAppointment',{
+// 	params: {
+// 	  start: '2021-02-12 09:00:00',
+// 	  finish: '2021-02-12 10:00:00',
+// 	  resource_id: 794202,
+// 	  price: 800,
+// 	},
 // 	callback: function(res){
-// 		console.log('test!!',res)
-// 		// store.commit('SET_ISLOADING', false) 
+// 	  // 初期化
+// 	  localStorage.setItem('OK', res);
+// 	  // window.location.href = '/';
 // 	}
 // });
 
-firebase.auth().onAuthStateChanged(user => {
-	// console.log('yaho')
+// Firestore db作成
+store.dispatch('getInfo',{
+// store.dispatch('addAppointment',{
+	params: {},
+	callback: function(res){
+
+		// _.forEach(store.state.result.bookings, function(v, k) {
+		// 	// ユーザマスター
+		// 	// Firebase.db().collection("balances").doc(v['email'])
+	 //  //         .set({
+	 //  //         	id: v['id'],
+	 //  //           name: v['email'],
+	 //  //       });
+
+	 //  		// 予約
+	 //        var washingtonRef = Firebase.db().collection("balances").doc(v['email']);
+		// 	washingtonRef.update({
+		// 	    bookings: firebase.firestore.FieldValue.arrayUnion({
+		// 	    	product_name: v['product_name'],
+		// 	    	date: v['date'],
+		// 	    	price: v['price'],
+		// 	    	start: v['start'],
+		// 	    	finish: v['finish'],
+		// 	    	created: v['created'],
+		// 	    })
+		// 	});
+			
+		// });
+
+		// // 料金マスター作成
+		// _.forEach(res, function(v, k) {
+  //         // console.log(v.id, k);
+  //         Firebase.db().collection("schedules").doc(v.name)
+  //         .set({
+  //         	id: v.id,
+  //           name: v.name,
+  //           type: 'resource',
+  //           group: 'mamber',
+  //           resources: {
+  //           	'1:00': {name:"1時間",price: 800},
+  //           	'1:30': {name:"1.5時間",price: 1200},
+  //           	'2:00': {name:"2時間",price: 1600}
+  //           }
+  //         });
+  //       })
+	}
+});
+
+Firebase.auth().onAuthStateChanged(user => {
+	// 
 	store.commit('SET_ISLOADING', true)
+	let that = this;
 	if (user) {
 		// ログイン情報
 		if (user.ma) {
 		  localStorage.setItem('jwt', user.ma);
 		} 
 		if (user.uid) {
-			store.commit('SET_AUTH', user);
-		 	store.commit('onUserStatusChanged', true) 
+
+			// メール認証済のみユーザ管理
+			if(user.emailVerified) {
+				// console.log('emailVerified')
+				store.commit('SET_AUTH', user);
+		 		store.commit('onUserStatusChanged', true)
+			}
 
 		 	// supersass
 		 	store.dispatch('getUsers',function(e){
@@ -94,20 +133,18 @@ firebase.auth().onAuthStateChanged(user => {
 		      			params: user,
 		      			callback: function(res){
 		      				console.log('新規登録に成功しました!!')
-		      				// store.commit('SET_ISLOADING', false) 
 		      			}
 		      		});
 		      		return;
 		      	}else{
 		      		// 存在する場合、権限を確認し保有（true:一般、false:会員）
 		      		if(!list[0].fk) store.commit('SET_AUTH_ROLE', false)
-		      		else store.commit('SET_AUTH_ROLE', true)
-
-		      		// checksum変換
+		      		else store.commit('SET_AUTH_ROLE', true)		      			
+	      			// checksum変換
 		      		store.dispatch('getMD5',{
 			      		params: list[0],
 			      		callback: function(res){
-			      			console.log('md5',res)
+			      			console.log('get md5')
 			      			store.commit('SET_AUTH_CHECKSUM', res) 
 			      		}
 			      	});
@@ -127,6 +164,7 @@ firebase.auth().onAuthStateChanged(user => {
 		}),
 		render: h => h(App)
 	}).$mount("#app");
+
 })
 
 
