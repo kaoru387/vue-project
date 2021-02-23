@@ -13,6 +13,7 @@ import VerifyEmailInvalid from '../views/VerifyEmailInvalid.vue'
 import Account from '../views/Account.vue'
 import ResetPassword from '../views/ResetPassword.vue'
 import EditAccount from '../views/EditAccount.vue'
+import Admin from '../views/Admin.vue'
 
 import store from "../store/app.js"
 import Firebase from "../Firebase"
@@ -53,15 +54,6 @@ const routes = [
     path: '/sendemail',
     name: 'sendemail',
     component: SendEmail,
-    // beforeEnter(to, from, next) {　//追記
-    //   let currentUserStatus = Firebase.auth().currentUser;
-    //   if(!currentUserStatus) return;
-    //   console.log('wa',currentUserStatus.emailVerified)
-    //   if(!currentUserStatus.emailVerified) {
-    //     next();
-    //   }
-    //   // 
-    // },
   },
   {
     path: '/resetpassword',
@@ -76,6 +68,11 @@ const routes = [
     // which is lazy-loaded when the route is visited.
     /* webpackChunkName: "about" */ 
     component: () => import('../views/About.vue')
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: Admin,
   },
   {
     path: "/admission", 

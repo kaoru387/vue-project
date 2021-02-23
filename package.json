@@ -17,6 +17,7 @@
     "@fullcalendar/timegrid": "^5.4.0",
     "@fullcalendar/vue": "^5.4.0",
     "@stripe/stripe-js": "^1.12.1",
+    "@team-decorate/vue-line-login": "^1.3.0",
     "@vue-stripe/vue-stripe": "^4.1.1",
     "@zeit/next-css": "^1.0.1",
     "axios": "^0.21.1",

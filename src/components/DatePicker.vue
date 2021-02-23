@@ -4,6 +4,12 @@
       <v-btn icon color="primary" dark elevation="0" v-on="on">
         <v-icon>mdi-calendar</v-icon>
       </v-btn>
+      <!-- <v-icon 
+        class="pt-1"
+        large
+        color="#03BFA5"
+        :style="{'font-size':'20px'}"
+      >mdi-check-circle</v-icon> -->
     </template>
     <v-date-picker v-model="picker"
       locale="ja-jp"

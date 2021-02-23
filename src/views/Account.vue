@@ -1,22 +1,7 @@
 <template>
-  <!-- <div class="login">
-    <form method="post" action="https://www.supersaas.com/api/users">
-      <input type="hidden" name="account" value="susture"/>
-      <input type="hidden" name="id" value="1234fk"/> 
-      <input type="hidden" name="user[name]" value="A@susture.com"/>
-      <input type="hidden" name="user[full_name]" value="生徒A"/>
-      <input type="hidden" name="user[email]" value="A@susture.com"/>
-      <input type="hidden" name="user[mobile]" value=""/>
-      <input type="hidden" name="user[address]" value=""/>
-      <input type="hidden" name="checksum" value="1e5dcff50bb5f9a5273602b25a2f0d41"/>
-      <input type="hidden" name="after" value="experience"/>
-      <input type="submit" value="Book now"/>
-    </form>
-  </div> -->
   <div>
-    <!-- <div id="firebaseui-auth-container"></div> -->
-    <!-- <div id="loader">Loading...</div> -->
     <v-card 
+      max-width="360px"
       :tile="$vuetify.breakpoint.sm || $vuetify.breakpoint.xs"
       :style="{'margin':'0 auto'}"
       >
@@ -64,7 +49,7 @@
                     name="ユーザー名"
                     label="ユーザー名"
                     type="text"
-                    v-model="form.username"
+                    v-model="form.full_name"
                     :error-messages="prop.errors[0]"
                   ></v-text-field>
                 </validation-provider> 
@@ -170,9 +155,10 @@ export default {
     return {
       loading: false,
       form: {
-        email: "",
+        // email: "",
         password: "",
-        username: "",
+        full_name: "",
+        name: "",
         address:"",
         phone:"",
       },
@@ -214,37 +200,37 @@ export default {
       });
       // console.log(save)
 
-      const f = await firebase.auth().createUserWithEmailAndPassword(this.form.email, this.form.password).then(
-        (user) => {
+      // const f = await firebase.auth().createUserWithEmailAndPassword(this.form.email, this.form.password).then(
+      //   (user) => {
           
-          let currentUser = firebase.auth().currentUser;
-          console.log('OK', currentUser);
-          currentUser.updateProfile({
-            displayName: that.form.username,
-          }).then(function() {
+      //     let currentUser = firebase.auth().currentUser;
+      //     console.log('OK', currentUser);
+      //     currentUser.updateProfile({
+      //       displayName: that.form.username,
+      //     }).then(function() {
            
-          }).catch(function(error) {
-            // An error happened.
-          });
+      //     }).catch(function(error) {
+      //       // An error happened.
+      //     });
 
-          // 保留
-          currentUser.sendEmailVerification()
-          .then(() => {
-            that.$router.replace('/sendemail')
-          }).catch((err) => {
-            alert('EmailVerificationでerrが発生しました。', err)
-          })
+      //     // 保留
+      //     currentUser.sendEmailVerification()
+      //     .then(() => {
+      //       that.$router.replace('/sendemail')
+      //     }).catch((err) => {
+      //       alert('EmailVerificationでerrが発生しました。', err)
+      //     })
           
-        },
-        (err) => {
-          let errorCode = err.code
-          let errorMessage = err.message
-          // console.log(errorCode)
-          if(errorCode=='auth/email-already-in-use') {
-            alert('emailは既に存在しています！');
-          }
-        }
-      )
+      //   },
+      //   (err) => {
+      //     let errorCode = err.code
+      //     let errorMessage = err.message
+      //     // console.log(errorCode)
+      //     if(errorCode=='auth/email-already-in-use') {
+      //       alert('emailは既に存在しています！');
+      //     }
+      //   }
+      // )
       
     },
     cancel() {

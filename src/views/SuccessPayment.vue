@@ -96,6 +96,7 @@ export default {
         const session = res.data
         if(session.payment_status=='paid'){
           params.email=session.customer_details.email;
+          
           // Sucpersass予約
           store.dispatch('addAppointment', {
             params: params,

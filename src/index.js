@@ -58,28 +58,28 @@ store.dispatch('getInfo',{
 	params: {},
 	callback: function(res){
 
-		// _.forEach(store.state.result.bookings, function(v, k) {
-		// 	// ユーザマスター
-		// 	// Firebase.db().collection("balances").doc(v['email'])
-	 //  //         .set({
-	 //  //         	id: v['id'],
-	 //  //           name: v['email'],
-	 //  //       });
+		_.forEach(store.state.result.bookings, function(v, k) {
+			// ユーザマスター
+			// Firebase.db().collection("balances").doc(v['email'])
+	  //         .set({
+	  //         	id: v['id'],
+	  //           name: v['email'],
+	  //       });
 
-	 //  		// 予約
-	 //        var washingtonRef = Firebase.db().collection("balances").doc(v['email']);
-		// 	washingtonRef.update({
-		// 	    bookings: firebase.firestore.FieldValue.arrayUnion({
-		// 	    	product_name: v['product_name'],
-		// 	    	date: v['date'],
-		// 	    	price: v['price'],
-		// 	    	start: v['start'],
-		// 	    	finish: v['finish'],
-		// 	    	created: v['created'],
-		// 	    })
-		// 	});
+	  // 		// 予約
+	  //       var washingtonRef = Firebase.db().collection("balances").doc(v['email']);
+			// washingtonRef.update({
+			//     bookings: firebase.firestore.FieldValue.arrayUnion({
+			//     	product_name: v['product_name'],
+			//     	date: v['date'],
+			//     	price: v['price'],
+			//     	start: v['start'],
+			//     	finish: v['finish'],
+			//     	created: v['created'],
+			//     })
+			// });
 			
-		// });
+		});
 
 		// // 料金マスター作成
 		// _.forEach(res, function(v, k) {
@@ -110,47 +110,60 @@ Firebase.auth().onAuthStateChanged(user => {
 		  localStorage.setItem('jwt', user.ma);
 		} 
 		if (user.uid) {
-
 			// メール認証済のみユーザ管理
 			if(user.emailVerified) {
 				// console.log('emailVerified')
-				store.commit('SET_AUTH', user);
+				// store.commit('SET_AUTH', user);
 		 		store.commit('onUserStatusChanged', true)
 			}
-
+			store.commit('SET_AUTH', user);
+			
+			//---------------
 		 	// supersass
+		 	//---------------
+		 	// ログイン名取得
+			let name = user.email;
+			if(user.email==null) name = user.phoneNumber;
+
 		 	store.dispatch('getUsers',function(e){
 		 		// supersassに存在するかチェック
 		      	let list = _.filter(e, function(o) {
-		            if(user.email==o.name){
+		            if(name==o.name){
 		              return o;
 		            }
 		        });
-		        // console.log(user,e)
 		      	if(list.length==0){
+		      		let newUser = {
+		      			'full_name': user.username,
+			            'name': name,
+			            'password': user.password,
+			            'phone': user.phone,
+			            'address': user.address,
+		      		}
 		      		// 存在しない場合、新規登録する
 		      		store.dispatch('addUser',{
-		      			params: user,
+		      			params: newUser,
 		      			callback: function(res){
-		      				console.log('新規登録に成功しました!!')
+		      				console.log('新規登録に成功しました!!',res)
 		      			}
 		      		});
 		      		return;
 		      	}else{
+		      		console.log(list[0])
 		      		// 存在する場合、権限を確認し保有（true:一般、false:会員）
 		      		if(!list[0].fk) store.commit('SET_AUTH_ROLE', false)
-		      		else store.commit('SET_AUTH_ROLE', true)		      			
+		      		else store.commit('SET_AUTH_ROLE', true)
+
 	      			// checksum変換
 		      		store.dispatch('getMD5',{
 			      		params: list[0],
 			      		callback: function(res){
-			      			console.log('get md5')
+			      			// console.log('get md5',res)
 			      			store.commit('SET_AUTH_CHECKSUM', res) 
 			      		}
 			      	});
 		      	}
 		 	});
-			
 		} else {
 		 	store.commit('onUserStatusChanged', false)
 		}

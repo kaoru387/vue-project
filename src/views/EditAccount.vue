@@ -3,6 +3,7 @@
     <!-- <div id="firebaseui-auth-container"></div> -->
     <!-- <div id="loader">Loading...</div> -->
     <v-card 
+      max-width="360px"
       :tile="$vuetify.breakpoint.sm || $vuetify.breakpoint.xs"
       :style="{'margin':'0 auto'}"
       >
@@ -22,7 +23,7 @@
                     name="ユーザー名"
                     label="ユーザー名"
                     type="text"
-                    v-model="form.username"
+                    v-model="form.full_name"
                     :error-messages="prop.errors[0]"
                   ></v-text-field>
                 </validation-provider> 
@@ -131,7 +132,7 @@ export default {
         providerId: "",
         uid: "",
         email: "",
-        username: "",
+        full_name: "",
         address:"",
         phone:"",
       },
@@ -147,7 +148,7 @@ export default {
     let that = this;
     let auth = store.state.auth;
     that.form.email = auth.email;
-    that.form.username = auth.username;
+    that.form.full_name = auth.username;
     that.form.address = auth.address;
     that.form.phone = auth.phone;
 
@@ -171,7 +172,7 @@ export default {
         callback: function(res){
           // console.log('ユーザー更新に成功しました!!',res)
           user.updateProfile({
-            displayName: that.form.username,
+            displayName: that.form.full_name,
           }).then(function() {
             setTimeout(function(){
               store.dispatch('getUsers',

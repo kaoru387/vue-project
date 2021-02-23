@@ -9,18 +9,17 @@
       >
         <!-- <v-app-bar-nav-icon></v-app-bar-nav-icon> -->
         <v-toolbar-title class="p-0" :style="{'color':'white'}">スタジオ予約</v-toolbar-title>
-        <!-- <div class="text-left ml-1">
+        <div class="text-left ml-1">
             <v-btn
-              v-if="auth.emailVerified"
               icon
               color="green"
               @click="reload"
             >
               <v-icon>mdi-cached</v-icon>
             </v-btn>
-        </div> -->
+        </div>
         <v-spacer></v-spacer>
-        <v-btn
+        <!-- <v-btn
           :disabled="auth.username=='' || !auth.emailVerified"
           v-if="auth.isAdmissionFee"
           class="ma-1"
@@ -30,7 +29,7 @@
           @click="openShop"
         >
           <v-icon>{{ mdiCartVariant }}</v-icon>
-        </v-btn>
+        </v-btn> -->
         <!-- <v-btn
           v-if="auth.username!=='' && !auth.isAdmissionFee && auth.emailVerified"
           class="ma-1"
@@ -54,12 +53,12 @@
           </template>
           <span>入会金</span>
         </v-tooltip> -->
-        <!-- <a v-if="auth.username==''" class="text-decoration-underline sample" :style="{'color':'white !important'}" @click="openModal">
-          新規会員登録
-        </a> -->
-        <router-link class="nav-link" :to="{ name:'account'}" active-class="active" exact>
+        <a v-if="auth.username==''" class="text-decoration-underline sample" :style="{'color':'white !important'}" @click="openModal">
+          ログイン
+        </a>
+        <!-- <router-link class="nav-link" :to="{ name:'account'}" active-class="active" exact>
           <a v-if="auth.username==''" class="text-decoration-underline sample" :style="{'color':'white !important'}">会員新規登録</a>
-        </router-link>
+        </router-link> -->
         <v-menu
           :disabled="loading"
           bottom
@@ -70,12 +69,13 @@
             <div class="outer">
               <div class="sample" :style="{'color':'white'}">
                 <div v-if="auth.username!==''" class="d-flex align-items-start flex-column bd-highlight">
-                  <div class="p-0 bd-highlight ml-auto">{{ auth.username }}<span class="sample">さん</span></div>
+                  <div class="p-0 bd-highlight ml-auto">
+                    <span v-if="auth.username==null"　class="text-decoration-underline" @click="editAccount">ユーザー</span>
+                    <span v-else class="text-decoration-underline" @click="editAccount">{{ auth.username }}</span>
+                    <span class="sample">さん</span>
+                  </div>
                   <div class="p-0 bd-highlight">ポイント:<span class="ml-1">{{ auth.credit.toLocaleString() }}</span></div>
                 </div>
-                <!-- <a v-else class="text-decoration-underline" :style="{'color':'white !important'}" @click="openModal">
-                  ログイン
-                </a> -->
               </div>
               <v-btn
                 dark
@@ -88,14 +88,20 @@
             </div>
           </template>
           <v-list class="text-left pl-2">
-            <v-list-item>
+            <!-- <v-list-item>
               <v-list-item-title v-if="auth.username==''" @click="openModal">ログイン</v-list-item-title>
-            </v-list-item>
+            </v-list-item> -->
             <v-list-item>
+              <v-list-item-title v-if="auth.isLine" :style="{'color':'white'}">LINE友達</v-list-item-title>
+            </v-list-item>
+            <!-- <v-list-item>
               <v-list-item-title v-if="auth.username!=='' && auth.emailVerified" @click="editAccount">会員情報</v-list-item-title>
-            </v-list-item>
+            </v-list-item> -->
+            <!-- <v-list-item>
+              <v-list-item-title @click="openMaster">管理者</v-list-item-title>
+            </v-list-item> -->
             <v-list-item>
-              <v-list-item-title v-if="auth.username!=='' && auth.emailVerified" @click="logout">ログアウト</v-list-item-title>
+              <v-list-item-title v-if="(auth.username!=='' && auth.emailVerified) || auth.username==null" @click="logout">ログアウト</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -138,6 +144,7 @@
   import store from './store/app';
   import axios from "axios"
   import { mdiAccount, mdiKey, mdiCartVariant, mdiCardAccountDetailsOutline } from '@mdi/js'
+  import moment from 'moment-timezone'
   import Firebase from "Firebase";
   import firebase from "@firebase/app";
   // import ModalShop from './components/ModalShop'
@@ -195,6 +202,9 @@ export default {
     info() {
       return store.state.info;
     },
+    // supersass() {
+    //   return store.state.auth.supersass;
+    // }
   },
   mounted() {
     // console.log('mute')
@@ -329,24 +339,9 @@ export default {
       processAll()
 
     },
-    // resetPassword() {
-    //   // store.commit('SET_ISLOADING', true)
-    //   // this.$router.push({path: '/resetpassword'});
-    //   let that = this;
-    //   var auth = Firebase.auth();
-    //   var emailAddress = that.auth.email;
-    //   auth.sendPasswordResetEmail(emailAddress).then(function() {
-    //     // Email sent.
-    //     store.commit('SET_RESET_PASSWORD', true)
-    //     that.$message({
-    //       type: 'success',
-    //       message: 'パスワード再設定メールを送信しました。メールが届いているかをご確認ください。',
-    //     });
-    //   }).catch(function(error) {
-    //     // An error happened.
-    //   });
-
-    // },
+    openMaster() {
+      this.$router.push({path: '/admin'});
+    },
     editAccount() {
       // store.commit('SET_ISLOADING', true)
       this.$router.push({path: '/editaccount'});
@@ -372,9 +367,8 @@ export default {
             if(res) store.commit('SET_ISLOADING', false)
           }
         });
-        // クラス取得
-        await store.dispatch('getClass',{})
-        
+        // // クラス取得
+        // await store.dispatch('getClass',{})
       }
       const processAll = async function() {
         await processA()
