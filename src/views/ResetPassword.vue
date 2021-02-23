@@ -1,8 +1,8 @@
 <template>
   <div>
     <div id="firebaseui-auth-container"></div>
-
     <v-card 
+      max-width="360px"
       :tile="$vuetify.breakpoint.sm || $vuetify.breakpoint.xs"
       :style="{'margin':'0 auto'}"
       >

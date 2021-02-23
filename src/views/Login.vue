@@ -116,34 +116,33 @@ export default {
           return true;
         },
         signInSuccessWithAuthResult: function(authResult, redirectUrl) {
-          console.log('2')
+          console.log('providerId',authResult.additionalUserInfo.providerId)
           // // 認証種類判定
           // if (authResult.additionalUserInfo.providerId === 'twitter.com') {
           //     return true;
           // } else {
+          //   // 確認メールの有無
+          //   const mailFlag = authResult.user.emailVerified;
+          //   if (mailFlag === false) {
+              
+          //     // 確認メール未時に確認メール送信
+          //     firebase.auth().currentUser.sendEmailVerification()
+          //     .then(function() {
+          //       // alert('登録メールを送信しました。メールが届いているかをご確認ください。');
+          //       // URLリロード
+          //       that.$router.replace('/sendemail')
+          //     })
+          //     .catch(function(error) {
+          //       console.log('error!',error)
+          //       // alert('登録に失敗しました!');
+          //       // that.$router.replace('/')
+          //     });
 
-          // 確認メールの有無
-          const mailFlag = authResult.user.emailVerified;
-          if (mailFlag === false) {
-            
-            // 確認メール未時に確認メール送信
-            firebase.auth().currentUser.sendEmailVerification()
-            .then(function() {
-              // alert('登録メールを送信しました。メールが届いているかをご確認ください。');
-              // URLリロード
-              that.$router.replace('/sendemail')
-            })
-            .catch(function(error) {
-              console.log('error!',error)
-              // alert('登録に失敗しました!');
-              // that.$router.replace('/')
-            });
-
-          } else {
-            // 確認メール済時にメイン画面へ移動
-            console.log('error')
-            return true;
-          }
+          //   } else {
+          //     // 確認メール済時にメイン画面へ移動
+          //     console.log('error')
+          //     return true;
+          //   }
 
           // }
           // alert('管理者に通知されました。登録メールが届くまで、しばらくお待ち下さい...');
@@ -194,11 +193,11 @@ export default {
       // Query parameter name for sign in success url.
       queryParameterForSignInSuccessUrl: 'signInSuccessUrl',
       signInSuccessUrl: '/?mode=signedIn',
-      signInOptions: firebase.signInOptions(),
-      // signInOptions: [
-      //   firebaseapp.auth.EmailAuthProvider.PROVIDER_ID,
-      //   firebaseapp.auth.PhoneAuthProvider.PROVIDER_ID,
-      // ],
+      // signInOptions: firebase.signInOptions(),
+      signInOptions: [
+        firebaseapp.auth.EmailAuthProvider.PROVIDER_ID,
+        firebaseapp.auth.PhoneAuthProvider.PROVIDER_ID,
+      ],
       // tosUrl: '<your-tos-url>',
       // privacyPolicyUrl: '<your-privacy-policy-url>',
       // credentialHelper: firebase.credential()

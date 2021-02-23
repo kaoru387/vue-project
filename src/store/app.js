@@ -36,6 +36,7 @@ const parser = new xml2js.Parser({
         explicitArray: false
       });
 import firebase from "@firebase/app";
+import Firebase from "Firebase";
 
 // const debug = process.env.NODE_ENV !== 'production'
 const debug = process.env.NODE_ENV !== 'development'
@@ -45,6 +46,7 @@ const state = {
       events: [],
       users: [],
       bookings: [],
+      charges: [],
       schedules: [],
       resources: [],
       myschedules: [],
@@ -73,10 +75,12 @@ const state = {
       email: '',
       checksum: '',
       isMember: false,
-      credit: 0,
+      credit: '0',
       supersass: supersassConfig,
-      isAdmissionFee: true,
-      verifyEmail: false
+      isAdmissionFee: false,
+      verifyEmail: false,
+      emailVerified: false,
+      isLine: false
     },
     authStatus: false,
     info: {
@@ -92,13 +96,12 @@ const state = {
 
 const actions = {
   getMD5: (store,{params,callback}) => {
-    // console.log('md',store.state.auth.email,params)
     try {
       const processA = async function() {
         const httpEvent = firebase.functions().httpsCallable('getHash');
         await httpEvent({ 
           // name: 'susturesusture2525'+store.state.auth.email,
-          name: supersassConfig.account+supersassConfig.password+params.email,
+          name: supersassConfig.account+supersassConfig.password+params.name,
           headers: {
             "Accept": "application/json",
             "Content-Type": "application/json; charset=utf-8",
@@ -117,45 +120,24 @@ const actions = {
     }
   },
   getInfo: (store,{params,callback}) => {
+    callback(params);
+  },
+  getCharges: (store,{params,callback}) => {
     try {
-
-      // console.log('wa')
-        // const sessionId=session.sessionData.id;
-        // console.log(session.sessionData)
-        // const result = stripe.redirectToCheckout({
-        //   sessionId: sessionId,
-        // });
-        // if (result.error) {
-        //   console.log(result.error.message);
-        // }
-
-        // const httpEvent = firebase.functions().httpsCallable('getSSass');
-        // await httpEvent({ 
-        //   path: '/resources',
-        //   // path: '/schedules',
-        //   params: {
-        //     schedule_id: supersassConfig.resourceId,
-        //     account: supersassConfig.account,
-        //     api_key: supersassConfig.apiKey,
-        //   },
-        //   headers: {
-        //     "Access-Control-Allow-Credentials": "true",
-        //     "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.password),
-        //     "Accept": "application/json",
-        //     "Content-Type": "application/json; charset=utf-8",
-        //     "Access-Control-Allow-Origin": "*",
-        //   }
-        // }).then((res) => {
-        //   console.log('schedules',res);
-        //   callback(res.data)
-        //   // store.commit('SET_USERS', res.data)
-        // });
-        callback(params);
-      // }
-      // const processAll = async function() {
-      //   await processA()
-      // }
-      // processAll()
+      const processA = async function() {
+        const httpEvent = firebase.functions().httpsCallable('getChargeStripe');
+        await httpEvent({ 
+          params: {
+            params
+          }
+        }).then((res) => {
+          store.commit('SET_CHARGES', res.data.data)
+        });
+      }
+      const processAll = async function() {
+        await processA()
+      }
+      processAll()
     } catch(error){
       console.log(error)
     }
@@ -217,9 +199,10 @@ const actions = {
           // xml to json
           let my=[];
           parser.parseString(res2.data, function (err, result) {
+            store.commit('SET_BOOKINGS', result.bookings)
             _.forEach(result.bookings, function(booking, k) {
               _.forEach(booking, function(v, k2) {
-                if(params.user_email==v.full_name){
+                if(params.user_email==v.full_name) {
                   // console.log(v)
                   let _start = moment(v.start._).format("HH:mm");
                   let _finish = moment(v.finish._).format("HH:mm");
@@ -234,10 +217,8 @@ const actions = {
                     created: v.created_on._,
                     resource_id: v.schedule.$.id
                   })
-
                 }
               })
-              
             });
           })
           store.state.result.myschedules=my;
@@ -336,10 +317,32 @@ const actions = {
     store.commit('SET_ISLOADING', true)
     let dt = moment(params.date).format("YYYY-MM-DD");
     let dt2 = moment(dt + " " + params.time +":00").format("YYYY-MM-DD HH:mm:ss");  
+
+    console.log(params.document);
+    // 料金取得
+    let price = 0;
+    Firebase.db().collection("schedules").doc(params.document)
+    .get().then(function(querySnapshot) {
+        if (querySnapshot.exists) {
+          let resource = querySnapshot.data()
+          price = resource.resources[params.time_zone].price
+
+          // 決済以外（ポイント精算）
+          let credit = store.state.auth.credit;
+          if(credit<=price) store.state.search.is_stripe = true;
+
+        } else {
+            // doc.data() will be undefined in this case
+            console.log("No such document!");
+        }
+    }).catch(function(error) {
+        console.log("Error getting document:", error);
+    });
+
     // 初期化
     store.commit('SET_SELECT_RESOURCES', [])
     try {
-      const processA = async function(schedule_id,color) {
+      const processA = async function(schedule_id) {
         const httpEvent = firebase.functions().httpsCallable('getSSass');
         await httpEvent({ 
           path: '/free/'+schedule_id+'.json',
@@ -347,8 +350,8 @@ const actions = {
             from: dt2,
             checksum: supersassConfig.checksum,
             length: params.time_zone,
-            resource: params.studio,
-            // maxresults: 20,
+            resource: params.studio_name,
+            maxresults: 40,
           },
           headers: {
             "Accept": "application/json",
@@ -358,51 +361,49 @@ const actions = {
         }).then((res) => {
           let _resources = [];
           _.forEach(res.data.slots, function(v, k) {
-            let _start = moment(v.start).format("HH:mm");
-            let _finish = moment(v.start).add(Number(params.hour), 'h').format("HH:mm");
+            let _start_time = moment(v.start).format("HH:mm");
+            let _finish_time = moment(v.start).add(Number(params.hour), 'h').format("HH:mm");
+            let _finish = moment(v.start).add(Number(params.hour), 'h').format("YYYY-MM-DD HH:mm:ss");
+
+            let color = supersassConfig.nagoColor;
+            if(params.studio_name=="コザスタジオ") {
+              // コザ
+              color = supersassConfig.kozaColor;
+            }
+
             _resources.push({
               id: v.id,
-              title: v.name,
+              title: params.studio_name+' '+ params.hour+'時間 '+params.use_type+' ¥'+price,
               start: v.start,
-              end: v.finish,
-              datetime: _start+'〜'+_finish,
-              description: 'ok',
-              // isMember:isMember,
+              end: _finish,
+              // description: studioname,
+              datetime: _start_time+'〜'+_finish_time,
               studioName: v.name,
-              iconColor: color,
-              color: color,
+              price: price,
+              hour: params.hour,
+              use_type: params.use_type,
+              borderColor: color,
+              color: 'white',
               fontColor: 'black',
               display: '',
-              isReserve: false,
-              // allDay: true
+              // created: v['created-on']['_'],
+              // user_id: v['user-id']['_'],
+              allDay: false
             })
           });
-
-          store.commit('SET_SELECT_RESOURCES', _resources)
-          callback(res.data)
+          // store.commit('SET_SELECT_RESOURCES', _resources)
+          callback(_resources)
           // store.commit('SET_USERS', res.data)
         });
       }
 
       // コザクラス
       const processAll = async function() {
-        // await processA(535055,'コザスタジオ','#F3C857')
-        // await processA(550120,'コザクラス','tomato')
-        await processA(549839, '#F3C857')
+        await processA(549839)
       }
-      processAll()
-      .then(code => {
-        // // ナゴクラス
-        // const processAll2 = async function() {
-        //   // await processA(548481,'ナゴスタジオ','#9DC0AC')
-        //   await processA(550127,'ナゴクラス','blue')
-        // }
-        // processAll2().then(code2 => {
-        //   store.commit('SET_ISLOADING', false)
-        //   console.log('success')
-        //   return 'success';
-        // })
-      })
+      setTimeout(function(){
+        processAll()
+      },1200);
       
     } catch(error){
       console.log(error)
@@ -434,7 +435,7 @@ const actions = {
               store.state.result.bookings=[];
               _.forEach(_datas, function(reservations, k) {
                 _.forEach(reservations, function(v, key) {
-                  // console.log('booking-',v['field-2'])
+                  // console.log('booking-',v)
                   if(!v['res-name']) return;  // 削除された場合、表示しない
 
                   let description = v['status-message'];
@@ -442,13 +443,11 @@ const actions = {
                   let _finish = moment(v['finish']['_']).utc().format("HH:mm");
 
                   // コザが含まれているか検索
-                  let iconColor = '#9DC0AC';
-                  let color = '#9DC0AC';
+                  let color = supersassConfig.nagoColor;
                   var result = v['res-name'].indexOf('コザ');
-                  if(result==-1) {
+                  if(result!==-1) {
                     // コザ
-                    iconColor = '#F3C857';
-                    color = '#F3C857';
+                    color = supersassConfig.kozaColor;
                   }
                   let allDay=false;
                   let title=v['full-name'];
@@ -457,10 +456,11 @@ const actions = {
                   let index = _.findIndex(store.state.result.users, function(o) { 
                     return o.name == v['full-name']; 
                   })
-                  if(index==-1) {
-                    // 一般
-                    iconColor = '#ffb6c1'
-                    color = '#ffb6c1'
+                  if(index!=-1) {
+                    title = store.state.result.users[index]['full_name']+'さん';
+                    // // 一般
+                    // iconColor = '#ffb6c1'
+                    // color = '#ffb6c1'
                     // title = "一般"
                     // // 一般且つ承認待ちの場合
                     // if(v['status-message']=='承認待ち') {
@@ -476,7 +476,9 @@ const actions = {
 
                   let price = 0;
                   let obj2 = Object.prototype.toString.call(v['field-1'])
-                  if(obj2 == '[object String]') price = v['field-1'];
+                  if(obj2 == '[object String]') {
+                    price = "¥"+v['field-1']
+                  }
                   
                   store.state.result.bookings.push({
                     id: v['id']['_'],
@@ -488,20 +490,20 @@ const actions = {
                     finish: _finish,
                     created: moment(v['created-on']['_']).utc().format("YYYY-MM-DD"),
                   });
+
                   // Firestore更新用-end
-                  
                   store.state.result.events.push({
                     id: v['id']['_'],
-                    title: title,
+                    title: title+' '+price,
                     start: v['start']['_'],
                     end: v['finish']['_'],
                     description: description,
                     datetime: _start+'〜'+_finish,
                     // isMember:isMember,
                     studioName: v['res-name'],
-                    iconColor: iconColor,
+                    iconColor: color,
                     color: color,
-                    fontColor: 'black',
+                    // textColor: 'black',
                     display: '',
                     // isReserve: true,
                     created: v['created-on']['_'],
@@ -513,6 +515,7 @@ const actions = {
               })
             });
             callback(true)
+
           });
         }
 
@@ -521,6 +524,43 @@ const actions = {
           await processA(549839)
         }
         processAll()
+
+
+        let today = moment().format('YYYY-MM-DD');
+        for (let i = 0; i < 60; i++) {
+          let dt = moment(today).add(i, 'd').format("YYYY-MM-DD");
+          
+          store.state.result.events.push({
+            id: 'dummy',
+            title: 'ナゴ空き時間',
+            start: dt+' 06:00:00',
+            end: dt,
+            description: 'test',
+            studioName: 'ナゴスタジオ',
+            iconColor: supersassConfig.nagoColor,
+            borderColor: supersassConfig.nagoColor,
+            color: 'white',
+            textColor: supersassConfig.nagoColor,
+            created: dt,
+            allDay: true
+          });
+          store.state.result.events.push({
+            id: 'dummy',
+            title: 'コザ空き時間',
+            start: dt+' 08:00:00',
+            end: dt,
+            description: 'test',
+            studioName: 'コザスタジオ',
+            iconColor: supersassConfig.kozaColor,
+            borderColor: supersassConfig.kozaColor,
+            color: 'white',
+            textColor: supersassConfig.kozaColor,
+            created: dt,
+            allDay: true
+          });
+          
+        }
+
       } catch(error){
         console.log(error)
       }
@@ -650,8 +690,8 @@ const actions = {
             // password:'jmlLq1BhwucEkul_WgmSOA',
             account: supersassConfig.account,
             password: supersassConfig.apiKey,
-            'user[full_name]': params.username,
-            'user[name]': params.email,
+            'user[full_name]': params.full_name,
+            'user[name]': params.name,
             'user[password]': params.password,
             'user[phone]': params.phone,
             'user[address]': params.address,
@@ -718,6 +758,8 @@ const actions = {
           params: {
             notfound: 'ignore',
             'user[email]': store.state.auth.email,
+            'user[name]': store.state.auth.email,
+            'user[full_name]': params.full_name,
             'user[address]': params.address,
             'user[phone]': params.phone,
           },
@@ -794,6 +836,7 @@ const mutations = {
     state.info.isSafariLogin = false
     state.auth.emailVerified=false
     state.result.myschedules=[]
+    state.auth.isAdmissionFee = false;
   },
   onUserStatusChanged(state, status) {
     state.authStatus = status;
@@ -804,8 +847,11 @@ const mutations = {
   SET_SERVICE_RESOURCES (state, data) {
     state.result.service_resources = data
   },
-  SET_NONMEMBERS (state, data) {
-    state.result.nonMembers = data
+  SET_BOOKINGS (state, data) {
+    state.result.bookings = data
+  },
+  SET_CHARGES (state, data) {
+    state.result.charges = data
   },
   SET_SCHEDULES (state, data) {
     state.result.schedules = data
@@ -825,35 +871,57 @@ const mutations = {
   SET_AUTH (state, auth){
     
     state.auth.username = auth.displayName;
-    state.auth.email = auth.email
-    state.auth.isAdmissionFee = true;
-    state.auth.emailVerified=auth.emailVerified;
+    if(auth.email==null){
+      state.auth.email = auth.phoneNumber;
+      state.auth.emailVerified=true;
+    }else{
+      state.auth.email = auth.email
+      state.auth.emailVerified=auth.emailVerified;
+    }
+    
+    
     // state.info.isSafariLogin = false;
     // console.log('get auth',auth)
 
     // イベント取得
+    let name = auth.email;
+    if(auth.email==null) name = auth.phoneNumber;
     let index = _.findIndex(state.result.users, function(o){
-      return o.name==auth.email;
+      return name==o.name;
     });
     if(index==-1) return;
 
     // supersassアカウント
     let supersassuser = state.result.users[index]
     state.auth.user_id = supersassuser.id
-    state.auth.credit = supersassuser.credit
-    state.auth.address = supersassuser.address
-    state.auth.phone = supersassuser.phone
+    state.auth.credit = 0;
+    if(0<supersassuser.credit){
+      state.auth.credit = Number(that.auth.credit.replace(/,/, ''));
+    }
+    // state.auth.credit = supersassuser.credit
+    if(supersassuser.address=="null") state.auth.address = '';
+    else state.auth.address = supersassuser.address;
+
+    if(supersassuser.phone=="null") state.auth.phone = '';
+    else state.auth.phone = supersassuser.phone;
+    
     state.auth.password = supersassuser.password
+    state.auth.username = supersassuser.full_name;
     // console.log('super',supersassuser)
 
     // 初回の入会金チェック
     if(supersassuser.super_field==null || supersassuser.super_field==''){
       state.auth.isAdmissionFee = false;
+      state.auth.isLine = false
       return;
     }
+    // console.log(supersassuser.super_field)
     
     // 権限
-    if(supersassuser.super_field==1) state.auth.isMember = true;
+    if(supersassuser.super_field==1) {
+      state.auth.isLine = true;
+      state.auth.isMember = true;
+    }
   },
   SET_AUTH_ROLE (state, general){
     state.auth.general = general;

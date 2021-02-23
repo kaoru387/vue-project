@@ -9,7 +9,7 @@
         <b>{{ arg.timeText }}</b>
         <i>{{ arg.event.title }}</i>
       </template> -->
-      <!--  <template #eventContent="arg">
+       <!-- <template #eventContent="arg">
         <interactive-content ref="interactiveContent" :item=arg.event  :dialog-form-visible="content_visible" :close-content="closeContent" :style="{'x-index': 1060}" /> -->
         <!-- <v-list-item three-line>
           <v-list-item-content>
@@ -21,6 +21,9 @@
         </v-list-item> -->
       <!-- </template> -->
     </FullCalendar>
+    <modal-reservation-studio ref="reservationStudio" 
+      :dialog-form-visible="search_visible" 
+      :close-modal="closeContent" />
     <!-- <interactive-content ref="interactiveContent" 
       :dialog-form-visible="content_visible" 
       :close-content="closeContent" /> -->
@@ -44,6 +47,8 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import ja from "@fullcalendar/core/locales/ja";
 
 import InteractiveContent from './InteractiveContent'
+import ModalReservationStudio from './ModalReservationStudio'
+
 
 import store from '../store/app';
 import moment from "moment"
@@ -53,6 +58,7 @@ export default {
   components: {
     FullCalendar,
     InteractiveContent,
+    ModalReservationStudio,
     BPopover
   },
   props: {
@@ -64,17 +70,18 @@ export default {
   },
   data() {
     return {
+      search_visible: false,
       content_visible: false,
       item: {},
       calendarOptions: {
         timeZone: 'UTC',
         plugins: [ dayGridPlugin, timeGridPlugin, interactionPlugin ],
-        initialView: 'dayGridMonth',
+        initialView: 'timeGridWeek',
         // initialDate: this.iniDate,
         headerToolbar: {
           left:   'title',
           // center: 'myCustomButton',
-          right:  'today prev,next',
+          right:  'today dayGridMonth,timeGridWeek,timeGridDay prev,next',
           // left: 'prev,next today',
           // center: 'title',
           // right: 'dayGridMonth,timeGridWeek,timeGridDay'
@@ -98,7 +105,7 @@ export default {
       },
       elDay: '',
       elToday: '',
-      viewName: 'dayGridMonth'
+      // viewName: 'timeGridWeek'
     }
   },
   computed: {
@@ -116,6 +123,9 @@ export default {
         case 'lg': return 600
         case 'xl': return 800
       }
+    },
+    auth() {
+      return store.state.auth;
     },
   },
   created: function () {
@@ -136,7 +146,16 @@ export default {
       this.calendarOptions.weekends = !this.calendarOptions.weekends // update a property
     },
     handleDateClick(arg) {  // 日付選択
-      // console.log('day', arg.dateStr)
+
+      // this.$refs.reservationStudio.conditions(date, start);
+      // this.search_visible=true;
+
+      // console.log(arg)
+
+      // if(arg.view.type!=='dayGridMonth'){
+        
+      //   return;
+      // }
       
       // // 当日の背景色クリア
       // var cells = document.getElementsByTagName("td");
@@ -156,19 +175,61 @@ export default {
       // // 選択日付更新
       // store.commit('SET_SELECT_DATE', arg.dateStr);
       
-      // // 表示切り替え
-      // this.$refs.fullCalendar.getApi().gotoDate(arg.dateStr)
-      // // this.$refs.fullCalendar.getApi().changeView('timeGridWeek');
-      // this.$refs.fullCalendar.getApi().changeView('timeGridDay');
+      // 表示切り替え
+      this.$refs.fullCalendar.getApi().gotoDate(arg.dateStr)
+      // this.$refs.fullCalendar.getApi().changeView('timeGridWeek');
+      this.$refs.fullCalendar.getApi().changeView('timeGridDay');
       // this.viewName = 'timeGridDay';
       
       // // 詳細表示
       // this.$emit('date-selected',arg.dateStr);
     },
     changeEvent: function(eventInfo) {
-      // console.log('change event')
-      // //イベント選択
-      // let event = eventInfo.event.toJSON()
+      
+      //イベント選択
+      let event = eventInfo.event.toJSON()
+      if(event.id!=='dummy') return;
+
+      // console.log(event)
+
+      store.commit('SET_ISLOADING', true)
+      let date = this.$moment(event.start).format('YYYY-MM-DD');
+      let start = this.$moment(event.start).format('HH:mm');
+      let search = {
+        date: date,
+        start: start,
+        studio_name: event.extendedProps.studioName
+      }
+      store.commit('SET_SELECT_SEARCH', search)
+
+      // 料金マスター
+      let _documentName = "個人利用";
+      // 会員且つ入会金支払い済
+      if(this.auth.username!=='' && this.auth.isAdmissionFee && this.auth.isLine) {
+        _documentName = "スタジオレンタル（個人利用）";
+      }
+
+      store.commit('SET_SELECT_RESOURCES', [])
+      store.dispatch('getFree', {
+        params: {
+          date: date,
+          time: start,
+          time_zone: '1:00',
+          hour: 1.0,
+          document: _documentName,
+          use_type: '個人',
+          studio_name: search.studio_name
+        },
+        callback: function(res){
+          // console.log(res)
+          store.commit('SET_SELECT_RESOURCES', res)
+          store.commit('SET_ISLOADING', false)
+        }
+      });
+
+      this.$router.replace('/studiosearch')
+
+
       // this.item = event;
       // this.content_visible = true
 
@@ -195,12 +256,11 @@ export default {
       // }
     },
     eventDidMount: function(info) { // 詳細表示
-      // console.log('mount',info)
-      // if(!info.event.allDay) return;
       // console.log(info.event.extendedProps)
+      if(info.event.extendedProps.studioName=='dummy') return;
 
       let title = '一般利用';
-      if(info.event.title!=='*') title = info.event.title+'さん';
+      if(info.event.title!=='*') title = info.event.title;
       // if(info.event.extendedProps.title=="*") title = '一般利用';
       var tooltip = new BPopover({
         propsData: {
@@ -225,28 +285,21 @@ export default {
     },
     viewDidMount: function(e){
       // console.log('vi',e.view.type)
-      let that = this
-      // 週から月への場合再読み込み
-      // if(e.view.type == "dayGridMonth") {
-      //   if(that.viewName == 'timeGridDay'){
-      //     store.commit('SET_ISLOADING', true)
-      //     that.$emit('reLoad');
-      //     return;
+      // let that = this
+      // // 今日の日付の背景色をリセット
+      // let today = this.$moment().utc().format('YYYY-MM-DD');
+      // var cells = document.getElementsByTagName("td");
+      // for (var i = 0; i < cells.length; i++) {
+      //   // if(today<=cells[i].getAttribute('data-date')){
+      //   //   // cells[i].classList.remove('fc-day-today');
+      //   //   // that.elToday=cells[i];
+      //   //   cells[i].style.backgroundColor = 'rgba(255,153,106,0.08)';
+      //   // }
+      //   // 過去の日付は選択できないため背景色を変更
+      //   if(cells[i].getAttribute('data-date')<today){
+      //     cells[i].style.backgroundColor = 'rgba(128,128,128,0.08)';
       //   }
       // }
-
-      // 今日の日付の背景色をリセット
-      var cells = document.getElementsByTagName("td");
-      for (var i = 0; i < cells.length; i++) {
-        if(cells[i].getAttribute('data-date')==this.$moment().utc().format('YYYY-MM-DD')){
-          // cells[i].classList.remove('fc-day-today');
-          that.elToday=cells[i];
-        }
-        // 過去の日付は選択できないため背景色を変更
-        if(cells[i].getAttribute('data-date')<this.$moment().utc().format('YYYY-MM-DD')){
-          cells[i].style.backgroundColor = 'rgba(128,128,128,0.08)';
-        }
-      }
     },
     todayEvent: function(){
       // 今日にリセット
@@ -255,7 +308,8 @@ export default {
       store.commit('SET_SELECT_DATE', this.$moment().utc().format('YYYY-MM-DD'));
     },
     closeContent: function(){
-
+      // console.log('close')
+      this.search_visible=false;
     }
   }
 };

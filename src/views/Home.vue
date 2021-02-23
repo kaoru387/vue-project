@@ -1,3 +1,5 @@
+
+<script src="https://www.line-website.com/social-plugins/js/thirdparty/loader.min.js" async="async" defer="defer"></script>
 <template>
   <div id="home">
   	<!-- <b-badge class="sample mr-1 badge-success" pill>スタジオ予約</b-badge>個人利用 -->
@@ -25,7 +27,6 @@
 	<!-- <el-button v-else-if="!search_loading" type="primary" @click="openResources">
 	    + 新規予約する
 	</el-button> -->
-	
 	<el-alert
 		v-if="info.isResetPassword"
         class="text-left mb-3"
@@ -33,33 +34,78 @@
         description="パスワード再設定メールを送信しました。メールが届いているかをご確認ください。"
         show-icon>
     </el-alert>
-	<span v-if="auth.username==''" @click="openModal">
+	<!-- <span v-if="auth.username==''" @click="openModal">
 		<el-alert
 			v-if="auth.username==''"
 	        class="text-left mb-3"
 	        type="warning"
 	        description="会員登録いただくと一回のレンタル料がお安くなります。こちらをクリックしてご登録ください!!">
 	    </el-alert>
-	</span>
-    <span v-if="auth.username!=='' && !auth.isAdmissionFee && auth.emailVerified" @click="openAdmission">
+	</span> -->
+	<div class="d-flex bd-highlight">
+		<div class="p-0 flex-fill bd-highlight w-100 text-right mt-2 mb-3">
+			<div class="d-flex flex-column bd-highlight m-0 text-center">
+		        <!-- <span class="p-0 bd-highlight">
+		        	<el-button 
+				    	v-if="auth.username==''"
+				    	type="danger" @click="openModal">
+					    会員新規登録
+					</el-button>
+		        </span> -->
+		        <span class="p-0 bd-highlight">
+		        	<a class="text-decoration-underline" :style="{'color':'blue !important','font-size': '12pt'}" @click="sheet = !sheet">料金説明</a>
+		        </span>
+		    </div>
+		</div>
+	</div>
+	
+    <!-- <span v-if="auth.username!=='' && !auth.isAdmissionFee && auth.emailVerified">
 		<el-alert
 	        class="text-left mb-3"
 	        type="warning"
-	        description="入会金をお支払いいただければ、一回のレンタル料がお安くなるチケットを購入できます。こちらをクリックしてお申し込みください。"
+	        description="レッスン受講生は入会金支払い不要です。管理者が承認するまでお待ち下さい。"
 	        show-icon>
 	    </el-alert>
     </span>
+    <el-button 
+    	v-if="auth.username!=='' && !auth.isAdmissionFee && auth.emailVerified"
+    	class="mt-2 mb-3"
+    	type="warning" @click="openAdmission">
+	    入会金支払い・入会申し込みを完了する
+	</el-button> -->
+
 	<!-- <div role="alert" class="alert alert-warning pl-3 p-2 text-left" @click="openAdmission">
     	<v-icon color="#856404" class="mb-1">mdi-alert-circle</v-icon><span :style="{'cursor': 'e-resize'}"  class="ml-1">入会金をお支払いいただければ、一回のレンタル料がお安くなるチケットを購入できます。</span>
     </div> -->
-   	<span v-if="auth.username!=='' && auth.isAdmissionFee && auth.emailVerified && auth.credit==0" @click="openShop">
+    <!-- <el-button 
+    	v-if="auth.username!=='' && auth.isAdmissionFee && auth.emailVerified"
+    	class="mt-2 mb-2"
+    	type="primary" @click="openShop">
+	    チケットを購入してポイント追加する
+	</el-button> -->
+	<div v-if="auth.username!=='' && !auth.isLine">
+	    <!-- <el-alert
+	        class="text-left mt-2 mb-3"
+	        type="success"
+	        description="会員登録いただき誠にありがとうございます。是非お客様のLINEの友だちに追加お願いいたしますm(__)m"
+	        show-icon>
+	    </el-alert> -->
+		<!-- <el-button 
+	    	class="mt-1 mb-3"
+	    	type="success" 
+	    	@click="onLinkClick">
+		    LINE友達になる
+		</el-button> -->
+	</div>
+
+   	<!-- <div v-if="auth.username!=='' && auth.isAdmissionFee && auth.emailVerified && auth.credit==0">
 	    <el-alert
 	        class="text-left mb-3"
 	        type="warning"
-	        description="ポイントが不足しています。こちらをクリックしてレンタルチケットをご購入ください。"
+	        description="ポイントが不足しています。"
 	        show-icon>
 	    </el-alert>
-	</span>
+	</div> -->
     <el-alert
 		v-if="auth.username!=='' && !auth.emailVerified"
         class="text-left mb-3"
@@ -67,71 +113,140 @@
         description="メール認証がまだ完了していないため予約できません。メールが届いているかをご確認ください。"
         show-icon>
     </el-alert>
-	<el-button v-if="!search_loading && auth.emailVerified" type="primary" @click="moveSearch">
+	<!-- <el-button v-if="!search_loading && auth.emailVerified" type="primary" @click="moveSearch">
 	    + 会員の新規予約
 	</el-button>
 	<el-button v-if="auth.username==''" type="danger" @click="moveSearch">
     	+ 一般の新規予約
-  	</el-button>
+  	</el-button> -->
   	<div>
   		<template>
+  			<div class="d-flex bd-highlight">
+			  <div class="p-0 pr-3 pb-1 flex-fill flex-shrink-1 bd-highlight text-right">
+			  	<span class="p-0 bd-highlight">
+                	<span class="badge" :style="{'background-color': '#9DC0AC', 'color':'white'}">ナゴスタジオ</span>
+                </span>
+                <span class="p-0 bd-highlight">
+                	<span class="badge" :style="{'background-color': '#F3C857', 'color':'white'}">コザスタジオ</span>
+                </span>
+			  </div>
+			</div>
+
 		  <div class="text-center">
-		    <a class="text-decoration-underline sample" :style="{'color':'blue !important'}" @click="sheet = !sheet">料金説明</a>
 		    <v-bottom-sheet v-model="sheet">
 		      <v-sheet
 		        class="text-center"
 		        height="600px"
 		      >
 		        <v-btn
-		          class="mt-5"
+		          class="mt-3"
 		          text
 		          color="red"
 		          @click="sheet = !sheet"
 		        >
-		          料金説明を閉じる
+		          閉じる
 		        </v-btn>
-		        <div class="m-1 mt-3">
-		          	<!-- <span>一般のお客様</span>
-		          	<div class="d-flex flex-column bd-highlight mb-3">
-					  <div class="p-0 bd-highlight">Flex item 1</div>
-					  <div class="p-0 bd-highlight">Flex item 2</div>
-					  <div class="p-0 bd-highlight">Flex item 3</div>
-					</div> -->
-					<div class="container font-weight-medium" :style="{'border': '1px solid black'}">
+		        <!-- <div>
+		        	<div class="text-center pt-3 text-primary">
+			        	<h4>レッスン受講生</h4>
+			      	</div>
+			      	<div class="d-flex flex-column bd-highlight m-0 text-center">
+					  <div class="p-0 bd-highlight">
+					  	<v-icon 
+				        class="pr-1 pb-1"
+				        large
+				        color="#03BFA5"
+				        :style="{'font-size':'20px'}"
+				      	>mdi-check-circle</v-icon>
+				      	<span>入会金不要</span>
+				      </div>
+					  <div class="p-0 bd-highlight">
+					  	<v-icon 
+				        class="pr-1 pb-1"
+				        large
+				        color="#03BFA5"
+				        :style="{'font-size':'20px'}"
+				      	>mdi-check-circle</v-icon>
+				      	<span>会員様価格</span>
+					  </div>
+					</div>
+		        </div> -->
+
+		        <div class="m-1 mt-5">
+		        	<div class="text-center pb-2 pt-2">
+			        	<h4>料金説明</h4>
+			      	</div>
+					<div class="container" :style="{'border': '1px solid black'}">
 					  <div class="row">
 					  	<div class="col-2"></div>
-					    <div class="col">一般のお客様</div>
-					    <div class="col">会員様</div>
-					  </div>
-					  <div class="row" :style="{'border': '1px solid black'}">
-					  	<div class="col-2">
-					  		<span class="font-weight-medium">個人利用</span></div>
 					    <div class="col">
-					    	<div class="d-flex flex-column bd-highlight m-0 text-left">
+					    	<el-badge type="danger" :value="'一般のお客様'"></el-badge>
+					    </div>
+					    <div class="col">
+					    	<el-badge type="success" :value="'会員様'"></el-badge>
+					    </div>
+					  </div>
+					  <!-- 
+					  <div class="row" :style="{'border': '1px solid black'}">
+					  	<div class="col-2 pr-0">
+					  		<span class="font-weight-medium text-left">入会金</span></div>
+					    <div class="col">
+					    	<div class="d-flex flex-column bd-highlight m-0 text-center">
+							  <div class="p-0 bd-highlight">不要</div>
+							</div>
+					    </div>
+					    <div class="col">
+					    	<div class="d-flex flex-column bd-highlight m-0 text-right">
+							  <div class="p-0 bd-highlight">¥4,000/年</div>
+							</div>
+					    </div>
+					  </div> -->
+					  <div class="row pt-3" :style="{'border': '1px solid black'}">
+					  	<div class="col-2 pr-0">
+					  		<span class="font-weight-medium text-left">チケット購入</span></div>
+					    <div class="col">
+					    	<div class="d-flex flex-column bd-highlight m-0 text-center">
+							  <div class="p-0 bd-highlight">不可</div>
+							</div>
+					    </div>
+					    <div class="col">
+					    	<div class="d-flex flex-column bd-highlight m-0">
+							  <div class="p-0 bd-highlight text-right">¥3,000/回</div>
+							  <div class="p-0 bd-highlight text-left">
+								  <span class="test">¥4,000分のポイントが加算されます!</span>
+								</div>
+							</div>
+					    </div>
+					  </div>
+					  <div class="row pt-2">
+					  	<div class="col-2 pr-0">
+					  		<span class="font-weight-medium text-left">個人利用</span></div>
+					    <div class="col">
+					    	<div class="d-flex flex-column bd-highlight m-0 text-right">
 							  <div class="p-0 bd-highlight">1時間：¥1,000</div>
 							  <div class="p-0 bd-highlight">1.5時間：¥1,500</div>
 							  <div class="p-0 bd-highlight">2時間：¥2,000</div>
 							</div>
 					    </div>
 					    <div class="col">
-					    	<div class="d-flex flex-column bd-highlight m-0 text-left">
-							  <div class="p-0 bd-highlight">1時間：¥800</div>
+					    	<div class="d-flex flex-column bd-highlight m-0 text-right">
+							  <div class="p-0 bd-highlight">1時間：¥800 </div>
 							  <div class="p-0 bd-highlight">1.5時間：¥1,200</div>
 							  <div class="p-0 bd-highlight">2時間：¥1,600</div>
 							</div>
 					    </div>
 					  </div>
 					  <div class="row pt-3">
-					  	<div class="col-2">グループ利用</div>
+					  	<div class="col-2 pr-0 text-left">グループ利用</div>
 					    <div class="col">
-					    	<div class="d-flex flex-column bd-highlight m-0 text-left">
+					    	<div class="d-flex flex-column bd-highlight m-0 text-right">
 							  <div class="p-0 bd-highlight">1時間：¥2,000</div>
 							  <div class="p-0 bd-highlight">1.5時間：¥2,500</div>
 							  <div class="p-0 bd-highlight">2時間：¥3,000</div>
 							</div>
 					    </div>
 					    <div class="col"">
-					    	<div class="d-flex flex-column bd-highlight m-0 text-left">
+					    	<div class="d-flex flex-column bd-highlight m-0 text-right">
 							  <div class="p-0 bd-highlight">1時間：¥1,500</div>
 							  <div class="p-0 bd-highlight">1.5時間：¥2,000</div>
 							  <div class="p-0 bd-highlight">2時間：¥2,500</div>
@@ -155,7 +270,7 @@
 			      description="利用可能時間表示中..."
 			      show-icon>
 			    </el-alert>
-		        <v-list-item-subtitle class="text-left p-2">{{ search.name }}</v-list-item-subtitle>
+		        <v-list-item-subtitle class="text-right p-2">{{ search.name }}</v-list-item-subtitle>
 		        <v-list-item-subtitle v-if="auth.username!=='' && !auth.isAdmissionFee" class="text-left p-2">
 		        	<el-alert
 				      class="mt-2 mb-1"
@@ -168,15 +283,13 @@
 		    </v-list-item>
 	   	</div>
 	</div> -->
-	<v-container class="mt-3">
+	<v-container>
 		<calendar ref="calendar" 
 			v-if="events.length"
 	    	:events="events"
-	    	:view-name="'dayGridMonth'"
-		    @eventChange="eventChange">    	
+	    	:view-name="'dayGridMonth'">    	
 		</calendar>
 	</v-container>
-
 	<v-container v-if="!loading">
 		<h4 v-if="auth.username!==''" class="mt-1 mb-5" ref="courseContents">{{ auth.username }}さんご予約</h4>
 		<my-reservation
@@ -193,7 +306,6 @@
 		    show-icon>
 		</el-alert> -->
 	</v-container>
-
 	<!-- 予約 -->
 	<!-- <modal-reservation-studio 
 		ref="dialogFullscreen"
@@ -219,12 +331,11 @@
   </div>
 </template>
 <style scoped>
-	/*.item {
-	  padding-top: 6px;
-	  padding-right: 20px; 
-	}*/
+	.test {
+	  font-size: 10pt;
+	  font-weight: 600;
+	}
 </style>
-
 <script>
 import store from '../store/app';
 import Calendar from '../components/FullCalendar.vue'
@@ -307,6 +418,9 @@ export default {
 	    },
 	    auth() {
 	      return store.state.auth;
+	    },
+	    supersass() {
+	      return store.state.auth.supersass;
 	    },
 	    info() {
 	      return store.state.info;
@@ -491,77 +605,7 @@ export default {
 		    this.modal_visible = true;
 		    
 	    },
-	 //    dateSelected(select_date){
-	 //    	////////////////////////////////
-	 //    	// 選択された日付のイベントを表示する
-	 //    	////////////////////////////////
-	 //    	// let date = moment(select_date).utc().format('YYYY-MM-DD')
-		// 	this.filterContents(select_date);
-  //       	// データなしの場合、日付までスクロール移動
-  //       	if(this.contens.length==0) {
-  //       		this.$refs.courseContents.scrollIntoView({block: "center"});
-  //       		return;
-  //       	}
-  //           let that = this;
-  //           this.$nextTick(function() {
-  //           	// 先頭へ移動
-  //           	that.$refs['courseDetail'+that.contens[0].id][0].$el.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"})
-  //           });
-		// },
-		eventChange(eventInfo){
-			
-			// ////////////////////////////////
-			// // イベント選択
-			// ////////////////////////////////
-
-			// let date = moment(eventInfo.start).utc().format('YYYY-MM-DD')
-			// var result = eventInfo.start.indexOf('Z');
-			// if(result==-1) date = moment(eventInfo.start).format('YYYY-MM-DD')	
-			// this.filterContents(date);
-
-   //          let that = this;
-   //          this.$nextTick(function() {
-
-   //          	// 初期化
-   //          	_.forEach(that.contens, function(v, k) {
-		 //      		that.$refs['courseDetail'+v.id][0].$el.style.border='thin solid rgba(0,0,0,0.12)';
-		 //      		that.$refs['courseDetail'+v.id][0].$el.classList.remove('shadow-lg');
-	  //       	});
-	      		
-   //          	// イベント取得
-   //          	let index = _.findIndex(store.state.result.events, function(o){
-	  //       		return o.id==eventInfo.id;
-	  //       	});
-	  //       	if(index==-1) return;
-	  //       	let e = store.state.result.events[index]
-
-   //          	//移動
-   //          	that.$refs['courseDetail'+e.id][0].$el.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"})
-
-   //          	// 選択枠線変更
-   //          	that.$refs['courseDetail'+eventInfo.id][0].$el.style.borderColor=e.iconColor;
-   //          	that.$refs['courseDetail'+eventInfo.id][0].$el.classList.add('shadow-lg');
-
-   //          	// 背景色までいいかな・・保留
-   //     //      	that.$refs['courseDetail'+eventInfo.id][0].$el.style.backgroundColor=e.iconColor;
-   //     //      	setTimeout(() => {
-			//     //     that.$refs['courseDetail'+eventInfo.id][0].$el.style.backgroundColor="white";
-			//     // }, 1000);
-   //          });
-		},
-		// filterContents(select_date) {	// 対象データ抽出
-		// 	// 初期化
-		// 	this.contens = [];
-  //  			let contens=[];
-  //     		_.forEach(store.state.result.events, function(v, k) {
-  //     			let _d = moment(v.start).format('YYYY-MM-DD');
-  //     			var result = v.start.indexOf('Z');
-  //     			if(result!==-1) _d = moment(v.start).utc().format('YYYY-MM-DD');
-	 //      		if(select_date==_d) contens.push(v);
-  //       	});
-  //           this.contens=contens;
-  //           // console.log(contens)
-		// },
+		
 		close_shop_modal: function() {
 	        this.modal_shop_visible = false;
 	    },
@@ -602,24 +646,29 @@ export default {
 	    	this.$refs.dialogCourse.ready(item);
 	    	this.modal_course_visible=true;
 	    },
-	    // reload() {
-	    //   let that = this;
-	    //   const processA = async function() {
-	    //     await store.commit('SET_EVENTS', []);
-	    //     // 予約取得
-	    //     await store.dispatch('getBookings')
-	    //     // クラス取得
-	    //     await store.dispatch('getClass',{})
-	    //   }
-	    //   const processAll = async function() {
-	    //     await processA()
-	    //   }
-	    //   processAll()
-	    // },
 	    moveSearch() {
 	    	store.commit('SET_ISLOADING', true)
 	    	this.$router.push({path: '/studiosearch'})
 	    },
+	    onLinkClick() {
+	    	store.commit('SET_ISLOADING', true)
+	    	let that = this;
+		    store.dispatch('saveUserAdmission',{
+		      params: {
+		        group_id: 1,
+		      },
+		      callback: function(res){
+		        console.log(res)
+		        setTimeout(function(){
+		            store.commit('SET_ISLOADING', false)
+		            window.location.href = "https://lin.ee/d0sbdmh";
+		        },1500);
+		      }
+		    });
+
+	    	
+	    }
+
 	  //   searchFree(form){
 	  //   	// 検索
 	  //   	let that = this

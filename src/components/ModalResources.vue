@@ -24,54 +24,19 @@
           <div class="filed">
             <span class="demonstration">予約日：</span>
             <validation-provider name="予約日" rules="required" v-slot="prop">
-              <!-- <el-date-picker
-                name="予約日"
-                v-model="form.date"
-                type="date"
-                placeholder="日付選択"
-                :style="{'width':'100%'}">
-              </el-date-picker> -->
               <v-text-field name="予約日" v-model="form.date" single-line>
                 <template v-slot:append-outer>
                   <date-picker v-model="form.date"/>
-                  <!-- <v-menu v-model="form.date" offset-y :close-on-content-click="false">
-                    <template v-slot:activator="{ on }">
-                      <v-btn icon color="primary" dark elevation="0" v-on="on">
-                        <v-icon>mdi-calendar</v-icon>
-                      </v-btn>
-                    </template>
-                    <v-date-picker v-model="picker" @click="menu = false"/>
-                  </v-menu> -->
                 </template>
               </v-text-field>
               <span :style="{'color': 'red'}">{{ prop.errors[0] }}</span>
             </validation-provider>
           </div>
-          <!-- <div class="block">
-            <span class="demonstration">予約日：</span>
-            <el-date-picker
-              v-model="form.date"
-              type="date"
-              placeholder="日付"
-              :style="{'width':'100%'}">
-            </el-date-picker>
-          </div> -->
         </div>
         <div class="col-5 mb-0"> 
           <div class="filed">
             <span class="demonstration">入室時間：</span>
             <validation-provider name="入室時間" rules="required" v-slot="prop">
-              <!-- <el-time-select
-                name="入室時間"
-                v-model="form.time"
-                :picker-options="{
-                  start: '08:30',
-                  step: '00:15',
-                  end: '18:30'
-                }"
-                placeholder="時間"
-                :style="{'width':'100%'}">
-              </el-time-select> -->
               <span :style="{'color': 'red'}">{{ prop.errors[0] }}</span>
             </validation-provider> 
           </div>
@@ -80,15 +45,6 @@
           <div class="filed">
             <span class="demonstration">利用タイプ：</span>
             <validation-provider name="利用タイプ" rules="required" v-slot="prop">
-              <!-- <el-select name="利用タイプ" v-model="form.use_type" placeholder="利用タイプ選択" :style="{'width':'100%'}">
-                <el-option
-                  v-for="item in type_options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                  :disabled="item.disabled">
-                </el-option>
-              </el-select> -->
               <v-autocomplete
                 name="利用タイプ"
                 v-model="form.use_type"
@@ -169,17 +125,13 @@
       </v-expansion-panel>
     </v-expansion-panels> -->
 
-    
   <!-- {{ info.browser+'/'+info.isPersonal + '/' + info.isSafariLogin  + '/' + auth.email}} -->
     <!-- <div class="text-center mb-1">
       <a class="text-decoration-underline" :style="{'color':'blue !important'}" rel="noreferrer" @click="onLinkClick">
         キャンセル
       </a>
     </div> -->
-
-  
   </el-dialog>
-  
 </template>
 
 <script>
