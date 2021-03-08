@@ -60,7 +60,7 @@ export default {
     let currentUserStatus = Firebase.auth().currentUser;
     if(!currentUserStatus) console.log('no singin！！！')
 
-    const processA = async function(documentName) {
+    const processA = async function() {
       // Stripe Checkout
       const stripe = await stripePromise;
       var docRef = Firebase.db().collection("sessions").doc(store.state.auth.email);

@@ -53,7 +53,7 @@ export default {
         var currentUser = Firebase.auth().currentUser;
         if(!currentUser){
           // ログインなしの場合
-          window.location.href = "https://kdev.page/"
+          window.location.href = "https://vue-authentification-b7a7a.firebaseapp.com/"
         }else{
           // ログインありの場合
           window.location.href = "https://www.fandangos-okinawa.com/reservation/" 

@@ -1,5 +1,107 @@
 <template>
   <div id="reservation">
+    <v-card
+      class="mx-auto text-left p-2 mb-1"
+      max-width="360px"
+    >
+      <el-page-header @back="cancel" content="スタジオ空き時間検索" title="戻る" class="mt-2 mb-3">
+      </el-page-header>
+      <b-card no-body class="mb-1">
+        <b-card-header header-tag="header" class="p-1" role="tab">
+          <b-button block v-b-toggle.accordion-1 variant="info">検索条件</b-button>
+        </b-card-header>
+        <b-collapse id="accordion-1" visible accordion="my-accordion" role="tabpanel">
+          <b-card-body>
+            <validation-observer ref="observer" v-slot="ObserverProps" tag="form" @submit.prevent="searchStudio()">
+              <div class="form-row">
+                <div class="col-6 pt-0 pb-0">
+                  <div class="filed">
+                    <validation-provider name="予約日" rules="required" v-slot="prop">
+                      <v-text-field 
+                        class="pl-1"
+                        name="予約日" 
+                        v-model="form.date" 
+                        label="予約日" 
+                        :error-messages="prop.errors[0]" 
+                        single-line>
+                        <template v-slot:append-outer>
+                          <date-picker v-model="form.date"/>
+                        </template>
+                      </v-text-field>
+                    </validation-provider>
+                  </div>
+                </div>
+                <div class="col-6 pt-0 pb-0"> 
+                  <div class="filed">
+                    <validation-provider name="スタジオ" rules="required" v-slot="prop">
+                      <v-select
+                        name="スタジオ"
+                        class="text-left pt-3 pr-1"
+                        v-model="form.studio_name"
+                        :items="studio_options"
+                        label="スタジオ"
+                        :error-messages="prop.errors[0]"
+                      ></v-select>
+                      <span class="sample" :style="{'color': 'red'}">{{ prop.errors[0] }}</span>
+                    </validation-provider> 
+                  </div>
+                </div>
+                <div class="col-6 pt-0 pb-0">
+                  <div class="filed">
+                    <validation-provider name="利用時間" rules="required" v-slot="prop">
+                      <v-select
+                        name="利用時間"
+                        class="text-left p-1"
+                        v-model="form.time_zone_name"
+                        :items="options"
+                        label="利用時間"
+                        :error-messages="prop.errors[0]"
+                      ></v-select>
+                    </validation-provider> 
+                  </div>
+                </div>
+                <div class="col-6 pt-0 pb-0">
+                  <div class="filed">
+                    <validation-provider name="人数タイプ" rules="required" v-slot="prop">
+                      <v-select
+                        name="人数タイプ"
+                        class="text-left p-1"
+                        v-model="form.use_type"
+                        :items="type_options"
+                        label="人数タイプ"
+                        :error-messages="prop.errors[0]"
+                      ></v-select>
+                    </validation-provider> 
+                  </div>
+                </div>
+                <div class="col-12 pt-0 pb-0">
+                  <div class="filed">
+                    <validation-provider name="利用タイプ" rules="required" v-slot="prop">
+                      <v-select
+                        name="利用タイプ"
+                        class="text-left p-1"
+                        v-model="form.use_name"
+                        :items="use_options"
+                        label="利用タイプ"
+                        :error-messages="prop.errors[0]"
+                      ></v-select>
+                    </validation-provider> 
+                  </div>
+                </div>
+                <div class="col-12 pt-2">
+                  <div class="block">
+                    <el-button class="m-0" type="warning" :style="{'width':'100%'}" @click="searchStudio" plain>
+                      検索する
+                    </el-button>
+                  </div>
+                </div>
+              </div>
+            </validation-observer>
+          </b-card-body>
+        </b-collapse>
+      </b-card>
+    </v-card>
+
     <v-card 
       outlined
       ref="reservationStudio"
@@ -7,15 +109,22 @@
       max-width="360px"
       :style="{'margin':'0 auto'}"
       >
-      <div class="text-center pt-5 pb-0 text-primary">
-        <h4>スタジオ空き時間</h4>
+      <div v-if="!loading" class="d-flex bd-highlight justify-content-center pt-5">
+        <span class="p-0 bd-highlight">
+          <h5 :style="{'color':'#4caf50','font-weight':'600'}">検索結果</h5>
+        </span>
+        <!-- <span class="p-0 bd-highlight">
+          <v-icon 
+            class="pl-2 pb-1"
+            large
+            color="#03BFA5"
+            :style="{'font-size':'22px'}"
+          >mdi-check-circle</v-icon>
+        </span> -->
       </div>
-      <el-alert
-        class="mt-2 mb-1 text-left"
-        type="success"
-        :description="'ご希望の時間帯をお選びください。'"
-        show-icon>
-      </el-alert>
+      <!-- <div class="text-center pt-5 pb-0 text-primary">
+        <h4>スタジオ空き時間</h4>
+      </div> -->
       <!-- <div class="d-flex bd-highlight">
         <div class="p-2 flex-fill flex-shrink-1 bd-highlight text-right">
           <span class="p-0 bd-highlight">
@@ -26,131 +135,31 @@
           </span>
         </div>
       </div> -->
-      <free-time-full-calendar
-        v-if="0<items.length"
-        :events="items"
-        :initialDate="search.date"
-        @confirm="confirm"
-        @cancel="cancel" />
-      </free-time-full-calendar>
-      <div class="text-left p-3 pt-5">
-        <div class="text-center">
-          <h5>検索条件選択</h5>
-        </div>
-        <!-- <el-alert
-          :closable="false"
-          type="warning"
-          description="選択を変更して、空き時間の表示内容を変更できます。"
+      <div class="text-left p-2 pt-0">
+        <el-alert
+          v-if="!loading"
+          class="mt-1 mb-5 text-left"
+          type="success"
+          :description="'ご希望の時間をお選びください。'"
           show-icon>
-        </el-alert> -->
-        <validation-observer ref="observer" v-slot="ObserverProps" tag="form" @submit.prevent="searchStudio()">
-          <div class="form-row">
-            <div class="col-6 p-2 pt-0 pb-0">
-              <div class="filed">
-                <validation-provider name="予約日" rules="required" v-slot="prop">
-                  <v-text-field 
-                    name="予約日" 
-                    v-model="form.date" 
-                    label="予約日" 
-                    :error-messages="prop.errors[0]" 
-                    single-line>
-                    <template v-slot:append-outer>
-                      <date-picker v-model="form.date"/>
-                    </template>
-                  </v-text-field>
-                </validation-provider>
-              </div>
-            </div>
-            <div class="col-6 p-2 pt-0 pb-0"> 
-              <div class="filed">
-                <validation-provider name="スタジオ" rules="required" v-slot="prop">
-                  <v-select
-                    name="スタジオ"
-                    class="text-left pt-3"
-                    v-model="form.studio_name"
-                    :items="studio_options"
-                    label="スタジオ"
-                    :error-messages="prop.errors[0]"
-                  ></v-select>
-                  <span class="sample" :style="{'color': 'red'}">{{ prop.errors[0] }}</span>
-                </validation-provider> 
-                <!-- <validation-provider name="入室時間" rules="required" v-slot="prop">
-                  <v-text-field 
-                    name="入室時間" 
-                    v-model="form.time" 
-                    label="入室時間" 
-                    :error-messages="prop.errors[0]" single-line>
-                    <template v-slot:append-outer>
-                      <date-time-picker v-model="form.time"/>
-                    </template>
-                  </v-text-field>
-                </validation-provider>  -->
-              </div>
-            </div>
-            <div class="col-6 p-2 pt-0 pb-0">
-              <div class="filed">
-                <validation-provider name="利用時間" rules="required" v-slot="prop">
-                  <v-select
-                    name="利用時間"
-                    class="text-left p-1"
-                    v-model="form.time_zone_name"
-                    :items="options"
-                    label="利用時間"
-                    :error-messages="prop.errors[0]"
-                  ></v-select>
-                </validation-provider> 
-              </div>
-            </div>
-            <div class="col-6 p-2 pt-0 pb-0">
-              <div class="filed">
-                <validation-provider name="利用タイプ" rules="required" v-slot="prop">
-                  <v-select
-                    name="利用タイプ"
-                    class="text-left p-1"
-                    v-model="form.use_type"
-                    :items="type_options"
-                    label="利用タイプ"
-                    :error-messages="prop.errors[0]"
-                  ></v-select>
-                </validation-provider> 
-              </div>
-            </div>
-            <!-- <div class="col-12 p-2 pt-0 pb-0">
-              <div class="filed">
-                <validation-provider name="スタジオ" rules="required" v-slot="prop">
-                  <v-select
-                    name="スタジオ"
-                    class="text-left p-1"
-                    v-model="form.studio_name"
-                    :items="studio_options"
-                    label="スタジオ"
-                    :error-messages="prop.errors[0]"
-                  ></v-select>
-                  <span class="sample" :style="{'color': 'red'}">{{ prop.errors[0] }}</span>
-                </validation-provider> 
-              </div>
-            </div> -->
-            <div class="col-12 p-0 text-center">
-              <div class="block mb-3">
-                <el-button class="m-0" type="warning" :style="{'width': '100%'}" @click="searchStudio">
-                  検索し直す
-                </el-button>
-              </div>
-              <!-- <a class="text-decoration-underline" @click="cancel">
-                キャンセル
-              </a> -->
-            </div>
-            <!-- <div class="col-12 p-2 pb-0">
-              <div class="block">
-                <el-button type="secondary" class="m-0 mt-5 mb-3" :style="{'width': '100%'}" @click="cancel">キャンセル</el-button>
-              </div>
-            </div> -->
-          </div>
-        </validation-observer>
-        
+        </el-alert>
+        <free-time-full-calendar
+          v-if="0<items.length"
+          :events="items"
+          :initialDate="search.date"
+          @confirm="confirm"
+          @cancel="cancel" />
+        </free-time-full-calendar>
       </div>
     </v-card>
-    <studio-resource
+    <!-- <studio-resource
+      :item="item"
+      :dialog-form-visible="modal_visible"
+      :close-modal="close_modal"
+      @confirm="confirm"
+      @payment="payment"
+      @paypay="paypay"> -->
+      <studio-resource
       :item="item"
       :dialog-form-visible="modal_visible"
       :close-modal="close_modal"
@@ -174,8 +183,6 @@
           :description="'ポイント'+shortPoint +'不足しているため、レンタル料金はカード決済でお支払いとなります。'"
           show-icon>
         </el-alert> -->
-     
-        
         <!-- <studio-resource
           v-for="(item, index) in items"
           :key="'course-detail-'+index" 
@@ -208,8 +215,7 @@
   import Firebase from 'Firebase'
   import firebase from "@firebase/app";
   import { loadStripe } from '@stripe/stripe-js';
-  const stripePromise = loadStripe('pk_test_51I1LTfAXJN6gcxR4I1pw3tPbCXFUl8rnbbq0Wcl6dJhQkjb3ZuuASp8GlpCVTZLFfMn4TnWdkZm1nS52N99w5ch400f3oMXvxy');
-
+  const stripePromise = loadStripe('pk_live_51I1LTfAXJN6gcxR4hNyT76w1LVnMGtnUEmrLgyURu6JRIg8niYPpCjn5XSmrjY9TSZg83XdZ4jt4iX7F88nOkeaN00kzBXdjQa');
 
 export default {
   components: {
@@ -225,7 +231,14 @@ export default {
       type_options: ['個人','グループ'],
       options: ['1時間','1.5時間','2時間'],
       studio_options: ['ナゴスタジオ','コザスタジオ'],
+      use_options: ['フラメンコ練習', 'その他の利用'],
       form: {
+        // full_name: '',
+        // email: '',
+        // start: '',
+        // finish: '',
+        resource_id: '',
+        price: 0,
         date: '',
         time: '',
         use_type: '個人',
@@ -233,17 +246,18 @@ export default {
         time_zone: '',
         hour: 1,
         studio_name: '',
-        price: 0,
         is_stripe: false,
+        is_framenco: 1,
+        use_name: 'フラメンコ練習'
       },
-      isShort: false,
-      shortPoint: 0,
+      // isShort: false,
+      // shortPoint: 0,
       targetDate: '',
       datetime: '',
       modal_visible: false,
-      item: {
-        datetime: 'wa'
-      }
+      item: {},
+      search_visible: false,
+      activeName: ''
     }
   },
   // beforeRouteEnter (to, from, next) {
@@ -282,6 +296,12 @@ export default {
     this.form.time = this.search.start;
     this.form.studio_name = this.search.studio_name;
 
+    this.$message({
+      type: 'success',
+      message: 'スタジオの空き時間を検索しています。検索結果よりご希望の時間をお選びください。',
+      duration: 3000
+    });
+
     // this.isSafariLogin = localStorage.getItem('isSafariLogin');
     // 日付初期値
     // this.form.date = this.$moment().format('YYYY-MM-DD');
@@ -299,13 +319,10 @@ export default {
         // ABORT!!
         return;
       }
-
+      
       // 利用可能時間を検索する
       store.commit('SET_ISLOADING', true)
-      var element = document.getElementById('capa-content');
       var that = this;
-      that.isShort = false;
-      that.shortPoint = 0;
 
       // 時間変換
       switch (that.form.time_zone_name) {
@@ -323,28 +340,38 @@ export default {
           break;
       }
 
+      // 一般価格
       let _documentName = "個人利用";
-      if(that.form.use_type == "グループ") _documentName = "団体利用"
+      if(that.form.use_type == "グループ") _documentName = "団体利用";
 
-      // 会員で入会金支払い済の場合
-      if(that.auth.username!=='' && that.auth.isAdmissionFee && that.auth.isLine) {
+      // フラメンコ練習？
+      let is_framenco = true;
+      if(that.form.use_name !== "フラメンコ練習") is_framenco = false;
+      that.form.is_framenco = is_framenco;
+
+      // 会員の場合且つフラメンコれんしゅうのみ
+      if(that.auth.isLine && is_framenco) {
         _documentName = "スタジオレンタル（個人利用）";
         if(that.form.use_type == "グループ") _documentName = "スタジオレンタル（団体利用）";
       }
       that.form.document = _documentName;
+      
+      // スタジオコード取得
+      that.form.resource_id = 794201;
+      if(that.form.studio_name == "ナゴスタジオ") that.form.resource_id = 794202;
 
-      store.commit('SET_SELECT_SEARCH', that.form)
-      store.commit('SET_SELECT_RESOURCES', [])
+      store.commit('SET_SELECT_SEARCH', that.form);
+      store.commit('SET_SELECT_RESOURCES', []);
 
       // 利用可能時間を取得
-      store.dispatch('getFree',{
+      store.dispatch('getFree', {
         params: that.form,
         callback: function(res){
           store.commit('SET_SELECT_RESOURCES', res)
           store.commit('SET_ISLOADING', false)
         }
       });
-        
+
     },
     ready: function(){
       // // 選択日付
@@ -375,6 +402,66 @@ export default {
     close_modal(){
       this.modal_visible=false;
     },
+    // paypay(item) {
+    //   console.log(item, this.search);
+    //   this.modal_visible = false;
+    //   store.commit('SET_ISLOADING', true);
+
+    //   let that = this;
+    //   // 選択条件
+    //   that.form.start = item.start_datetime;
+    //   that.form.finish = item.finish_datetime;
+    //   that.form.price = item.price;
+    //   that.form.email = that.auth.email;
+    //   that.form.full_name = that.auth.username;
+    //   that.form.product_name = item.product_name;
+    //   that.form.super_field = '';
+    //   if(that.auth.username=='') that.form.full_name = '一般';
+    //   let session_timestamp = moment().format("YYYYMMDDHH");
+    //   console.log(session_timestamp);
+      
+    //   store.dispatch('getPayPay', {
+    //     params: {
+    //       merchantPaymentId: '',
+    //       amount: {
+    //         amount: that.form.price,
+    //         currency: "JPY"
+    //       },
+    //       codeType: "ORDER_QR",
+    //       orderDescription: that.form.product_name,
+    //       isAuthorization: false,
+    //       redirectUrl: "https://vue-authentification-b7a7a.firebaseapp.com/?mode=successPayPay",
+    //       redirectType: "WEB_LINK",
+    //     },
+    //     callback: function(res){
+    //       // 支払ID取得
+    //       // that.form.merchantPaymentId = res.merchantPaymentId;
+    //       // that.form.codeId = res.codeId;
+    //       // store.commit('SET_FORM', that.form);
+    //       that.$confirm('<strong class="text-left">PayPay支払を開始してよろしいですか？</strong>', 'PayPayで支払う', {
+    //           dangerouslyUseHTMLString: true,
+    //           confirmButtonText: 'OK',
+    //           type: 'info',
+    //           center: true,
+    //         }).then(() => {
+    //           console.log(res)
+
+    //           // 一旦保持
+    //           Firebase.db().collection("paypay").doc(session_timestamp)
+    //           .set({
+    //             merchantPaymentId: res.merchantPaymentId,
+    //             codeId: res.codeId,
+    //             form: that.form,
+    //             status: 'create'
+    //           });
+    //           window.open(res.url, '_blank');
+    //           store.commit('SET_ISLOADING', false);
+    //         }).catch(() => {
+    //       });
+          
+    //     }
+    //   });
+    // },
     payment() { //カード決済
       
       this.modal_visible=false;
@@ -386,18 +473,20 @@ export default {
       let _start = moment(that.item.start).format("YYYY-MM-DD HH:mm:ss");
       let _finish = moment(_start).add(Number(that.item.hour), 'h').format("YYYY-MM-DD HH:mm:ss");
       
-      // // スタジオコード取得
-      // let _resource_id = 794201;
-      // if(that.search.studio == "ナゴスタジオ") _resource_id = 794202;
+      // スタジオコード取得
+      let _resource_id = 794201;
+      if(that.item.studioName == "ナゴスタジオ") _resource_id = 794202;
 
       let parms = {
+        full_name: that.auth.username,
         start: _start,
         finish: _finish,
-        // resource_id: _resource_id,
+        resource_id: _resource_id,
         price: that.item.price,
-        email: 'stripe@dummy.com',
+        email: that.auth.email,
+        product_name: that.item.use_name+' '+that.item.use_type,
       }
-      console.log(parms)
+      console.log('params!', parms);
       const processA = async function(documentName) {
         const _price_data = {
           currency: "jpy",
@@ -419,17 +508,11 @@ export default {
           },
           mode: "payment",
           // success_url: "https://localhost:4006/?mode=stripeSuccess",
-          success_url: "https://kdev.page/?mode=stripeSuccess",
+          success_url: "https://vue-authentification-b7a7a.firebaseapp.com/?mode=stripeSuccess",
           cancel_url: "https://www.fandangos-okinawa.com/reservation/?mode=stripeCancel",
-          headers: {
-            "Accept": "*/*",
-            "Contsent-Type": "application/json; charset=utf-8",
-            "Access-Control-Allow-Origin": "*",
-          }
         }).then((res) => {
           const session = res.data;
           const sessionId = session.id;
-          console.log(sessionId)
 
           // 一旦保持
           Firebase.db().collection("sessions").doc(parms.email)
@@ -451,7 +534,6 @@ export default {
         await processA();
       }
       processAll();
-
 
     },
   }

@@ -1,7 +1,10 @@
 <template>
   <div id="calendar">
+    <v-row justify="center" align-content="center">
+      <h5>{{ initialDate }}</h5>
+    </v-row>
     <FullCalendar
-      :style="{'min-height':height-adjust+'px','height':height+'px'}"
+      :style="{'min-height':height-adjust+'px'}"
       ref="freeTimeFullCalendar"
       defaultView="dayGridMonth"
       :options="calendarOptions">
@@ -60,8 +63,8 @@ export default {
         initialDate: this.initialDate,
         headerToolbar: {
           left:   '',
-          right: 'myCustomButton',
-          center: 'title',
+          right: '',
+          center: '',
         },
         selectable:true,
         // initialEvents: this.events,
@@ -72,12 +75,12 @@ export default {
         eventClick: this.changeEvent,
         weekends: true,
         // eventDidMount: this.eventDidMount,
-        customButtons: {
-          myCustomButton: {
-            text: '戻る',
-            click: this.closeContent
-          }
-        },
+        // customButtons: {
+        //   myCustomButton: {
+        //     text: '戻る',
+        //     click: this.closeContent
+        //   }
+        // },
         viewDidMount: this.viewDidMount
       },
       elDay: '',
@@ -186,7 +189,6 @@ export default {
       // // 表示切り替え
       // this.$refs.fullCalendar.getApi().gotoDate(date)
       // this.$refs.fullCalendar.getApi().changeView('timeGridDay');
-
 
       // // 背景色
       // var cells = document.getElementsByTagName("td");

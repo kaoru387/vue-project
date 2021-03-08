@@ -1,5 +1,4 @@
 import firebase from "@firebase/app";
-// import "@firebase/admin";
 import "@firebase/auth";
 import "@firebase/functions";
 // import "@firebase/database";
@@ -52,6 +51,7 @@ export default {
     // store.state.auth.password = password;
     firebase.auth().signInWithEmailAndPassword(email, password)
       .then(res => {
+        console.log("login", res);
         res.user.getIdToken().then(idToken => {
           // localStorage.setItem('jwt', idToken);
           router.push('/').catch(err => {
@@ -65,9 +65,11 @@ export default {
   //emailとパスワードでアカウント作成する
   //アカウント作成後は、'/signin'へルーティング
   signUpWithEmailAndPassword(email, password) {
+    let that = this;
     firebase.auth().createUserWithEmailAndPassword(email, password)
       .then(res => {
-        router.push('/signin');
+        // router.push('/signin')
+        that.signInWithEmailAndPassword(email, password);
       }).catch(err => {
         console.log(err.message);
       })
@@ -95,7 +97,6 @@ export default {
         // });
         // that.onAuth()
         // store.commit('SET_ISLOADING', false);
-        
       })
       .catch((err) => {
         console.log("err",err);
@@ -134,11 +135,10 @@ export default {
         provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
         requireDisplayName: false
       }
-    // firebase.auth.TwitterAuthProvider.PROVIDER_ID,
+      // firebase.auth.TwitterAuthProvider.PROVIDER_ID,
       // firebase.auth.EmailAuthProvider.PROVIDER_ID,
       // firebase.auth.PhoneAuthProvider.PROVIDER_ID,
     ]
-
     // let options = [
     //   {
     //     provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,

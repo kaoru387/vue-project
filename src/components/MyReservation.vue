@@ -60,11 +60,6 @@ import store from '../store/app';
 import axios from "axios"
 import moment from "moment"
 
-// import Firebase from 'Firebase'
-// import firebase from "@firebase/app";
-// import { loadStripe } from '@stripe/stripe-js';
-// const stripePromise = loadStripe('pk_test_51HU17xEL8vDvw6C3KK8sAW82ZkUnlLo7pRjQWkoiMNjjJiiaHOsL6uEpaO7URE55CGJAu3KIxOIy06azOtFVxp8J006cwjspAu');
-
 export default {
   props: {
     item: { 
@@ -109,12 +104,13 @@ export default {
   },
   mounted() {
     // this.title = this.selectDate+'の予約';
+    // console.log('nu', this.auth.credit + this.item.price)
   },
   methods: {
     deleteReservation() {
 
       let that = this;
-      console.log(that.item.price)
+      // console.log(that.item.price)
       this.$confirm('<strong class="text-left">本当に取消してもよろしいですか？</strong>', '予約取消', {
           dangerouslyUseHTMLString: true,
           confirmButtonText: 'OK',
@@ -123,16 +119,17 @@ export default {
         }).then(() => {
           store.commit('SET_ISLOADING', true)
           // ポイント戻す
-          let credit = store.state.auth.credit.replace(/,/, '');
-          credit = Number(credit) + Number(that.item.price.replace(/,/, ''));
+          // let credit = store.state.auth.credit.replace(/,/, '');
+          // credit = Number(credit) + Number(that.item.price.replace(/,/, ''));
+          let credit = that.auth.credit;
+          credit = Number(that.auth.credit) + Number(that.item.price);
           store.dispatch('saveUser',{
-           params: {
-             credit: credit,
-           },
-           callback: function(res){
-            console.log('su',res)
-            setTimeout(function(){
-
+            params: {
+              credit: credit,
+            },
+            callback: function(res){
+              // ポイント更新
+              store.commit('UPDATE_USER_CREDIT', credit);
               store.dispatch('deleteAppointment',{
                 params: {
                   id: that.item.id,
@@ -141,23 +138,34 @@ export default {
                   // user_id: that.item.user_id,
                   resource_id: that.item.resource_id,
                 },
-                callback: function(res){
-                  console.log('lo',res)
-                  // store.commit('SET_ISLOADING', false)
-                  window.location.href = '/';
+                callback: function(res) {
+                  // 完了メッセージ
+                  that.$message({
+                    type: 'success',
+                    message: '予約を取消しました。',
+                  });
+                  setTimeout(function(){
+                    // 予約
+                    store.commit('SET_EVENTS', []);
+                    store.dispatch('getBookings',{
+                      callback: function(res){
+                      }
+                    });
+                    // 自身の予約
+                    store.dispatch('getUserAgenda',{
+                      params: {
+                        from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
+                        user_email: that.auth.email
+                      },
+                    });
+                    store.dispatch('getUsers',function(e){
+                      store.commit('SET_ISLOADING', false)
+                    });
+                  },1200);
                 }
               });
-              // 完了メッセージ
-              that.$message({
-                type: 'success',
-                message: '予約を取消しました。',
-              });
-              // window.location.href = '/?mode=stripeSuccess';
-            },2000);
-             // window.location.href = '/?mode=stripeSuccess';
-           }
+            }
           });
-
         }).catch(() => {
           that.$message({
             type: 'info',

@@ -53,56 +53,53 @@ Firebase.init();
 // });
 
 // Firestore db作成
-store.dispatch('getInfo',{
-// store.dispatch('addAppointment',{
-	params: {},
-	callback: function(res){
+// store.dispatch('getInfo',{
+// // store.dispatch('addAppointment',{
+// 	params: {},
+// 	callback: function(res){
+// 		_.forEach(store.state.result.bookings, function(v, k) {
+// 			// ユーザマスター
+// 			// Firebase.db().collection("balances").doc(v['email'])
+// 	  //         .set({
+// 	  //         	id: v['id'],
+// 	  //           name: v['email'],
+// 	  //       });
 
-		_.forEach(store.state.result.bookings, function(v, k) {
-			// ユーザマスター
-			// Firebase.db().collection("balances").doc(v['email'])
-	  //         .set({
-	  //         	id: v['id'],
-	  //           name: v['email'],
-	  //       });
+// 	  // 		// 予約
+// 	  //       var washingtonRef = Firebase.db().collection("balances").doc(v['email']);
+// 			// washingtonRef.update({
+// 			//     bookings: firebase.firestore.FieldValue.arrayUnion({
+// 			//     	product_name: v['product_name'],
+// 			//     	date: v['date'],
+// 			//     	price: v['price'],
+// 			//     	start: v['start'],
+// 			//     	finish: v['finish'],
+// 			//     	created: v['created'],
+// 			//     })
+// 			// });
+// 		});
 
-	  // 		// 予約
-	  //       var washingtonRef = Firebase.db().collection("balances").doc(v['email']);
-			// washingtonRef.update({
-			//     bookings: firebase.firestore.FieldValue.arrayUnion({
-			//     	product_name: v['product_name'],
-			//     	date: v['date'],
-			//     	price: v['price'],
-			//     	start: v['start'],
-			//     	finish: v['finish'],
-			//     	created: v['created'],
-			//     })
-			// });
-			
-		});
-
-		// // 料金マスター作成
-		// _.forEach(res, function(v, k) {
-  //         // console.log(v.id, k);
-  //         Firebase.db().collection("schedules").doc(v.name)
-  //         .set({
-  //         	id: v.id,
-  //           name: v.name,
-  //           type: 'resource',
-  //           group: 'mamber',
-  //           resources: {
-  //           	'1:00': {name:"1時間",price: 800},
-  //           	'1:30': {name:"1.5時間",price: 1200},
-  //           	'2:00': {name:"2時間",price: 1600}
-  //           }
-  //         });
-  //       })
-	}
-});
+// 		// // 料金マスター作成
+// 		// _.forEach(res, function(v, k) {
+//   //         // console.log(v.id, k);
+//   //         Firebase.db().collection("schedules").doc(v.name)
+//   //         .set({
+//   //         	id: v.id,
+//   //           name: v.name,
+//   //           type: 'resource',
+//   //           group: 'mamber',
+//   //           resources: {
+//   //           	'1:00': {name:"1時間",price: 800},
+//   //           	'1:30': {name:"1.5時間",price: 1200},
+//   //           	'2:00': {name:"2時間",price: 1600}
+//   //           }
+//   //         });
+//   //       })
+// 	}
+// });
 
 Firebase.auth().onAuthStateChanged(user => {
-	// 
-	store.commit('SET_ISLOADING', true)
+	store.commit('SET_ISLOADING', true);
 	let that = this;
 	if (user) {
 		// ログイン情報
@@ -122,9 +119,13 @@ Firebase.auth().onAuthStateChanged(user => {
 		 	// supersass
 		 	//---------------
 		 	// ログイン名取得
+		 	let password = user.email;
 			let name = user.email;
-			if(user.email==null) name = user.phoneNumber;
-
+			if(user.email==null) {
+				// 電話ログインの場合
+				password = user.phoneNumber;
+				name = user.phoneNumber;
+			}
 		 	store.dispatch('getUsers',function(e){
 		 		// supersassに存在するかチェック
 		      	let list = _.filter(e, function(o) {
@@ -133,12 +134,15 @@ Firebase.auth().onAuthStateChanged(user => {
 		            }
 		        });
 		      	if(list.length==0){
+		      		let full_name = name;
+		      		if(user.displayName!==null) full_name = user.displayName;
 		      		let newUser = {
-		      			'full_name': user.username,
+		      			'full_name': full_name,
+		      			'email': user.email,
 			            'name': name,
-			            'password': user.password,
-			            'phone': user.phone,
-			            'address': user.address,
+			            'password': password,
+			            'phone': user.phoneNumber,
+			            'address': "",
 		      		}
 		      		// 存在しない場合、新規登録する
 		      		store.dispatch('addUser',{
@@ -149,7 +153,7 @@ Firebase.auth().onAuthStateChanged(user => {
 		      		});
 		      		return;
 		      	}else{
-		      		console.log(list[0])
+		      		// console.log(list[0])
 		      		// 存在する場合、権限を確認し保有（true:一般、false:会員）
 		      		if(!list[0].fk) store.commit('SET_AUTH_ROLE', false)
 		      		else store.commit('SET_AUTH_ROLE', true)
@@ -177,29 +181,4 @@ Firebase.auth().onAuthStateChanged(user => {
 		}),
 		render: h => h(App)
 	}).$mount("#app");
-
-})
-
-
-// new Vue({
-//   vuetify,
-//   router,
-//   render: h => h(App)
-// }).$mount('#app')
-
-// new Vue({
-// 	vuetify: new Vuetify({
-// 	}),
-//   router,
-//   render: h => h(App)
-// }).$mount('#app')
-
-// new Vue({
-// 	Vuetify: new Vuetify({
-// 		icons: {
-// 	    	iconfont: 'mdi', // 'mdi' || 'mdiSvg' || 'md' || 'fa' || 'fa4' || 'faSvg'
-// 	    },
-// 	}),
-//   router,
-//   render: h => h(App)
-// }).$mount('#app')
+});

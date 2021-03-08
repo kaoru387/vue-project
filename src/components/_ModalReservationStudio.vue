@@ -179,7 +179,7 @@
     },
     computed: {
       loading() {
-      return store.state.isLoading;
+        return store.state.isLoading;
       },
       auth() {
         return store.state.auth;
@@ -229,17 +229,23 @@
             break;
         }
 
+        // 一般
         let _documentName = "個人利用";
         if(that.form.use_type == "グループ") _documentName = "団体利用"
-
         // 会員以外は即決済
-        if(that.auth.username=='') that.form.is_stripe = true;
+        that.form.is_stripe = true;
 
-        // 会員で入会金支払い済の場合
-        if(that.auth.username!=='' && that.auth.isAdmissionFee) {
+        // 会員は会員価格
+        if(that.auth.isLine) {
           _documentName = "スタジオレンタル（個人利用）";
           if(that.form.use_type == "グループ") _documentName = "スタジオレンタル（団体利用）";
         }
+
+        // // 会員で入会金支払い済の場合
+        // if(that.auth.username!=='' && that.auth.isAdmissionFee) {
+        //   _documentName = "スタジオレンタル（個人利用）";
+        //   if(that.form.use_type == "グループ") _documentName = "スタジオレンタル（団体利用）";
+        // }
 
         // console.log(_documentName)
         firebase.db().collection("schedules").doc(_documentName)

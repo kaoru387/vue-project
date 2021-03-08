@@ -104,7 +104,9 @@ export default {
     // this.ui = new firebaseui.auth.AuthUI(firebase.auth());
   },
   mounted() {
-    // console.log("Login_mounted");
+    console.log("Login mounted");
+    store.commit('SET_ISLOADING', false);
+
     let that = this;
     var ui = firebase.authUI();
     var uiConfig = {
@@ -195,7 +197,7 @@ export default {
       signInSuccessUrl: '/?mode=signedIn',
       // signInOptions: firebase.signInOptions(),
       signInOptions: [
-        firebaseapp.auth.EmailAuthProvider.PROVIDER_ID,
+        // firebaseapp.auth.EmailAuthProvider.PROVIDER_ID,
         firebaseapp.auth.PhoneAuthProvider.PROVIDER_ID,
       ],
       // tosUrl: '<your-tos-url>',

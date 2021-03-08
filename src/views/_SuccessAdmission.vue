@@ -18,10 +18,10 @@
         >mdi-check-circle</v-icon>
         <div class="ml-2 mr-2 pb-5">
           <el-alert
-              class="text-left caption"
-              type="success"
-              description="会員登録いただき誠にありがとうございました。画面が切り替わるまで、しばらくこのままお待ち下さい..."
-              show-icon>
+            class="text-left caption"
+            type="success"
+            description="会員登録いただき誠にありがとうございました。画面が切り替わるまで、しばらくこのままお待ち下さい..."
+            show-icon>
           </el-alert>
         </div>
         <!-- <div class="pt-4 pb-5">
@@ -62,8 +62,8 @@ export default {
       callback: function(res){
         console.log(res)
         setTimeout(function(){
-            store.commit('SET_ISLOADING', false)
-            window.location.href = "https://www.fandangos-okinawa.com/reservation/" 
+          store.commit('SET_ISLOADING', false)
+          window.location.href = "https://www.fandangos-okinawa.com/reservation/" 
         },1500);
       }
     });
@@ -77,7 +77,7 @@ export default {
       let currentUser = firebase.auth().currentUser;
       if(!currentUser){
         // ログインなしの場合
-        window.location.href = "https://kdev.page/"
+        window.location.href = "https://vue-authentification-b7a7a.firebaseapp.com/"
       }else{
         // ログインありの場合
         store.dispatch('getUsers',function(e){

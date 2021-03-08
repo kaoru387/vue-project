@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    title="内容確認"
+    title="支払内容の確認"
     custom-class="dialog_category"
     :visible="dialogFormVisible"
     :close-on-press-escape="false"
@@ -8,7 +8,7 @@
     append-to-body
     @close="close"
     :loading="loading"
-    width="95%"
+    width="98%"
     :style = "{'max-width':'375px','margin': '20px auto'}"
     center
   >
@@ -22,35 +22,41 @@
       </div>
     </div>
     <v-card
-      class="mx-auto text-left p-2 mb-1"
-      max-width="344"
+      :loading="loading"
+      class="mx-auto text-left p-0 mb-1"
       outlined
     >
       <v-list-item three-line>
         <v-list-item-content>
-          <div class="d-flex justify-content-between mb-2">
-            <div>
-              <div class="d-flex flex-column bd-highlight m-0">
-                <div class="font-weight-medium pt-2" :style="{'text-transform':'capitalize','font-size':'20px'}">
-                  {{ item.studioName }}
-                </div>
-              </div>
-            </div>
+          <div class="d-flex justify-content-end p-2 pt-3 pb-0">
             <div>
               <div class="d-flex flex-column bd-highlight m-0 text-right">
-                <el-badge v-if="auth.username=='' || !auth.isLine" type="danger" class="pt-2 pr-2 bd-highlight" :value="'一般のお客様'"></el-badge>
-                <el-badge v-else class="pt-2 pr-2 bd-highlight" type="success" :value="'会員様'"></el-badge>
-                <span v-if="auth.username!=='' && auth.isLine" class="p-0 bd-highlight sample">ポイント：{{ auth.credit }}</span></span>
+                <el-badge v-if="auth.username=='' || !auth.isLine" type="danger" class="pt-2 bd-highlight" :value="'一般のお客様'"></el-badge>
+                <el-badge v-else class="pt-2 bd-highlight" type="success" :value="'会員様'"></el-badge>
+                <span v-if="auth.username!=='' && auth.isLine" class="p-0 bd-highlight sample">ポイント：{{ auth.credit.toLocaleString() }}</span></span>
               </div>
             </div>
           </div>
-          <v-list-item-subtitle class="mt-1">利用時間：{{ item.hour }}時間</span></v-list-item-subtitle>
-          <v-list-item-subtitle class="mt-1">利用ﾀｲﾌﾟ：{{ item.use_type }}</span></v-list-item-subtitle>
           <!-- .toLocaleString() -->
-          <v-list-item-title>レンタル料金：¥{{ item.price }}</v-list-item-title>
+          <!-- <div class="d-flex flex-column bd-highlight m-0">
+            <div class="font-weight-medium pt-2" :style="{'text-transform':'capitalize','font-size':'20px'}">
+              {{ item.studioName }}
+            </div>
+          </div> -->
+          <v-list-item-title class="font-weight-bold">
+            <div class="font-weight-medium pl-1 pt-0" :style="{'text-transform':'capitalize','font-size':'22px'}">
+              {{ item.studioName }}
+            </div>
+          </v-list-item-title>
+          <div class="p-0 pl-3">
+            <v-list-item-subtitle class="font-weight-bold pb-1">レンタル料金：¥{{ item.price }}</v-list-item-subtitle>
+            <v-list-item-subtitle class="mt-1">利用時間：{{ item.hour }}時間</span></v-list-item-subtitle>
+            <v-list-item-subtitle class="mt-1">利用ﾀｲﾌﾟ：{{ item.use_name }}</span></v-list-item-subtitle>
+            <v-list-item-subtitle class="mt-1">人数ﾀｲﾌﾟ：{{ item.use_type }}</span></v-list-item-subtitle>
+          </div>
         </v-list-item-content>
         <v-list-item-avatar
-          class="m-0"
+          class="p-4 mr-3"
           tile
           size="100"
           color="grey"
@@ -66,13 +72,42 @@
         </v-list-item-avatar>
       </v-list-item>
 
-      <v-card-actions class="justify-content-end pb-3">
-        <el-button v-if="search.is_stripe" :style="{'width':'100%'}" type="primary" @click="payment">
-          予約・カード決済する
-        </el-button>
-        <el-button v-else :style="{'width':'100%'}" type="success" @click="payoff">
-          予約・ポイント精算する
-        </el-button>
+      <v-card-actions class="justify-content-center pb-2">
+        <div class="d-flex bd-highlight">
+          <div class="p-0 flex-fill bd-highlight text-center pt-4 pb-4">
+            <!-- <span class="p-0 bd-highlight">
+              <el-button class="mb-4" :style="{'width':'100%'}" type="secondary" @click="paypay">
+                <img
+                  width="88" height="25"
+                  src="/images/Paypay_logo.png"
+                  alt="PayPay">
+                  <span class="ml-1">PayPayで支払う</span>
+              </el-button>
+            </span> -->
+            <div class="p-0 bd-highlight mb-4">
+              <el-alert
+                v-if="!isPoint"
+                class="p-1 mb-2"
+                type="error"
+                description="ポイントが不足しています。"
+                show-icon>
+              </el-alert>
+              <el-button class="p-3" :style="{'width':'100%'}" type="success" @click="payoff" :disabled="auth.credit<item.price" :loading="loading">
+                ポイント精算する
+              </el-button>
+            </div>
+            <span class="p-0 bd-highlight">
+              <el-button :style="{'width':'100%'}" type="secondary" @click="payment" :loading="loading">
+                <img
+                  width="120" height="22"
+                  src="/images/card_5brand.png"
+                  alt="stripe">
+                <span class="ml-1">カード決済する</span>
+              </el-button>
+            </span>
+            
+          </div>
+        </div>
       </v-card-actions>
     </v-card>
   </el-dialog>
@@ -84,10 +119,7 @@ import axios from "axios"
 import moment from "moment"
 import { Dialog } from 'element-ui'
 
-// import Firebase from 'Firebase'
-// import firebase from "@firebase/app";
-// import { loadStripe } from '@stripe/stripe-js';
-// const stripePromise = loadStripe('pk_test_51I1LTfAXJN6gcxR4I1pw3tPbCXFUl8rnbbq0Wcl6dJhQkjb3ZuuASp8GlpCVTZLFfMn4TnWdkZm1nS52N99w5ch400f3oMXvxy');
+import Firebase from 'Firebase';
 
 export default {
   components: {
@@ -109,18 +141,23 @@ export default {
   },
   data() {
     return {
-      loading: false,
+      // loading: false,
       title: '',
       isTarget: false,
       useType: '',
       targetDate: '',
       form: {
         hour: '',
-        use_type: ''
-      }
+        use_type: '',
+        use_name: '',
+      },
+      isPoint: true,
     }
   },
   computed: {
+    loading() {
+      return store.state.isLoading;
+    },
     search() {
       return store.state.search;
     },
@@ -131,6 +168,7 @@ export default {
   created: function () {
     this.form.hour = this.search.hour;
     this.form.use_type = this.search.use_type;
+    this.form.use_name = this.search.use_name;
 
     // 過去データは取消不可
     // console.log(this.$moment().format('YYYY-MM-DD'), this.item.start)
@@ -139,9 +177,13 @@ export default {
     }
     this.targetDate = moment(this.item.start).utc().format("MM月DD日")
     this.useType = this.item.use_type
+
   },
   mounted() {
-    
+    // ポイント
+    if(this.auth.credit<this.item.price){
+      this.isPoint=false;
+    }
   },
   methods: {
     applyExperience() {
@@ -149,125 +191,96 @@ export default {
     },
     payoff() { // ポイント精算
 
-      // this.$confirm('<strong class="text-left">レンタル料金をポイントから精算処理してもよろしいですか？</strong>', 'ポイント精算', {
-      //     dangerouslyUseHTMLString: true,
-      //     confirmButtonText: 'OK',
-      //     type: 'info',
-      //     center: true,
-      //   }).then(() => {
-
-      //     store.commit('SET_ISLOADING', true)
+      this.$confirm('<strong class="text-left">レンタル料金をポイントから精算処理してもよろしいですか？</strong>', 'ポイント精算', {
+          dangerouslyUseHTMLString: true,
+          confirmButtonText: 'OK',
+          type: 'info',
+          center: true,
+        }).then(() => {
+          store.commit('SET_ISLOADING', true);
           
-      //     let that = this;
-      //     var currentUser = Firebase.auth().currentUser;
-      //     if(!currentUser) {
-      //       alert('ポイント精算エラー');
-      //       return;
-      //     }
+          let that = this;
+          var currentUser = Firebase.auth().currentUser;
+          if(!currentUser) {
+            alert('ポイント精算エラー');
+            return;
+          }
 
-      //     let _start = moment(that.item.start).format("YYYY-MM-DD HH:mm:ss");
-      //     let _finish = moment(_start).add(Number(that.search.hour), 'h').format("YYYY-MM-DD HH:mm:ss");
-          
-      //     // スタジオコード取得
-      //     let _resource_id = 794201;
-      //     if(that.search.studio == "ナゴスタジオ") _resource_id = 794202;
+          // スタジオコード取得
+          let _resource_id = 794201;
+          if(that.item.studioName == "ナゴスタジオ") _resource_id = 794202;
 
-      //     let parms = {
-      //       start: _start,
-      //       finish: _finish,
-      //       resource_id: _resource_id,
-      //       price: that.search.price,
-      //       email: currentUser.email
-      //     }
+          let parms = {
+            full_name: that.auth.username,
+            start: that.item.start_datetime,
+            finish: that.item.finish_datetime,
+            resource_id: _resource_id,
+            price: that.item.price,
+            email: that.auth.email,
+            product_name: that.item.use_name+' '+that.item.use_type,
+          };
 
-      //     let credit = store.state.auth.credit.replace(/,/, '');
-      //     credit = Number(credit) - that.search.price;
-      //     const supersass = async function(documentName) {
-      //       await store.dispatch('saveUser',{
-      //         params: {
-      //           credit: credit,
-      //         },
-      //         callback: function(res){
-      //           // console.log('su',res)
-      //           // 予約
-      //           store.dispatch('addAppointment', {
-      //             params: parms,
-      //             callback: function(res2){
+          let credit = that.auth.credit;
+          credit = that.auth.credit - that.item.price;
+          const supersass = async function(documentName) {
+            await store.dispatch('saveUser',{
+              params: {
+                credit: credit,
+              },
+              callback: function(res){
+                // 予約
+                store.dispatch('addAppointment', {
+                  params: parms,
+                  callback: function(res2){
+                    // ポイント更新
+                    store.commit('UPDATE_USER_CREDIT', credit);
+                    that.isPoint=true;
+                    if(credit<that.item.price) that.isPoint=false;
+
+                    that.$message({
+                      type: 'success',
+                      message: '予約に成功しました！ポイント精算',
+                    });
                     
-      //               that.$message({
-      //                 type: 'success',
-      //                 message: '予約に成功しました！ポイント精算',
-      //               });
-      //               setTimeout(function(){
-      //                 // 予約
-      //                 store.commit('SET_EVENTS', []);
-      //                 store.dispatch('getBookings',{
-      //                   callback: function(res){
-      //                   }
-      //                 });
-      //                 // 自身の予約
-      //                 store.dispatch('getUserAgenda',{
-      //                   params: {
-      //                     from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
-      //                     user_email: store.state.auth.email
-      //                   },
-      //                 });
-      //                 store.dispatch('getUsers',function(e){
-      //                   store.commit('SET_AUTH', currentUser);
-      //                   store.commit('SET_ISLOADING', false)
-      //                   if(that.$route.path!=='/') that.$router.push({path: '/'});
-      //                 })
-      //               },1000);
-      //             }
-      //           });
-      //         }
-      //       });
-      //     }
-      //     const all = async function() {
-      //       await supersass()
-      //     }
-      //     all();
-      // }).catch(() => {
-      // });
-
+                    // データ取得
+                    setTimeout(function() {
+                      // 予約
+                      store.commit('SET_EVENTS', []);
+                      store.dispatch('getBookings',{
+                        callback: function(res){
+                        }
+                      });
+                      // 自身の予約
+                      store.dispatch('getUserAgenda',{
+                        params: {
+                          from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
+                          user_email: that.auth.email
+                        },
+                      });
+                      store.commit('SET_ISLOADING', false);
+                      store.dispatch('getUsers',function(e) {
+                        store.commit('SET_AUTH', currentUser);
+                        if(that.$route.path!=='/') that.$router.push({path: '/'});
+                      });
+                    }, 1200);
+                  }
+                });
+              }
+            });
+          }
+          const all = async function() {
+            await supersass()
+          }
+          all();
+      }).catch(() => {
+      });
     },
     payment() { //カード決済
       this.$emit('payment')
-
     },
-    deleteReservation() {
-      let that = this;
-      this.$confirm('<strong class="text-left">本当に取消してもよろしいですか？</strong>', '予約取消', {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: 'OK',
-          type: 'warning',
-          center: true,
-        }).then(() => {
-          // store.commit('SET_ISLOADING', true)
-          store.dispatch('deleteAppointment',{
-            params: {
-              id: that.item.id,
-              created: moment(that.item.created).format("YYYY-MM-DD"),
-              start: that.item.start,
-              user_id: that.item.user_id,
-              resource_id: that.item.resource_id,
-            },
-            callback: function(res){
-              // that.$emit('reLoad');
-              // 完了メッセージ
-              that.$message({
-                type: 'success',
-                message: '予約を取消しました。',
-              });
-            }
-          });
-        }).catch(() => {
-          that.$message({
-            type: 'info',
-            message: '予約取消キャンセルしました。'
-          });          
-        });
-    },
+    // paypay() {  //paypay決済
+    //   this.$emit('paypay',this.item)
+    // },
     close () {
       this.closeModal();
       this.$el.scrollTo(0,0);

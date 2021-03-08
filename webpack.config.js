@@ -79,6 +79,7 @@ module.exports = {
   },
   devServer: {
     // contentBase: '../public_html/dist',
+    // host: '0.0.0.0',
     contentBase: './firebase/public',
     // port: 4005,
     // headers: {

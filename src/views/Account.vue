@@ -16,7 +16,7 @@
       <v-card-text class="pt-0">
         <validation-observer ref="observer" v-slot="ObserverProps" tag="form" @submit.prevent="submit()">
           <div class="form-row">
-            <div class="col-12 p-2 pb-0">
+            <!-- <div class="col-12 p-2 pb-0">
               <div class="filed">
                 <validation-provider name="email" rules="required|email|emailcheck" v-slot="prop">
                   <v-text-field
@@ -41,13 +41,26 @@
                   ></v-text-field>
                 </validation-provider> 
               </div>
+            </div> -->
+            <div class="col-12 p-2 pb-0">
+              <div class="filed">
+                <validation-provider name="電話番号" rules="phonecheck|required" v-slot="prop">
+                  <v-text-field
+                    name="電話番号"
+                    label="電話番号：必須：ハイフンなし"
+                    type="number"
+                    v-model="form.phone"
+                    :error-messages="prop.errors[0]"
+                  ></v-text-field>
+                </validation-provider> 
+              </div>
             </div>
             <div class="col-12 p-2 pb-0">
               <div class="filed">
                 <validation-provider name="ユーザー名" rules="required" v-slot="prop">
                   <v-text-field
-                    name="ユーザー名"
-                    label="ユーザー名"
+                    name="ユーザー表示名"
+                    label="ユーザー表示名：必須"
                     type="text"
                     v-model="form.full_name"
                     :error-messages="prop.errors[0]"
@@ -68,20 +81,6 @@
                 </validation-provider> 
               </div>
             </div>
-            <div class="col-12 p-2 pb-0">
-              <div class="filed">
-                <validation-provider name="電話番号" rules="phone" v-slot="prop">
-                  <v-text-field
-                    name="電話番号"
-                    label="電話番号"
-                    type="number"
-                    v-model="form.phone"
-                    :error-messages="prop.errors[0]"
-                  ></v-text-field>
-                </validation-provider> 
-              </div>
-            </div>
-            
             <div class="col-12 p-2 pb-0">
               <div class="block">
                 <el-button class="m-0" type="success" :style="{'width': '100%'}" @click="submit">
@@ -123,8 +122,18 @@
   import { ValidationProvider, ValidationObserver } from 'vee-validate';
   import { extend } from'vee-validate'
   // エラーメッセージを設定する
-  extend('emailcheck', {
-    message: 'メールアドレスは既に存在しています。',
+  // extend('emailcheck', {
+  //   message: 'メールアドレスは既に存在しています。',
+  //   validate(value) {
+  //     let index = _.findIndex(store.state.result.users, function(o) {
+  //         return value==o.name;
+  //     });
+  //     if(index==-1) return true;
+  //     return false;
+  //   }
+  // });
+  extend('phonecheck', {
+    message: '電話番号は既に存在しています。',
     validate(value) {
       let index = _.findIndex(store.state.result.users, function(o) {
           return value==o.name;
@@ -133,18 +142,18 @@
       return false;
     }
   });
-  extend('phone', {
-    message: '{_field_}の形式が有効ではありません。',
-    validate(value) {
-      const util = PhoneNumberUtil.getInstance()
-      try {
-        const phoneNumber = util.parseAndKeepRawInput(value, 'JP')
-        return util.isValidNumber(phoneNumber)
-      } catch (err) {
-        return false
-      }
-    }
-  })
+  // extend('phone', {
+  //   message: '{_field_}の形式が有効ではありません。',
+  //   validate(value) {
+  //     const util = PhoneNumberUtil.getInstance()
+  //     try {
+  //       const phoneNumber = util.parseAndKeepRawInput(value, 'JP')
+  //       return util.isValidNumber(phoneNumber)
+  //     } catch (err) {
+  //       return false
+  //     }
+  //   }
+  // })
 
 export default {
   components: {

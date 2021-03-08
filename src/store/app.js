@@ -61,11 +61,6 @@ const state = {
     query:{
       limit:10,
     },
-    // superSassInfo: {
-    //   username: supersassConfig.account,
-    //   password: supersassConfig.password,
-    //   api_key: supersassConfig.apiKey
-    // },
     backuri: '',
     selectDate: '',
     auth: {
@@ -89,9 +84,13 @@ const state = {
       isSafariLogin: false,
       actionCode: '',
       accountEmail: '',
-      isResetPassword: false
+      isResetPassword: false,
     },
-    search: {}
+    search: {},
+    lineLogin: {
+      code: '',
+      state: '',
+    },
 }
 
 const actions = {
@@ -122,6 +121,92 @@ const actions = {
   getInfo: (store,{params,callback}) => {
     callback(params);
   },
+  getLineUserInfo: (store,{params,callback}) => {
+    // console.log('wao', params.client_id);
+    const processA = async function() {
+      const response = await firebase.functions().httpsCallable('getLineUser');
+      await response({
+        method: 'POST',
+        params: {
+          grant_type: 'authorization_code',
+          code: params.code,
+          redirect_uri: params.redirect_uri,
+          client_id: params.client_id,
+          client_secret: params.client_secret,
+        },
+      }).then((res) => {
+        console.log(res);
+        callback(res.data);
+      });
+    }
+    const processAll = async function() {
+      await processA()
+    }
+    processAll()
+  },
+  getLineLogin: (store,{params,callback}) => {
+    const processA = async function(documentName) {
+      const response = await firebase.functions().httpsCallable('getLineLogin');
+      await response({
+        method: 'POST',
+        params,
+      }).then((res) => {
+        callback(res)
+      });
+    }
+    const processAll = async function() {
+      await processA();
+    }
+    processAll();
+  },
+  getPayPay: (store,{params,callback}) => {
+    const processA = async function(documentName) {
+      const response = await firebase.functions().httpsCallable('postPayPay');
+      await response({
+        method: 'POST',
+        params,
+      }).then((res) => {
+        let data = JSON.parse(res.data).data;
+        callback(data)
+      });
+    }
+    const processAll = async function() {
+      await processA();
+    }
+    processAll();
+  },
+  getPayPayStatus: (store,{params,callback}) => {
+    const processA = async function(documentName) {
+      const response = await firebase.functions().httpsCallable('getPayPay');
+      await response({
+        method: 'POST',
+        params,
+      }).then((res) => {
+        let data = JSON.parse(res.data).data;
+        callback(data)
+      });
+    }
+    const processAll = async function() {
+      await processA();
+    }
+    processAll();
+  },
+  deletePayPay: (store,{params,callback}) => {
+    const processA = async function(documentName) {
+      const response = await firebase.functions().httpsCallable('deletePayPay');
+      await response({
+        method: 'POST',
+        params,
+      }).then((res) => {
+        let data = JSON.parse(res.data).data;
+        callback(data)
+      });
+    }
+    const processAll = async function() {
+      await processA();
+    }
+    processAll();
+  },
   getCharges: (store,{params,callback}) => {
     try {
       const processA = async function() {
@@ -143,16 +228,11 @@ const actions = {
     }
   },
   getUsers: (store,callback) => {
-    // console.log("get users");
     try {
       const processA = async function() {
         const httpEvent = firebase.functions().httpsCallable('getSSass');
         await httpEvent({ 
           path: '/users',
-          // params: {
-          //   username: supersassConfig.account,
-          //   password: supersassConfig.apiKey,
-          // },
           headers: {
             "Access-Control-Allow-Credentials": "true",
             "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.apiKey),
@@ -161,7 +241,6 @@ const actions = {
             "Access-Control-Allow-Origin": "*",
           }
         }).then((res) => {
-          // console.log('get',res);
           store.commit('SET_USERS', res.data)
           callback(res.data)
         });
@@ -176,7 +255,6 @@ const actions = {
 
   },
   getUserAgenda: (store,{params}) => {  // ユーザー予約を取得
-    // console.log("get user agenda", params);
     try {
       const processA = async function() {
         const httpEvent2 = firebase.functions().httpsCallable('getSSass');
@@ -196,14 +274,16 @@ const actions = {
             "Access-Control-Allow-Origin": "*",
           }
         }).then((res2) => {
+
           // xml to json
+          store.state.result.myschedules=[];
           let my=[];
           parser.parseString(res2.data, function (err, result) {
             store.commit('SET_BOOKINGS', result.bookings)
             _.forEach(result.bookings, function(booking, k) {
-              _.forEach(booking, function(v, k2) {
-                if(params.user_email==v.full_name) {
-                  // console.log(v)
+              if(booking.length==undefined) {
+                let v = booking;
+                if(params.user_email==v.email) {
                   let _start = moment(v.start._).format("HH:mm");
                   let _finish = moment(v.finish._).format("HH:mm");
                   my.push({
@@ -218,7 +298,26 @@ const actions = {
                     resource_id: v.schedule.$.id
                   })
                 }
-              })
+              }else{
+                // 複数ある場合
+                _.forEach(booking, function(v, k2) {
+                  if(params.user_email==v.email) {
+                    let _start = moment(v.start._).format("HH:mm");
+                    let _finish = moment(v.finish._).format("HH:mm");
+                    my.push({
+                      id: v.$.id,
+                      title: v.full_name,
+                      start: v.start._,
+                      end: v.finish._,
+                      datetime: _start+'〜'+_finish,
+                      studioName: v.resource_name._,
+                      price: v.price[0],
+                      created: v.created_on._,
+                      resource_id: v.schedule.$.id
+                    })
+                  }
+                })
+              }
             });
           })
           store.state.result.myschedules=my;
@@ -237,88 +336,13 @@ const actions = {
   getClass: (store, {params}) => { //クラスのレッスン
     // store.commit('SET_ISLOADING', true)
     // console.log(params)
-
-    // try {
-    //   const processA = async function(schedule_id,studio_name,color) {
-    //     const httpEvent = firebase.functions().httpsCallable('getSSass');
-    //     await httpEvent({ 
-    //       path: '/free/'+schedule_id+'.json',
-    //       params: {
-    //         from: store.state.selectDate + ' 00:00:00',
-    //         // from: params.date,
-    //         checksum: supersassConfig.checksum,
-    //       },
-    //       headers: {
-    //         "Accept": "application/json",
-    //         "Content-Type": "application/json; charset=utf-8",
-    //         "Access-Control-Allow-Origin": "*",
-    //       }
-    //     }).then((res) => {
-    //       // console.log('free',res);
-    //       _.forEach(res.data.slots, function(v, k) {
-    //         // console.log('free',v);
-    //         let description = v.description;
-    //         let isMember = false;
-
-    //         // description = description + ' ' +moment(v.start).format("h:mm")+'〜'+moment(v.finish).format("h:mm:ss a");
-    //         let _start = moment(v.start).format("HH:mm");
-    //         let _finish = moment(v.finish).format("HH:mm");
-    //         store.state.result.events.push({
-    //           id: v.id,
-    //           title: v.title,
-    //           start: v.start,
-    //           end: v.finish,
-    //           datetime: _start+'〜'+_finish,
-    //           description: description,
-    //           isMember:isMember,
-    //           studioName: studio_name,
-    //           iconColor: color,
-    //           color: color,
-    //           fontColor: 'black',
-    //           display: '',
-    //           isReserve: false,
-    //           // allDay: true
-    //         })
-    //         // store.commit('SET_ISLOADING', false)
-    //       });
-
-    //       // callback(res.data)
-    //       // store.commit('SET_USERS', res.data)
-    //     });
-    //   }
-
-    //   // コザクラス
-    //   const processAll = async function() {
-    //     // await processA(535055,'コザスタジオ','#F3C857')
-    //     await processA(550120,'コザクラス','tomato')
-    //     // await processA(549839,'コザクラス','tomato')
-    //   }
-    //   processAll()
-    //   .then(code => {
-
-    //     // ナゴクラス
-    //     const processAll2 = async function() {
-    //       // await processA(548481,'ナゴスタジオ','#9DC0AC')
-    //       await processA(550127,'ナゴクラス','blue')
-    //     }
-    //     processAll2().then(code2 => {
-    //       store.commit('SET_ISLOADING', false)
-    //       console.log('success')
-    //       return 'success';
-    //     })
-    //   })
-      
-    // } catch(error){
-    //   console.log(error)
-    // }
   },
   getFree: (store, {params,callback}) => { //空き状況：利用可能時間
 
     store.commit('SET_ISLOADING', true)
     let dt = moment(params.date).format("YYYY-MM-DD");
     let dt2 = moment(dt + " " + params.time +":00").format("YYYY-MM-DD HH:mm:ss");  
-
-    console.log(params.document);
+    // console.log(params.document);
     // 料金取得
     let price = 0;
     Firebase.db().collection("schedules").doc(params.document)
@@ -326,6 +350,7 @@ const actions = {
         if (querySnapshot.exists) {
           let resource = querySnapshot.data()
           price = resource.resources[params.time_zone].price
+          store.state.search.price=price
 
           // 決済以外（ポイント精算）
           let credit = store.state.auth.credit;
@@ -363,6 +388,8 @@ const actions = {
           _.forEach(res.data.slots, function(v, k) {
             let _start_time = moment(v.start).format("HH:mm");
             let _finish_time = moment(v.start).add(Number(params.hour), 'h').format("HH:mm");
+
+            let _start = moment(v.start).format("YYYY-MM-DD HH:mm:ss");
             let _finish = moment(v.start).add(Number(params.hour), 'h').format("YYYY-MM-DD HH:mm:ss");
 
             let color = supersassConfig.nagoColor;
@@ -370,18 +397,20 @@ const actions = {
               // コザ
               color = supersassConfig.kozaColor;
             }
-
             _resources.push({
               id: v.id,
-              title: params.studio_name+' '+ params.hour+'時間 '+params.use_type+' ¥'+price,
+              title: params.studio_name+' '+ params.hour+'時間 '+params.use_name+' '+params.use_type+' ¥'+price,
+              product_name: 'スタジオ予約 ' + params.use_type + ' '+ params.hour+'時間 ',
               start: v.start,
               end: _finish,
-              // description: studioname,
+              start_datetime: _start,
+              finish_datetime: _finish,
               datetime: _start_time+'〜'+_finish_time,
               studioName: v.name,
               price: price,
               hour: params.hour,
               use_type: params.use_type,
+              use_name: params.use_name,
               borderColor: color,
               color: 'white',
               fontColor: 'black',
@@ -397,7 +426,7 @@ const actions = {
         });
       }
 
-      // コザクラス
+      // スタジオ
       const processAll = async function() {
         await processA(549839)
       }
@@ -411,159 +440,56 @@ const actions = {
   },
   getBookings: (store, {callback}) => {
     store.commit('SET_ISLOADING', true)
-      try {
-        const processA = async function(schedule_id) {
-          const httpEvent = firebase.functions().httpsCallable('getSSass');
-          await httpEvent({ 
-            path: '/bookings',
-            params: {
-              schedule_id: schedule_id,
-              checksum: supersassConfig.checksum,
-            },
-            headers: {
-              "Accept": "application/xml",
-              "Content-Type": "application/xml; charset=utf-8",
-              "Access-Control-Allow-Origin": "*",
+    try {
+      let that = this;
+      const processA = async function(schedule_id) {
+        const httpEvent = firebase.functions().httpsCallable('getSSass');
+        await httpEvent({ 
+          path: '/bookings',
+          params: {
+            schedule_id: schedule_id,
+            checksum: supersassConfig.checksum,
+          },
+          headers: {
+            "Accept": "application/xml",
+            "Content-Type": "application/xml; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
+          }
+        }).then((res) => {
+          // xml to json
+          store.state.result.bookings=[];
+          parser.parseString(res.data, function (err, result) {
+
+            // 個人と団体データ様式が異なるため
+            let _datas=result.reservations;
+            if(_datas==undefined) _datas = result.appointments;
+
+            // -----------------------------
+            // 管理者が変更すると、この形式になる?
+            // -----------------------------
+            if(_datas.reservation){
+              if(1<_datas.reservation.length){
+                _.forEach(_datas.reservation, function(reservation, k) {
+                  setScheduleEvent(store, reservation);
+                });
+              }else{
+                // 1件しかない場合、配列じゃない。
+                setScheduleEvent(store, _datas.reservation);
+              }
             }
-          }).then((res) => {
-            // xml to json
-            parser.parseString(res.data, function (err, result) {
-              // 個人と団体データ様式が異なるため！
-              let _datas=result.reservations;
-              if(_datas==undefined) _datas = result.appointments;
-
-              store.state.result.bookings=[];
-              _.forEach(_datas, function(reservations, k) {
-                _.forEach(reservations, function(v, key) {
-                  // console.log('booking-',v)
-                  if(!v['res-name']) return;  // 削除された場合、表示しない
-
-                  let description = v['status-message'];
-                  let _start = moment(v['start']['_']).utc().format("HH:mm");
-                  let _finish = moment(v['finish']['_']).utc().format("HH:mm");
-
-                  // コザが含まれているか検索
-                  let color = supersassConfig.nagoColor;
-                  var result = v['res-name'].indexOf('コザ');
-                  if(result!==-1) {
-                    // コザ
-                    color = supersassConfig.kozaColor;
-                  }
-                  let allDay=false;
-                  let title=v['full-name'];
-
-                  // 一般か会員かチェック
-                  let index = _.findIndex(store.state.result.users, function(o) { 
-                    return o.name == v['full-name']; 
-                  })
-                  if(index!=-1) {
-                    title = store.state.result.users[index]['full_name']+'さん';
-                    // // 一般
-                    // iconColor = '#ffb6c1'
-                    // color = '#ffb6c1'
-                    // title = "一般"
-                    // // 一般且つ承認待ちの場合
-                    // if(v['status-message']=='承認待ち') {
-                    //   title = _start + " 承認待ち"
-                    //   allDay=true;
-                    // }
-                  };
-
-                  // Firestore更新用-start
-                  let product_name = 'スタジオ予約グループ';
-                  let obj = Object.prototype.toString.call(v['field-2'])
-                  if(obj == '[object String]') product_name = v['field-2'];
-
-                  let price = 0;
-                  let obj2 = Object.prototype.toString.call(v['field-1'])
-                  if(obj2 == '[object String]') {
-                    price = "¥"+v['field-1']
-                  }
-                  
-                  store.state.result.bookings.push({
-                    id: v['id']['_'],
-                    email: v['full-name'],
-                    product_name: product_name,
-                    price: price,
-                    date: moment(v['start']['_']).utc().format("YYYY-MM-DD"),
-                    start: _start,
-                    finish: _finish,
-                    created: moment(v['created-on']['_']).utc().format("YYYY-MM-DD"),
-                  });
-
-                  // Firestore更新用-end
-                  store.state.result.events.push({
-                    id: v['id']['_'],
-                    title: title+' '+price,
-                    start: v['start']['_'],
-                    end: v['finish']['_'],
-                    description: description,
-                    datetime: _start+'〜'+_finish,
-                    // isMember:isMember,
-                    studioName: v['res-name'],
-                    iconColor: color,
-                    color: color,
-                    // textColor: 'black',
-                    display: '',
-                    // isReserve: true,
-                    created: v['created-on']['_'],
-                    user_id: v['user-id']['_'],
-                    allDay: allDay
-                  })
-                  
-                })
-              })
-            });
-            callback(true)
-
           });
-        }
-
-        // 個人利用
-        const processAll = async function() {
-          await processA(549839)
-        }
-        processAll()
-
-
-        let today = moment().format('YYYY-MM-DD');
-        for (let i = 0; i < 60; i++) {
-          let dt = moment(today).add(i, 'd').format("YYYY-MM-DD");
-          
-          store.state.result.events.push({
-            id: 'dummy',
-            title: 'ナゴ空き時間',
-            start: dt+' 06:00:00',
-            end: dt,
-            description: 'test',
-            studioName: 'ナゴスタジオ',
-            iconColor: supersassConfig.nagoColor,
-            borderColor: supersassConfig.nagoColor,
-            color: 'white',
-            textColor: supersassConfig.nagoColor,
-            created: dt,
-            allDay: true
-          });
-          store.state.result.events.push({
-            id: 'dummy',
-            title: 'コザ空き時間',
-            start: dt+' 08:00:00',
-            end: dt,
-            description: 'test',
-            studioName: 'コザスタジオ',
-            iconColor: supersassConfig.kozaColor,
-            borderColor: supersassConfig.kozaColor,
-            color: 'white',
-            textColor: supersassConfig.kozaColor,
-            created: dt,
-            allDay: true
-          });
-          
-        }
-
-      } catch(error){
-        console.log(error)
+          callback(true);
+        });
       }
+      // スタジオ
+      const processAll = async function() {
+        await processA(549839)
+      }
+      processAll()
+
+    } catch(error){
+      console.log(error)
+    }
   },
   // getBooking: (store,{params,callback}) => {  //単一
   //   console.log("get book",params);
@@ -597,7 +523,6 @@ const actions = {
   //   } catch(error){
   //     console.log(error)
   //   }
-
   // },
   addAppointment: (store,{params,callback}) => {
     // 予約追加
@@ -610,12 +535,14 @@ const actions = {
           params: {
             schedule_id: supersassConfig.resourceId,
             api_key: supersassConfig.apiKey,
-            'booking[full_name]': params.email,
+            'booking[full_name]': params.full_name,
             'booking[email]': params.email,
             'booking[start]': params.start,
             'booking[finish]': params.finish,
             'booking[resource_id]': params.resource_id,
             'booking[field_1]': params.price,
+            'booking[field_2]': params.product_name,
+            // 'booking[super_field]': super_field,
           },
           headers: {
             "Access-Control-Allow-Credentials": "true",
@@ -624,7 +551,7 @@ const actions = {
             "Access-Control-Allow-Origin": "*",
           }
         }).then((res) => {
-          console.log('apo',res);
+          console.log("success add.");
           callback(res)
         });
       }
@@ -637,46 +564,43 @@ const actions = {
     }
   },
   deleteAppointment: (store,{params,callback}) => {
-      try {
-        // 予約削除
-        const processA = async function() {
-          const httpEvent2 = firebase.functions().httpsCallable('deleteSSass');
-          const d_appoint = httpEvent2({ 
-            path: '/bookings/'+ params.id +'.json',
-            params: {
-              schedule_id: supersassConfig.resourceId,
-              checksum: supersassConfig.checksum,
-            },
-            headers: {
-              "Accept": "*/*",
-              "Contsent-Type": "application/json; charset=utf-8",
-              "Access-Control-Allow-Origin": "*",
-            }
-          }).then((res) => {
-            console.log(res)
-            callback(res)
-          });
-          return d_appoint;
-
-        }
-        const processAll = async function() {
-          return await processA()
-        }
-        processAll()
-      } catch(error){
-        console.log(error)
+    try {
+      // 予約削除
+      const processA = async function() {
+        const httpEvent2 = firebase.functions().httpsCallable('deleteSSass');
+        const d_appoint = httpEvent2({ 
+          path: '/bookings/'+ params.id +'.json',
+          params: {
+            schedule_id: supersassConfig.resourceId,
+            checksum: supersassConfig.checksum,
+          },
+          headers: {
+            "Accept": "*/*",
+            "Contsent-Type": "application/json; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
+          }
+        }).then((res) => {
+          console.log("success delete.");
+          callback(res)
+        });
+        return d_appoint;
       }
+      const processAll = async function() {
+        return await processA()
+      }
+      processAll()
+    } catch(error){
+      console.log(error)
+    }
   },
   addUser: (store,{params,callback}) => {
 
     // ランダム整数発行
-    var _code = getRandomInt(1,9999)
-    // var _name='susturesusture2525'+params.email;
-    // // console.log('p name.',_name);
+    var _code = getRandomInt(1, 9999);
 
-    // ////////////////////////
-    // // supersass新規追加
-    // ////////////////////////
+    ////////////////////////
+    // supersass新規追加
+    ////////////////////////
 
     try {
       // console.log('user!',params, _code)
@@ -783,38 +707,38 @@ const actions = {
       console.log(error)
     }
   },
-  saveUserAdmission: (store,{params, callback}) => {
-    try {
-      const processA = async function() {
-        const httpEvent = firebase.functions().httpsCallable('postSSass');
-        await httpEvent({ 
-          path: '/users/'+ store.state.auth.user_id+'.json',
-          method: 'PUT',
-          params: {
-            notfound: 'ignore',
-            'user[name]': store.state.auth.email,
-            'user[super_field]': params.group_id,
-          },
-          headers: {
-            "Access-Control-Allow-Credentials": "true",
-            "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.apiKey),
-            "Accept": "*/*",
-            "Contsent-Type": "application/json; charset=utf-8",
-            "Access-Control-Allow-Origin": "*",
-          }
-        }).then((res) => {
-          console.log('success!',res);
-          callback(res)
-        });
-      }
-      const processAll = async function() {
-        await processA()
-      }
-      processAll()
-    } catch(error){
-      console.log(error)
-    }
-  }
+  // saveUserAdmission: (store,{params, callback}) => {
+  //   try {
+  //     const processA = async function() {
+  //       const httpEvent = firebase.functions().httpsCallable('postSSass');
+  //       await httpEvent({ 
+  //         path: '/users/'+ store.state.auth.user_id+'.json',
+  //         method: 'PUT',
+  //         params: {
+  //           notfound: 'ignore',
+  //           'user[name]': store.state.auth.email,
+  //           'user[super_field]': params.group_id,
+  //         },
+  //         headers: {
+  //           "Access-Control-Allow-Credentials": "true",
+  //           "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.apiKey),
+  //           "Accept": "*/*",
+  //           "Contsent-Type": "application/json; charset=utf-8",
+  //           "Access-Control-Allow-Origin": "*",
+  //         }
+  //       }).then((res) => {
+  //         console.log('success!',res);
+  //         callback(res)
+  //       });
+  //     }
+  //     const processAll = async function() {
+  //       await processA()
+  //     }
+  //     processAll()
+  //   } catch(error){
+  //     console.log(error)
+  //   }
+  // }
 }
 
 function getRandomInt(min, max) {
@@ -822,6 +746,63 @@ function getRandomInt(min, max) {
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
 }
+
+// カレンダーイベント追加
+function setScheduleEvent(store, v) {
+  let description = v['status-message'];
+  let _start = moment(v['start']['_']).utc().format("HH:mm");
+  let _finish = moment(v['finish']['_']).utc().format("HH:mm");
+
+  // Firestore更新用-start
+  let product_name = '管理者変更';
+  let obj = Object.prototype.toString.call(v['field-2'])
+  if(obj == '[object String]') product_name = v['field-2'];
+  
+  let price = v['price'];
+  let obj2 = Object.prototype.toString.call(v['field-1'])
+  if(obj2 == '[object String]') {
+    price = v['field-1'];
+  }
+  
+  // コザが含まれているか検索
+  let color = supersassConfig.nagoColor;
+  var result = v['res-name'].indexOf('コザ');
+  if(result!==-1) {
+    // コザ
+    color = supersassConfig.kozaColor;
+  }
+  let allDay=false;
+  let title='予約済';
+
+  store.state.result.bookings.push({
+    id: v['id']['_'],
+    email: v['full-name'],
+    product_name: product_name,
+    price: price,
+    date: moment(v['start']['_']).utc().format("YYYY-MM-DD"),
+    start: _start,
+    finish: _finish,
+    created: moment(v['created-on']['_']).utc().format("YYYY-MM-DD"),
+  });
+
+  // Firestore更新用-end
+  store.state.result.events.push({
+    id: v['id']['_'],
+    title: title+' '+price+' '+v['res-name'],
+    start: v['start']['_'],
+    end: v['finish']['_'],
+    description: description,
+    datetime: _start+'〜'+_finish,
+    product_name: product_name,
+    studioName: v['res-name'],
+    iconColor: color,
+    color: color,
+    display: '',
+    created: v['created-on']['_'],
+    user_id: v['user-id']['_'],
+    allDay: allDay
+  });
+};
 
 const mutations = {
   onAuthEmailChanged(state, email) {
@@ -842,6 +823,7 @@ const mutations = {
     state.authStatus = status;
   },
   SET_USERS (state, data) {
+    // console.log('users!', data);
     state.result.users = data
   },
   SET_SERVICE_RESOURCES (state, data) {
@@ -878,10 +860,8 @@ const mutations = {
       state.auth.email = auth.email
       state.auth.emailVerified=auth.emailVerified;
     }
-    
-    
     // state.info.isSafariLogin = false;
-    // console.log('get auth',auth)
+    // console.log('get auth',auth);
 
     // イベント取得
     let name = auth.email;
@@ -892,30 +872,29 @@ const mutations = {
     if(index==-1) return;
 
     // supersassアカウント
-    let supersassuser = state.result.users[index]
-    state.auth.user_id = supersassuser.id
-    state.auth.credit = 0;
-    if(0<supersassuser.credit){
-      state.auth.credit = Number(that.auth.credit.replace(/,/, ''));
-    }
-    // state.auth.credit = supersassuser.credit
+    let supersassuser = state.result.users[index];
+    state.auth.user_id = supersassuser.id;
+
+    // ポイント
+    let credit = Number(supersassuser.credit.replace(/,/, ''));
+    state.auth.credit = credit;
+    // 住所
     if(supersassuser.address=="null") state.auth.address = '';
     else state.auth.address = supersassuser.address;
-
+    // 電話番号
     if(supersassuser.phone=="null") state.auth.phone = '';
     else state.auth.phone = supersassuser.phone;
     
-    state.auth.password = supersassuser.password
-    state.auth.username = supersassuser.full_name;
-    // console.log('super',supersassuser)
+    state.auth.password = supersassuser.password;
+    if(state.auth.username==null) state.auth.username = supersassuser.full_name;
+    // console.log('super', supersassuser);
 
-    // 初回の入会金チェック
-    if(supersassuser.super_field==null || supersassuser.super_field==''){
-      state.auth.isAdmissionFee = false;
-      state.auth.isLine = false
-      return;
-    }
-    // console.log(supersassuser.super_field)
+    // // 初回の入会金チェック
+    // if(supersassuser.super_field==null || supersassuser.super_field==''){
+    //   state.auth.isAdmissionFee = false;
+    //   state.auth.isLine = false
+    //   return;
+    // }
     
     // 権限
     if(supersassuser.super_field==1) {
@@ -932,13 +911,13 @@ const mutations = {
   SET_INFO_BROUSER (state, browser){
     state.info.browser = browser;
   },
-  RESET_VUEX_STATE(state) {
-    // ローカルストレージ初期化
-    Object.assign(state, JSON.parse(localStorage.getItem('state')));
-  },
-  SET_SAFARI_LOGIN (state, is_login){
-    state.info.isSafariLogin = is_login
-  },
+  // RESET_VUEX_STATE(state) {
+  //   // ローカルストレージ初期化
+  //   Object.assign(state, JSON.parse(localStorage.getItem('state')));
+  // },
+  // SET_SAFARI_LOGIN (state, is_login){
+  //   state.info.isSafariLogin = is_login
+  // },
   SET_SELECT_SEARCH (state, search){
     state.search = search
   },
@@ -955,6 +934,18 @@ const mutations = {
   SET_ACTIONEMAIL (state, email){
     state.info.accountEmail = email
   },
+  // SET_FORM (state, form){
+  //   state.form = form;
+  // },
+  SET_LINE_LOGIN (state, lineLogin){
+    state.lineLogin = lineLogin
+  },
+  UPDATE_USER_CREDIT (state, credit){
+    state.auth.credit = credit
+  },
+  // SET_LINE_LOGIN_URL (state, url){
+  //   state.lineLoginUrl = url;
+  // },
 }
 
 // TODO: あとでcreateLoggerを外す

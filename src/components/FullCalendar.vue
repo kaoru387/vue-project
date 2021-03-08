@@ -21,9 +21,9 @@
         </v-list-item> -->
       <!-- </template> -->
     </FullCalendar>
-    <modal-reservation-studio ref="reservationStudio" 
+    <!-- <modal-reservation-studio ref="reservationStudio" 
       :dialog-form-visible="search_visible" 
-      :close-modal="closeContent" />
+      :close-modal="closeContent" /> -->
     <!-- <interactive-content ref="interactiveContent" 
       :dialog-form-visible="content_visible" 
       :close-content="closeContent" /> -->
@@ -47,7 +47,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import ja from "@fullcalendar/core/locales/ja";
 
 import InteractiveContent from './InteractiveContent'
-import ModalReservationStudio from './ModalReservationStudio'
+// import ModalReservationStudio from './ModalReservationStudio'
 
 
 import store from '../store/app';
@@ -58,7 +58,7 @@ export default {
   components: {
     FullCalendar,
     InteractiveContent,
-    ModalReservationStudio,
+    // ModalReservationStudio,
     BPopover
   },
   props: {
@@ -87,7 +87,7 @@ export default {
           // right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
         selectable:true,
-        // initialEvents: this.events,
+        // initialEvents: this.iniEvents,
         events: this.events,
         dateClick: this.handleDateClick,
         locale:ja,
@@ -105,7 +105,12 @@ export default {
       },
       elDay: '',
       elToday: '',
-      // viewName: 'timeGridWeek'
+      // iniEvents: {
+      //   id: 6,
+      //   title: '追加の予定',
+      //   start: "2021-02-14T15:15:00",
+      //   end: "2021-02-14T17:00:00"
+      // },
     }
   },
   computed: {
@@ -153,7 +158,6 @@ export default {
       // console.log(arg)
 
       // if(arg.view.type!=='dayGridMonth'){
-        
       //   return;
       // }
       
@@ -185,51 +189,6 @@ export default {
       // this.$emit('date-selected',arg.dateStr);
     },
     changeEvent: function(eventInfo) {
-      
-      //イベント選択
-      let event = eventInfo.event.toJSON()
-      if(event.id!=='dummy') return;
-
-      // console.log(event)
-
-      store.commit('SET_ISLOADING', true)
-      let date = this.$moment(event.start).format('YYYY-MM-DD');
-      let start = this.$moment(event.start).format('HH:mm');
-      let search = {
-        date: date,
-        start: start,
-        studio_name: event.extendedProps.studioName
-      }
-      store.commit('SET_SELECT_SEARCH', search)
-
-      // 料金マスター
-      let _documentName = "個人利用";
-      // 会員且つ入会金支払い済
-      if(this.auth.username!=='' && this.auth.isAdmissionFee && this.auth.isLine) {
-        _documentName = "スタジオレンタル（個人利用）";
-      }
-
-      store.commit('SET_SELECT_RESOURCES', [])
-      store.dispatch('getFree', {
-        params: {
-          date: date,
-          time: start,
-          time_zone: '1:00',
-          hour: 1.0,
-          document: _documentName,
-          use_type: '個人',
-          studio_name: search.studio_name
-        },
-        callback: function(res){
-          // console.log(res)
-          store.commit('SET_SELECT_RESOURCES', res)
-          store.commit('SET_ISLOADING', false)
-        }
-      });
-
-      this.$router.replace('/studiosearch')
-
-
       // this.item = event;
       // this.content_visible = true
 
@@ -270,7 +229,7 @@ export default {
           template: '<div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>',
           target: info.el,
           // title: info.timeText+' '+info.event.title,
-          title: info.timeText+' '+info.event.extendedProps.studioName,
+          title: info.timeText,
           // content: info.event.title+' '+info.event.extendedProps.description,
           content: title,
           boundary: 'viewport',

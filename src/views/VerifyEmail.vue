@@ -8,7 +8,7 @@
       >
       <v-card-title class="text-left pt-4">
         <!-- <h4>ログインに成功しました！</h4> -->
-        <v-row justify="center" align-content="center">
+        <v-row class="mt-2 pb-1" justify="center" align-content="center">
           <h4 class="pt-2">登録メール認証成功</h4>
         </v-row>
       </v-card-title>

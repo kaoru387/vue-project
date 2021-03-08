@@ -21,8 +21,8 @@
                 <validation-provider name="ユーザー名" rules="required" v-slot="prop">
                   <v-text-field
                     name="ユーザー名"
-                    label="ユーザー名"
                     type="text"
+                    label="ユーザー名：必須"
                     v-model="form.full_name"
                     :error-messages="prop.errors[0]"
                   ></v-text-field>
@@ -34,7 +34,7 @@
                 <validation-provider name="住所" v-slot="prop">
                   <v-text-field
                     name="住所"
-                    label="住所"
+                    label="住所：任意"
                     type="text"
                     v-model="form.address"
                     :error-messages="prop.errors[0]"
@@ -47,15 +47,14 @@
                 <validation-provider name="電話番号" rules="phone" v-slot="prop">
                   <v-text-field
                     name="電話番号"
-                    label="電話番号"
-                    type="number"
+                    label="電話番号：任意"
+                    type="text"
                     v-model="form.phone"
                     :error-messages="prop.errors[0]"
                   ></v-text-field>
                 </validation-provider> 
               </div>
             </div>
-            
             <div class="col-12 p-2 pb-0">
               <div class="block">
                 <el-button class="m-0" type="success" :style="{'width': '100%'}" @click="submit">
@@ -64,7 +63,6 @@
                 <el-button type="secondary" class="m-0 mt-5 mb-3" :style="{'width': '100%'}" @click="cancel">キャンセル</el-button>
               </div>
             </div>
-
           </div>
         </validation-observer>
       </v-card-text> 
@@ -135,6 +133,7 @@ export default {
         full_name: "",
         address:"",
         phone:"",
+        name: "",
       },
     }
   },
@@ -147,10 +146,12 @@ export default {
     
     let that = this;
     let auth = store.state.auth;
+    console.log(auth);
     that.form.email = auth.email;
     that.form.full_name = auth.username;
     that.form.address = auth.address;
     that.form.phone = auth.phone;
+    that.form.name = auth.email;
 
   },
   mounted() { 
@@ -177,8 +178,8 @@ export default {
             setTimeout(function(){
               store.dispatch('getUsers',
                 function(e){
-                  // console.log('ユーザー再取得OK')
-                  store.commit('SET_AUTH', user)
+                  // console.log('ユーザー再取得OK');
+                  store.commit('SET_AUTH', user);
                   that.$message({
                     type: 'success',
                     message: '会員情報を更新しました。',
@@ -194,9 +195,6 @@ export default {
           return res;
         }
       });
-      
-
-      
 
       // const f = await firebase.auth().createUserWithEmailAndPassword(this.form.email, this.form.password).then(
       //   (user) => {
