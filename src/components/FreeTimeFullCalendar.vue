@@ -172,7 +172,18 @@ export default {
       // this.$emit('date-selected',arg.dateStr);
     },
     changeEvent: function(eventInfo) {
-      // console.log('change event')
+      console.log('change event')
+      //イベント選択
+      let event = eventInfo.event.toJSON();
+      // 選択日付更新
+      let date = moment(event.start).utc().format('YYYY-MM-DD')
+      let start = moment(event.start).format('HH:mm');
+      let search = {
+        date: date,
+        start: start
+      }
+      store.commit('SET_SELECT_SEARCH', search);
+      
       // //イベント選択
       // let event = eventInfo.event.toJSON()
       // this.item = event;

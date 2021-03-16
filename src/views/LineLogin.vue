@@ -72,7 +72,7 @@ export default {
       console.log('OK', this.lineLogin);
 
       let that = this;
-      that.$confirm('<strong class="text-left">LINEアカウント情報の共有をご許可いただけるお客様のみご利用ください。ご許可いただけないお客様は、電話番号ログインをご利用ください。</strong>', 'LINEアカウント情報共有確認', {
+      that.$confirm('<strong class="text-left">LINEアカウント情報にメールアドレスが設定されていない場合、失敗いたします。また、情報共有をご許可いただけないお客様も失敗いたしますので、電話番号ログインをご利用ください。</strong>', 'LINEアカウント情報共有確認', {
           dangerouslyUseHTMLString: true,
           confirmButtonText: '承諾',
           type: 'warning',

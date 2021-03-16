@@ -514,7 +514,6 @@ const actions = {
   //         console.log('apoi',res2)
   //         callback(res2);
   //       });
-
   //     }
   //     const processAll = async function() {
   //       await processA()

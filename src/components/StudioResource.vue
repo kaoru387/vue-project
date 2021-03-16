@@ -145,7 +145,7 @@ export default {
       title: '',
       isTarget: false,
       useType: '',
-      targetDate: '',
+      // targetDate: '',
       form: {
         hour: '',
         use_type: '',
@@ -155,6 +155,10 @@ export default {
     }
   },
   computed: {
+    targetDate() {
+      if(!store.state.search.date) return '';
+      else return moment(store.state.search.date).format("MM月DD日");
+    },
     loading() {
       return store.state.isLoading;
     },
@@ -175,7 +179,7 @@ export default {
     if(this.$moment().format('YYYY-MM-DD')<=this.item.start){
       if(this.item.user_id==this.auth.user_id) this.isTarget=true;
     }
-    this.targetDate = moment(this.item.start).utc().format("MM月DD日")
+    // this.targetDate = moment(this.item.start).utc().format("MM月DD日")
     this.useType = this.item.use_type
 
   },

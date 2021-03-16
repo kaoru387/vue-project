@@ -102,7 +102,7 @@ export default {
         }).then((res) => {
           const session = res.data
           if(session.payment_status=='paid'){
-            params.email=session.customer_details.email;
+            // params.email=session.customer_details.email;
 
             console.log('params', params);
 
