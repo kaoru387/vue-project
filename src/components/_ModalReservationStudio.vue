@@ -229,17 +229,18 @@
             break;
         }
 
+        // ログインユーザーは会員 change-start
         // 一般
-        let _documentName = "個人利用";
-        if(that.form.use_type == "グループ") _documentName = "団体利用"
-        // 会員以外は即決済
-        that.form.is_stripe = true;
+        // let _documentName = "個人利用";
+        // if(that.form.use_type == "グループ") _documentName = "団体利用"
+        // // 会員以外は即決済
+        // that.form.is_stripe = true;
 
-        // 会員は会員価格
-        if(that.auth.isLine) {
-          _documentName = "スタジオレンタル（個人利用）";
-          if(that.form.use_type == "グループ") _documentName = "スタジオレンタル（団体利用）";
-        }
+        // // 会員は会員価格
+        // if(that.auth.isLine) {
+        //   _documentName = "スタジオレンタル（個人利用）";
+        //   if(that.form.use_type == "グループ") _documentName = "スタジオレンタル（団体利用）";
+        // }
 
         // // 会員で入会金支払い済の場合
         // if(that.auth.username!=='' && that.auth.isAdmissionFee) {
@@ -291,11 +292,11 @@
       login(){
         this.$router.push({path: '/login'});
       },
-      onLinkClick() {
-        this.close()
-        store.commit('SET_SAFARI_LOGIN', true)
-        // this.$emit('reload');
-      },
+      // onLinkClick() {
+      //   this.close()
+      //   store.commit('SET_SAFARI_LOGIN', true)
+      //   // this.$emit('reload');
+      // },
       conditions(date, time){
         this.form = {
           date: date,

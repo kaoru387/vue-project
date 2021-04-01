@@ -6,7 +6,7 @@ import store from "./store/app";
 require('./styles/style.scss')
 
 import Vuetify from 'vuetify'
-import 'vuetify/dist/vuetify.min.css'
+import 'vuetify/dist/vuetify.css'
 Vue.use(Vuetify)
 
 import ElementUI from 'element-ui'
@@ -16,7 +16,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 import 'element-ui/lib/theme-chalk/display.css'
 
 import BootstrapVue from "bootstrap-vue"
-import "bootstrap/dist/css/bootstrap.min.css"
+import "bootstrap/dist/css/bootstrap.css"
 import "bootstrap-vue/dist/bootstrap-vue.css"
 Vue.use(BootstrapVue)
 Vue.use(ElementUI, { locale })
@@ -26,7 +26,8 @@ Vue.config.productionTip = false
 import VeeValidate, { localize } from'vee-validate'
 import ja from 'vee-validate/dist/locale/ja.json';
 localize('ja',ja);
-Vue.use(localize)
+Vue.use(localize);
+
 import { extend } from 'vee-validate';
 import { required, email, min } from 'vee-validate/dist/rules';
 extend('required', required);
@@ -36,6 +37,50 @@ extend('min', min);
 import firebase from "@firebase/app";
 import Firebase from 'Firebase'
 Firebase.init();
+
+window.jQuery = window.$ = require('jquery');
+
+// <!-- JS Global Compulsory -->
+require('../assets/vendor/jquery/jquery.min.js');
+require('../assets/vendor/jquery-migrate/jquery-migrate.min.js');
+require('../assets/vendor/popper.js/popper.min.js');
+require('../assets/vendor/bootstrap/bootstrap.min.js');
+
+// <!-- JS Implementing Plugins -->
+require('../assets/vendor/jquery.countdown.min.js');
+require('../assets/vendor/slick-carousel/slick/slick.js');
+require('../assets/vendor/hs-megamenu/src/hs.megamenu.js');
+require('../assets/vendor/malihu-scrollbar/jquery.mCustomScrollbar.concat.min.js');
+require('../assets/vendor/appear.js');
+
+// <!-- JS Unify -->
+// require('../assets/js/hs.core.js');
+// require('../assets/js/components/hs.header.js');
+// require('../assets/js/helpers/hs.hamburgers.js');
+// require('../assets/js/components/hs.dropdown.js');
+// require('../assets/js/components/hs.scrollbar.js');
+
+// <script src="../assets/js/components/hs.go-to.js"></script>
+
+// <!-- JS Implementing Plugins -->
+require('../assets/vendor/hs-megamenu/src/hs.megamenu.js');
+require('../assets/vendor/malihu-scrollbar/jquery.mCustomScrollbar.concat.min.js');
+
+// <!-- JS Unify -->
+require('../assets/js/hs.core.js');
+require('../assets/js/components/hs.header.js');
+require('../assets/js/helpers/hs.hamburgers.js');
+require('../assets/js/components/hs.dropdown.js');
+require('../assets/js/components/hs.scrollbar.js');
+require('../assets/js/components/hs.go-to.js');
+
+require('../assets/js/components/hs.countdown.js');
+require('../assets/js/components/hs.count-qty.js');
+require('../assets/js/components/hs.carousel.js');
+
+// <!-- JS Customization -->
+require("../assets/js/custom.js");
+
 
 // // 検証用
 // store.dispatch('addAppointment',{
@@ -97,8 +142,8 @@ Firebase.init();
 //   //       })
 // 	}
 // });
-
 Firebase.auth().onAuthStateChanged(user => {
+
 	store.commit('SET_ISLOADING', true);
 	let that = this;
 	if (user) {
@@ -158,14 +203,14 @@ Firebase.auth().onAuthStateChanged(user => {
 		      		if(!list[0].fk) store.commit('SET_AUTH_ROLE', false)
 		      		else store.commit('SET_AUTH_ROLE', true)
 
-	      			// checksum変換
-		      		store.dispatch('getMD5',{
-			      		params: list[0],
-			      		callback: function(res){
-			      			// console.log('get md5',res)
-			      			store.commit('SET_AUTH_CHECKSUM', res) 
-			      		}
-			      	});
+	      			// // checksum変換
+		      		// store.dispatch('getMD5',{
+			      	// 	params: list[0],
+			      	// 	callback: function(res){
+			      	// 		// console.log('get md5',res)
+			      	// 		store.commit('SET_AUTH_CHECKSUM', res) 
+			      	// 	}
+			      	// });
 		      	}
 		 	});
 		} else {
@@ -179,6 +224,93 @@ Firebase.auth().onAuthStateChanged(user => {
 		store,
 		vuetify: new Vuetify({
 		}),
-		render: h => h(App)
+		render: h => h(App),
+		methods: {
+		  window:onload = function() {  
+		   	$.HSCore.components.HSScrollBar.init($('.js-scrollbar'));
+		  },
+		},
+		mounted: function() {
+		 	// console.log('yaho');
+
+		 	$.HSCore.components.HSCarousel.init('[class*="js-carousel"]');
+
+		 	// initialization of header
+	        $.HSCore.components.HSHeader.init($('#js-header'));
+	        $.HSCore.helpers.HSHamburgers.init('.hamburger');
+
+	        // initialization of HSMegaMenu component
+	        $('.js-mega-menu').HSMegaMenu({
+	          event: 'hover',
+	          pageContainer: $('.container'),
+	          breakpoint: 991
+	        });
+
+	        // initialization of HSDropdown component
+	        $.HSCore.components.HSDropdown.init($('[data-dropdown-target]'), {
+	          afterOpen: function () {
+	            $(this).find('input[type="search"]').focus();
+	          }
+	        });
+
+	        // initialization of HSScrollBar component
+	        $.HSCore.components.HSScrollBar.init($('.js-scrollbar'));
+
+
+		    // initialization of countdowns
+		    var countdowns = $.HSCore.components.HSCountdown.init('.js-countdown', {
+		        yearsElSelector: '.js-cd-years',
+		        monthElSelector: '.js-cd-month',
+		        daysElSelector: '.js-cd-days',
+		        hoursElSelector: '.js-cd-hours',
+		        minutesElSelector: '.js-cd-minutes',
+		        secondsElSelector: '.js-cd-seconds'
+		    });
+
+	        // initialization of go to
+	        $.HSCore.components.HSGoTo.init('.js-go-to');
+
+
+	        $('#carouselCus1').slick('setOption', 'responsive', [{
+	          breakpoint: 1200,
+	          settings: {
+	            slidesToShow: 4
+	          }
+	        }, {
+	          breakpoint: 992,
+	          settings: {
+	            slidesToShow: 3
+	          }
+	        }, {
+	          breakpoint: 768,
+	          settings: {
+	            slidesToShow: 2
+	          }
+	        }], true);
+
+		    $('#carouselCus2').slick('setOption', 'responsive', [{
+		        breakpoint: 1200,
+		        settings: {
+		          slidesToShow: 3
+		        }
+		      }, {
+		        breakpoint: 992,
+		        settings: {
+		          slidesToShow: 2
+		        }
+		      }, {
+		        breakpoint: 768,
+		        settings: {
+		          slidesToShow: 1
+		        }
+		      }, {
+		        breakpoint: 480,
+		        settings: {
+		          slidesToShow: 1
+		        }
+		      }], true);
+
+
+		}
 	}).$mount("#app");
 });

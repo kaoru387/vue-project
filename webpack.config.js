@@ -2,7 +2,8 @@ const VueLoaderPlugin  = require('vue-loader/lib/plugin');
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const FixStyleOnlyEntriesPlugin = require("webpack-fix-style-only-entries");
-// const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+
 // const TerserPlugin = require('terser-webpack-plugin');
 // const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const webpack = require('webpack');
@@ -15,7 +16,8 @@ module.exports = {
   output: {
     filename: 'app.js',
     // path: path.resolve(__dirname, '../public_html/dist'),
-    path: path.resolve(__dirname, './firebase/public'),
+    // path: path.resolve(__dirname, './firebase/public'),
+    path: path.resolve(__dirname, './firebase/public_arts'),
   },
   mode: env,
   module: {
@@ -36,8 +38,28 @@ module.exports = {
             use: [
               MiniCssExtractPlugin.loader,
               // 'vue-style-loader',
-              'css-loader',
-              'sass-loader',
+              {
+                loader: "css-loader",
+                options: {
+                  //URL の解決を無効に
+                  url: false,
+                  // ソースマップを有効に
+                  sourceMap: true,
+                },
+              },
+              {
+                loader: "sass-loader",
+                options: {
+                  // dart-sass を優先
+                  implementation: require('sass'),
+                  sassOptions: {
+                    // fibers を使わない場合は以下で false を指定
+                    fiber: false,
+                  },
+                  // ソースマップを有効に
+                  sourceMap: true,
+                },
+              },
             ]
           },
           {
@@ -48,6 +70,7 @@ module.exports = {
             include: [
               path.resolve('src'),
               path.resolve('node_modules/element-ui/'),
+              // path.resolve('assets/vendor/'),
             ],
             use: [
               {
@@ -67,11 +90,12 @@ module.exports = {
       ]
   },
   resolve: {
-        modules: [path.join(__dirname, 'src'), 'node_modules'],
-        extensions: ['.js', '.vue'],
-        alias: {
-            'vue$': 'vue/dist/vue.esm.js'
-        },
+    modules: [path.join(__dirname, 'src'), 'node_modules', 'assets'],
+    extensions: ['.js', '.vue'],
+    alias: {
+      'vue$': 'vue/dist/vue.esm.js',
+      'TweenLite': path.resolve('/assets/vendor/revolution-slider/revolution/TweenLite'),
+    },
   },
   optimization: {
     // minimizer: [new OptimizeCSSAssetsPlugin({})],
@@ -80,7 +104,7 @@ module.exports = {
   devServer: {
     // contentBase: '../public_html/dist',
     // host: '0.0.0.0',
-    contentBase: './firebase/public',
+    contentBase: './firebase/public_arts',
     // port: 4005,
     // headers: {
     //     'X-Frame-Options': "allow-from *"
@@ -144,10 +168,11 @@ module.exports = {
     }),
     new FixStyleOnlyEntriesPlugin(),
     new MiniCssExtractPlugin({
-        // filename: '../public_html/dist/css/[name].css',
-        // chunkFilename: "[id].css"
-        filename: "css/[name].css"
+      // filename: '../public_html/dist/css/[name].css',
+      // chunkFilename: "[id].css"
+      filename: "css/[name].css",
     }),
+    // new OptimizeCSSAssetsPlugin(),
     // new CleanWebpackPlugin({ verbose: true }),
   ]
 }

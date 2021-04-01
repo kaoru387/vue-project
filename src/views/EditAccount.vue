@@ -8,10 +8,10 @@
       :style="{'margin':'0 auto'}"
       >
       <div class="text-center pt-5 pb-0 text-primary">
-        <h4>会員情報</h4>
+        <h4>会員情報!</h4>
       </div> 
       <v-card-text class="pt-0">
-        <validation-observer ref="observer" v-slot="ObserverProps" tag="form" @submit.prevent="submit()">
+        <validation-observer ref="observer" v-slot="ObserverProps" tag="form">
           <div class="form-row">
             <div class="col-12 p-2 pt-5 pb-3 text-left">
               <h5>{{ form.email }}</h5>
@@ -57,9 +57,25 @@
             </div>
             <div class="col-12 p-2 pb-0">
               <div class="block">
-                <el-button class="m-0" type="success" :style="{'width': '100%'}" @click="submit">
+                {{form.full_name}}
+                <!-- <el-button :disabled="false" class="m-0" type="success" :style="{'width': '100%'}" @click="submit">
                   更新
-                </el-button>
+                </el-button> -->
+                <v-btn
+                  class="ma-2"
+                  :loading="loading"
+                  :disabled="loading"
+                  color="info"
+                  @click="submit = 'loading4'"
+                >
+                  Icon Loader
+                  <template v-slot:loader>
+                    <span class="custom-loader">
+                      <v-icon light>mdi-cached</v-icon>
+                    </span>
+                  </template>
+                </v-btn>
+
                 <el-button type="secondary" class="m-0 mt-5 mb-3" :style="{'width': '100%'}" @click="cancel">キャンセル</el-button>
               </div>
             </div>
@@ -160,6 +176,7 @@ export default {
     async submit() {
 
       const isValid = await this.$refs.observer.validate();
+      console.log('q', isValid)
       if (!isValid) {
         // ABORT!!
         return;

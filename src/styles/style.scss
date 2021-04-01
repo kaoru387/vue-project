@@ -1,39 +1,171 @@
+//
+// Variables and Mixins
+//
+@import "variables.e-commerce";
+@import "../../assets/include/scss/unify";
 
-body {
-  font-family: "ヒラギノ角ゴ Pro", "Hiragino Kaku Gothic Pro", "Yu Gothic Medium", "游ゴシック Medium", YuGothic, "游ゴシック体", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", "MS Gothic", "ＭＳ ゴシック", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
-  background-color: #fff;
-  font-size: 10pt;
+// <!-- CSS Global Compulsory -->
+@import '../../assets/vendor/bootstrap/bootstrap.min.css';
+@import '../../assets/vendor/icon-line/css/simple-line-icons.css';
+
+// <!-- CSS Implementing Plugins -->
+@import '../../assets/vendor/icon-awesome/css/font-awesome.min.css';
+@import '../../assets/vendor/icon-line-pro/style.css';
+@import '../../assets/vendor/icon-hs/style.css';
+@import '../../assets/vendor/animate.css';
+@import '../../assets/vendor/hamburgers/hamburgers.min.css';
+@import '../../assets/vendor/hs-megamenu/src/hs.megamenu.css';
+@import '../../assets/vendor/malihu-scrollbar/jquery.mCustomScrollbar.min.css';
+
+// <!-- CSS Implementing Plugins -->
+@import '../../assets/vendor/slick-carousel/slick/slick.css';
+
+// <!-- Revolution Slider -->
+@import '../../assets/vendor/revolution-slider/revolution/fonts/pe-icon-7-stroke/css/pe-icon-7-stroke.css';
+@import '../../assets/vendor/revolution-slider/revolution/css/settings.css';
+@import '../../assets/vendor/revolution-slider/revolution/css/layers.css';
+@import '../../assets/vendor/revolution-slider/revolution/css/navigation.css';
+
+
+// <!-- CSS Unify Theme -->
+@import '../assets/css/styles.e-commerce.css';
+
+// <!-- CSS Customization -->
+// @import '../../assets/css/custom.css';
+@import '../../assets/css/unify.css';
+
+p {
+  color: $g-color-text;
 }
 
-a{
-  color: black !important;
+th{
+  font-size: 14pt !important;
 }
 
-.background {
-  height: 300px;
-  width: 300px;
-  // background: url('../images/samole.png');
+td{
+  padding: 0 !important;
 }
 
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin: unset;
+/*------------------------------------
+  Colors
+------------------------------------*/
+.g-color-text {
+  color: $g-color-text;
 }
 
-// bootstrap
-.container,
-.container-fluid,
-.container-sm,
-.container-md,
-.container-lg,
-.container-xl {
-  padding-right: 5px !important;
-  padding-left: 5px !important;
+.g-color-main-light-v3 {
+  color: $g-color-main-light-v3;
 }
+
+/*------------------------------------
+  Background Colors
+------------------------------------*/
+.g-bg-main-light-v1 {
+  background-color: $g-bg-color-main-light-v1;
+}
+
+.g-bg-main-light-v2 {
+  background-color: $g-bg-color-main-light-v2;
+}
+
+.g-bg-main-light-v3 {
+  background-color: $g-bg-color-main-light-v3 !important;
+}
+
+/*------------------------------------
+  Focus state background
+------------------------------------*/
+
+.g-bg-main-light-v2--focus:focus {
+  background-color: $g-bg-color-main-light-v2;
+}
+
+/*------------------------------------
+  Border Colors
+------------------------------------*/
+.g-brd-secondary-light-v1 {
+  border-color: $g-color-secondary-light-v1 !important;
+}
+
+/*------------------------------------
+  Carousel indicators v1
+------------------------------------*/
+
+.u-carousel-indicators-v1,
+.u-carousel-indicators-v1--white {
+  li {
+    &.slick-active {
+      span {
+        background-color: $g-color-primary !important;
+      }
+    }
+  }
+
+  span {
+    background-color: darken($g-bg-color-secondary, 5%) !important;
+  }
+}
+
+.u-carousel-indicators-v1 {
+  span {
+    background-color: darken($g-bg-color-secondary, 5%) !important;
+  }
+}
+
+/*------------------------------------
+  Sliders v1
+------------------------------------*/
+
+.u-slider-v1-3.ui-slider {
+  height: 2px;
+  background: $g-color-gray-light-v3;
+}
+
+/*------------------------------------
+  Mega Menu
+------------------------------------*/
+.hs-has-sub-menu > a::after,
+.hs-icon-arrow-bottom:before {
+  font-size: 9px;
+}
+
+
+// // 
+// body {
+//   font-family: "ヒラギノ角ゴ Pro", "Hiragino Kaku Gothic Pro", "Yu Gothic Medium", "游ゴシック Medium", YuGothic, "游ゴシック体", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", "MS Gothic", "ＭＳ ゴシック", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+//   background-color: #fff;
+//   font-size: 10pt;
+// }
+
+// a{
+//   color: black !important;
+// }
+
+// .background {
+//   height: 300px;
+//   width: 300px;
+//   // background: url('../images/samole.png');
+// }
+
+// #app {
+//   font-family: Avenir, Helvetica, Arial, sans-serif;
+//   -webkit-font-smoothing: antialiased;
+//   -moz-osx-font-smoothing: grayscale;
+//   text-align: center;
+//   color: #2c3e50;
+//   margin: unset;
+// }
+
+// // bootstrap
+// .container,
+// .container-fluid,
+// .container-sm,
+// .container-md,
+// .container-lg,
+// .container-xl {
+//   padding-right: 5px !important;
+//   padding-left: 5px !important;
+// }
 
 // vuetify　
 .v-card__text {
@@ -73,90 +205,108 @@ a{
 .v-application p{
   margin-bottom: unset !important;
 }
-// element ui
-.el-badge__content.is-fixed{
-  right: 0px !important;
-  font-size:10px !important;
-  transform:scale(0.7) !important;
-  padding-bottom: 10px;
-}
-.el-message-box{
-  max-width: 304px;
+
+.v-messages__message{
+  color: red;
 }
 
-// original
-// 小さい文字
-.sample {
-  font-size:14px;
-  -webkit-transform:scale(0.9);
-  -moz-transform:scale(0.9);
-  -ms-transform:scale(0.9);
-  -o-transform:scale(0.9);
-  transform:scale(0.9);
+.v-navigation-drawer {
+  width: 40% !important;
 }
-.outer{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-// .v-list-item__content > :not(:last-child){
-//  margin-bottom: unset !important;
+// // element ui
+// .el-badge__content.is-fixed{
+//   right: 0px !important;
+//   font-size:10px !important;
+//   transform:scale(0.7) !important;
+//   padding-bottom: 10px;
 // }
-.el-alert .el-alert__description{
-  margin: 0 !important;
-}
-.fade-enter-active, .fade-leave-active {
-  transition: 0.5;
-} 
-.fade-enter, .fade-leave-to {
-  opacity: 0;
-  transform: scale(0);
-}
+// .el-message-box{
+//   max-width: 304px;
+// }
 
-// Login
-.fill-width {
-  width: 100%;
+// // original
+// // 小さい文字
+// .sample {
+//   font-size:14px;
+//   -webkit-transform:scale(0.9);
+//   -moz-transform:scale(0.9);
+//   -ms-transform:scale(0.9);
+//   -o-transform:scale(0.9);
+//   transform:scale(0.9);
+// }
+// .outer{
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+// }
+// // .v-list-item__content > :not(:last-child){
+// //  margin-bottom: unset !important;
+// // }
+.el-alert .el-alert__description{
+  font-size: 16px !important;
 }
-.link-caption {
-  text-decoration: none;
-  color: #666 !important;
-  font-size: .75rem;
-}
-.separator {
-  margin-top: 30px;
-  margin-bottom: 30px;
-  height: 0;
-  border-top: 1px solid #ddd;
-  border-bottom: 1px solid #fff;
-  position: relative;
-}
-.middle_separator {
-  position: absolute;
-  padding: 0 16px;
-  color: #ccc;
-  background: #fff;
-  font-size: 11px;
-  text-shadow: 0 1px 0 #fff;
-  text-transform: uppercase;
-  top: -7px;
-  left: 30%;
-}
-.middle_separator {
-  color: #777;
-  font-size: 13px;
-  top: -9px;
-  left: 41%;
-}
+// .fade-enter-active, .fade-leave-active {
+//   transition: 0.5;
+// } 
+// .fade-enter, .fade-leave-to {
+//   opacity: 0;
+//   transform: scale(0);
+// }
+
+// // Login
+// .fill-width {
+//   width: 100%;
+// }
+// .link-caption {
+//   text-decoration: none;
+//   color: #666 !important;
+//   font-size: .75rem;
+// }
+// .separator {
+//   margin-top: 30px;
+//   margin-bottom: 30px;
+//   height: 0;
+//   border-top: 1px solid #ddd;
+//   border-bottom: 1px solid #fff;
+//   position: relative;
+// }
+// .middle_separator {
+//   position: absolute;
+//   padding: 0 16px;
+//   color: #ccc;
+//   background: #fff;
+//   font-size: 11px;
+//   text-shadow: 0 1px 0 #fff;
+//   text-transform: uppercase;
+//   top: -7px;
+//   left: 30%;
+// }
+// .middle_separator {
+//   color: #777;
+//   font-size: 13px;
+//   top: -9px;
+//   left: 41%;
+// }
 
 // Fullカレンダー
 #calendar {
   width: 98%;
   margin: 0 auto;
+  // fullcalendar文字色が青くなるため
 }
-
-// .fc-button{
-//   padding: 0.4em 0.4em !important;
-// }
+.fc-media-screen .fc-timegrid-event-harness{
+  opacity: 0.85;
+}
+.fc-button-primary{
+  background-color: white !important;
+  border-color: #323232;
+  color: #323232 !important;
+}
+.fc-button-active {
+  background-color: #323232 !important;
+  border-color: white;
+  color: white !important;
+}
 .fc-myCustomButton-button{
   background-color: white !important;
   border-color: gray !important;
@@ -165,6 +315,22 @@ a{
 .fc .fc-highlight{
   background: unset !important;
 }
+.fc .fc-button {
+  padding: 0.6em !important;
+}
+.fc .fc-col-header-cell-cushion{
+  color: #323232 !important;
+}
+.fc-event-time {
+  color: #323232 !important;
+}
+.fc-event-title {
+  color: #323232 !important; 
+}
+.fc-daygrid-day-number{
+  color: unset !important;
+}
+
 // .fc-header-toolbar{
 //     padding-top:10px;
 //     margin-bottom: 6px!important;
@@ -174,8 +340,20 @@ a{
 //     word-wrap:break-word!important;
 // }
 
+.v-menu__content{
+  left: 20px !important;
+}
+
 /*-- iPhone Vertical View--*/
 @media screen and (max-width: 375px) {
+
+  .v-navigation-drawer {
+    width: 87% !important;
+  }
+  th{
+    font-size: 10px !important;
+  }
+
   // 小さい文字
   .sample {
     font-size:11px;
@@ -186,10 +364,10 @@ a{
     transform:scale(0.8);
   }
 
-  .container .container-fluid {
-    padding: unset !important;
-    margin: unset !important;
-  }
+  // .container .container-fluid {
+  //   padding: unset !important;
+  //   margin: unset !important;
+  // }
   .v-alert{
     padding: 8px !important;
   }
@@ -199,14 +377,13 @@ a{
   .el-alert__icon.is-big{
     font-size: 18px !important;
   }
-  .el-alert .el-alert__description{
-    font-size: 13px !important;
-  }
+  // .el-alert .el-alert__description{
+  //   font-size: 17px !important;
+  // }
   .v-toolbar__content .v-btn.v-btn--icon.v-size--default {
     height: 38px !important;
     width: 38px !important;
   }
-
   // fullcalendar
   .fc-myCustomButton-button{
     font-size: 0.8em !important;
@@ -232,6 +409,9 @@ a{
   .fc .fc-daygrid-event{
     padding-top: 0px;
     padding-bottom: 0px;
+  }
+  .fc-direction-ltr .fc-toolbar > * > :not(:first-child){
+    margin-left: 0.1em !important;
   }
   /*-- ヘッダ　ツールバー --*/
   .fc-header-toolbar{
@@ -266,6 +446,12 @@ a{
 
 /*-- iPhone Vertical View--*/
 @media screen and (min-width: 414px) {
+  .v-navigation-drawer {
+    width: 82% !important;
+  }
+  th{
+    font-size: 12px !important;
+  }
   // 小さい文字
   .sample {
     font-size:12px;
@@ -276,10 +462,10 @@ a{
     transform:scale(0.9);
   }
 
-  .container .container-fluid {
-    padding: unset !important;
-    margin: unset !important;
-  }
+  // .container .container-fluid {
+  //   padding: unset !important;
+  //   margin: unset !important;
+  // }
   .v-alert{
     padding: 8px !important;
   }
@@ -289,9 +475,9 @@ a{
   .el-alert__icon.is-big{
     font-size: 18px !important;
   }
-  .el-alert .el-alert__description{
-    font-size: 13px !important;
-  }
+  // .el-alert .el-alert__description{
+  //   font-size: 14px !important;
+  // }
   .v-toolbar__content .v-btn.v-btn--icon.v-size--default {
     height: 38px !important;
     width: 38px !important;
@@ -319,6 +505,9 @@ a{
   .fc .fc-daygrid-event{
     padding-top: 0px;
     padding-bottom: 0px;
+  }
+  .fc-direction-ltr .fc-toolbar > * > :not(:first-child){
+    margin-left: 0.1em !important;
   }
   /*-- ヘッダ　ツールバー --*/
   .fc-header-toolbar{
