@@ -109,17 +109,17 @@ export default {
           // password is too weak.
         });
 
-      setTimeout(function(){
-        store.commit('SET_BACK_URI', '');
-        window.location.href = "https://www.fandangos-okinawa.com/reservation/"
-        store.commit('SET_ISLOADING', false) 
-      },2000);
+      // setTimeout(function(){
+      //   store.commit('SET_BACK_URI', '');
+      //   window.location.href = "https://www.fandangos-okinawa.com/reservation/"
+      //   store.commit('SET_ISLOADING', false) 
+      // },2000);
 
     },
     cancel: function () {
       // this.$router.replace('/')
       store.commit('SET_BACK_URI', '');
-      window.location.href = "https://www.fandangos-okinawa.com/reservation/"
+      // window.location.href = "https://www.fandangos-okinawa.com/reservation/"
     },
   }
 }

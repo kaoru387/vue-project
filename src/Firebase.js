@@ -51,13 +51,13 @@ export default {
     // store.state.auth.password = password;
     firebase.auth().signInWithEmailAndPassword(email, password)
       .then(res => {
-        console.log("login", res);
-        res.user.getIdToken().then(idToken => {
-          // localStorage.setItem('jwt', idToken);
-          router.push('/').catch(err => {
-            console.log("router push /");
-          });
-        })
+        console.log("success login.");
+        // res.user.getIdToken().then(idToken => {
+        //   // localStorage.setItem('jwt', idToken);
+        //   router.push('/').catch(err => {
+        //     console.log("router push /");
+        //   });
+        // })
       }, err => {
         console.log(err.message);
       })
@@ -83,14 +83,16 @@ export default {
         localStorage.removeItem("jwt")
         store.commit('onAuthEmailChanged', "");
         store.commit('onUserStatusChanged', false);
-        // ストレージ初期化
-        store.commit('RESET_VUEX_STATE');
-        // // セッションクリア
-        // localStorage.clear()
+        // // ストレージ初期化
+        // store.commit('RESET_VUEX_STATE');
+        // セッションクリア
+        localStorage.clear()
         // if(router.path!=='/') router.push('/');
+
         // .then(function() {
         //   console.log("logout ok");
-        //   // router.go({ path: '/' })
+        //   // router.push('/');
+        //   router.go({ path: '/' })
         // })
         // .catch(err => {
         //   console.log("router push /",err);

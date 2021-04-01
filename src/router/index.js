@@ -1,18 +1,20 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
+// import Home from '../views/Law.vue'
 // import Home from '../components/HelloWorld.vue'
+
 import ReservationStudio from '../views/ReservationStudio.vue'
 import Login from '../views/Login.vue'
 import SendEmail from '../views/SendEmail.vue'
-import CancelPayment from '../views/CancelPayment.vue'
+// import CancelPayment from '../views/CancelPayment.vue'
 import SuccessPayment from '../views/SuccessPayment.vue'
 // import SuccessAdmission from '../views/SuccessAdmission.vue'
 // import SuccessPaymentAddPoint from '../views/SuccessPaymentAddPoint.vue'
 import VerifyEmailInvalid from '../views/VerifyEmailInvalid.vue'
-import Account from '../views/Account.vue'
+// import Account from '../views/Account.vue'
 import ResetPassword from '../views/ResetPassword.vue'
-import EditAccount from '../views/EditAccount.vue'
+// import EditAccount from '../views/EditAccount.vue'
 import Admin from '../views/Admin.vue'
 import SuccessPayPay from '../views/SuccessPayPay.vue'
 import LineLogin from '../views/LineLogin.vue'
@@ -44,16 +46,16 @@ const routes = [
     name: 'login',
     component: Login,
   },
-  {
-    path: '/account',
-    name: 'account',
-    component: Account,
-  },
-  {
-    path: '/editaccount',
-    name: 'editaccount',
-    component: EditAccount,
-  },
+  // {
+  //   path: '/account',
+  //   name: 'account',
+  //   component: Account,
+  // },
+  // {
+  //   path: '/editaccount',
+  //   name: 'editaccount',
+  //   component: EditAccount,
+  // },
   {
     path: '/sendemail',
     name: 'sendemail',
@@ -94,30 +96,20 @@ const routes = [
     component: () =>import("../views/VerifyEmail.vue")
   },
   {
-    path: "/studiosearch", 
-    name: 'studiosearch',   
+    path: "/schedule", 
+    name: 'schedule',   
     component: ReservationStudio
   },
-  {
-    path: "/cancelpayment", 
-    name: 'cancelpayment',   
-    component: CancelPayment,
-  },
+  // {
+  //   path: "/cancelpayment", 
+  //   name: 'cancelpayment',   
+  //   component: CancelPayment,
+  // },
   {
     path: "/successpayment", 
     name: 'successpayment',
     component: SuccessPayment,
   },
-  // {
-  //   path: "/successpaymentaddpoint", 
-  //   name: 'successpaymentaddpoint',
-  //   component: SuccessPaymentAddPoint,
-  // },
-  // {
-  //   path: "/successadmission", 
-  //   name: 'successadmission',
-  //   component: SuccessAdmission,
-  // },
   {
     path: "/successpaypay", 
     name: 'successpaypay',
@@ -151,29 +143,32 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
 
   store.commit('SET_ISLOADING', true);
-  // LINE LOGINチェック
-  let session_timestamp = moment().format("YYYYMMDDHH");
-  var docRef = Firebase.db().collection("signIn").doc(session_timestamp);
-  docRef.get().then(function(doc) {
-    if (doc.exists) {
-      console.log("db sign in!!!", doc.data());
-      let lineUser = doc.data();
-      Firebase.signInWithEmailAndPassword(lineUser.email, lineUser.email);
-      // ログイン後、削除。
-      docRef.delete().then(function() {
-        console.log("Document successfully deleted!");
-      }).catch(function(error) {
-          console.error("Error removing document: ", error);
-      });
-    }else{
-      store.commit('SET_ISLOADING', false);
-    }
-  }).catch(function(error) {
-    console.log("error!?", error);
-    store.commit('SET_ISLOADING', false);
-  });
-  
-  
+
+  // // LINE LOGINチェック
+  // let session_timestamp = moment().format("YYYYMMDDHH");
+  // var docRef = Firebase.db().collection("signIn").doc(session_timestamp);
+  // docRef.get().then(function(doc) {
+  //   if (doc.exists) {
+  //     console.log("db sign in!!!", doc.data());
+  //     let lineUser = doc.data();
+  //     Firebase.signInWithEmailAndPassword(lineUser.email, lineUser.email);
+  //     // ログイン後、削除。
+  //     docRef.delete().then(function() {
+  //       console.log("Document successfully deleted!");
+  //     }).catch(function(error) {
+  //         console.error("Error removing document: ", error);
+  //     });
+  //   }else{
+  //     store.commit('SET_ISLOADING', false);
+  //   }
+  // }).catch(function(error) {
+  //   console.log("error!?", error);
+  //   store.commit('SET_ISLOADING', false);
+  // });
+
+  // console.log(store.state.auth.username);
+
+
   // 通常処理
   Firebase.onAuth();
 
@@ -195,15 +190,23 @@ router.beforeEach((to, from, next) => {
       state: state,
     };
     console.log('line login.');
-    store.commit('SET_BACK_URI', '/?mode=successLineLogin')
+    store.commit('SET_LINE_LOGIN', lineLogin);
+    // store.commit('SET_BACK_URI', '/?mode=logined')
 
-    // 一旦保持
-    let session_timestamp = moment().format("YYYYMMDDHH");
-    Firebase.db().collection("linelogin").doc(session_timestamp)
-    .set({
-      code: code,
-      state: state,
-    });
+  // //   let lineLogin = {
+  // //     code: code,
+  // //     state: state,
+  // //   };
+  // //   console.log('line login.');
+  // //   // store.commit('SET_BACK_URI', '/?mode=successLineLogin')
+
+  // //   // // 一旦保持
+  // //   // let session_timestamp = moment().format("YYYYMMDDHH");
+  // //   // Firebase.db().collection("linelogin").doc(session_timestamp)
+  // //   // .set({
+  // //   //   code: code,
+  // //   //   state: state,
+  // //   // });
   }
   
   switch (mode) {
@@ -218,10 +221,6 @@ router.beforeEach((to, from, next) => {
         // store.commit('SET_BACK_URI', '');
       }
       break;
-    // case 'recoverEmail':
-    //   // Display email recovery handler and UI.
-    //   handleRecoverEmail(auth, actionCode, lang);
-    //   break;
     case 'verifyEmail':
       console.log('verify',to.fullPath)
       if(to.fullPath !== '/verifyemail'){
@@ -242,35 +241,28 @@ router.beforeEach((to, from, next) => {
       }
       break;
     case 'stripeSuccess':
-      if(to.fullPath !== '/successpayment'){
-        store.commit('SET_BACK_URI', to.fullPath)
-      }else{
-        next();
-      }
-      break;
-    // case 'stripeSuccessPoint': 
-    //   if(to.fullPath !== '/successpaymentaddpoint'){
-    //     store.commit('SET_BACK_URI', to.fullPath)
-    //   }else{
-    //     next();
-    //     // チケット購入
-    //   }
-    //   break;
-    case 'stripeCancel': 
-      if(to.fullPath !== '/cancelpayment'){
-        store.commit('SET_BACK_URI', to.fullPath)
+      // if(to.fullPath !== '/successpayment'){
+      //   store.commit('SET_BACK_URI', to.fullPath)
+      // }else{
+      //   next();
+      // }
+      console.log('stripeSuccess', store.state.auth.session, to.fullPath);
+      if(to.fullPath == '/?mode=stripeSuccess'){
+        store.commit('SET_BACK_URI', to.fullPath);
+        // store.commit('STRIPE_SESSION', '');
       }else{
         // next();
       }
       break;
-    // case 'stripeSuccessAdmission': 
-    //   // 入会金申込み
-    //   if(to.fullPath !== '/successadmission'){
-    //     store.commit('SET_BACK_URI', to.fullPath)
-    //   }else{
-    //     // next();
-    //   }
-    //   break;
+    case 'stripeCancel': 
+      console.log('stripeCancel', store.state.auth.session, to.fullPath);
+      if(to.fullPath == '/?mode=stripeCancel'){
+        store.commit('SET_BACK_URI', to.fullPath);
+        store.commit('STRIPE_SESSION', '');
+      }else{
+        next();
+      }
+      break;
     case 'successPayPay':
       if(to.fullPath !== '/successpaypay'){
         store.commit('SET_BACK_URI', to.fullPath)
@@ -281,9 +273,9 @@ router.beforeEach((to, from, next) => {
     case 'successLineLogin':
       console.log('successLineLogin?', to.fullPath);
       if(to.fullPath !== '/successlinelogin'){
-        store.commit('SET_BACK_URI', "/?mode=successLineLogin");
+        store.commit('SET_BACK_URI', '/?mode=successLineLogin');
       }else{
-        // store.commit('SET_BACK_URI', '')
+        next();
       }
       break;
     case 'lineLogin':
@@ -292,15 +284,8 @@ router.beforeEach((to, from, next) => {
         store.commit('SET_BACK_URI', to.fullPath);
       }else{
         // 
+        next();
       }
-      break;
-    case 'tokenLine':
-      console.log('get token?', to.fullPath);
-      // if(to.fullPath !== '/linelogin'){
-      //   store.commit('SET_BACK_URI', to.fullPath)
-      // }else{
-      //   // store.commit('SET_BACK_URI', '')
-      // }
       break;
     default:
       // Error: invalid mode.

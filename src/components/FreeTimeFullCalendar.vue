@@ -1,5 +1,18 @@
 <template>
-  <div id="calendar">
+  <div id="free-calendar">
+    <!-- <div class="text-center pt-3 pb-3 text-primary">
+      <h4>空き時間表示</h4>
+    </div> -->
+
+    <div class="pl-3 pr-3">
+      <el-alert
+        class="mb-10 text-left"
+        type="success"
+        :description="'予約時間を選択してください。'"
+        show-icon>
+      </el-alert>
+    </div>
+
     <v-row justify="center" align-content="center">
       <h5>{{ initialDate }}</h5>
     </v-row>
@@ -33,6 +46,7 @@ import { mdiRecordCircleOutline } from '@mdi/js'
 
 import store from '../store/app';
 import moment from "moment"
+import _ from 'lodash';
 // import { BPopover } from 'bootstrap-vue'
 
 export default {
@@ -74,7 +88,7 @@ export default {
         // editable: true,
         eventClick: this.changeEvent,
         weekends: true,
-        // eventDidMount: this.eventDidMount,
+        eventDidMount: this.eventDidMount,
         // customButtons: {
         //   myCustomButton: {
         //     text: '戻る',
@@ -108,6 +122,12 @@ export default {
         case 'xl': return 800
       }
     },
+    items() {
+      return store.state.result.resources;
+    },
+    datas() {
+      return store.state.result.events;
+    },
   },
   created: function () {
     // console.log(this.search.date)
@@ -140,7 +160,7 @@ export default {
           start: start
         }
         store.commit('SET_SELECT_SEARCH', search)
-        this.$router.replace('/studiosearch')
+        this.$router.replace('/schedule')
         return;
       }
       
@@ -210,11 +230,11 @@ export default {
       //   }
       // }
     },
-    // eventDidMount: function(info) { // 詳細表示
-    //   // console.log('mount',info)
+    eventDidMount: function(info) { // 詳細表示
+      // console.log('mount',info)
     //   // if(!info.event.allDay) return;
-    //   // console.log(info.event.extendedProps)
-
+      // console.log(info.event.extendedProps);
+      
     //   let title = '一般利用';
     //   if(info.event.title!=='*') title = info.event.title;
     //   // if(info.event.extendedProps.title=="*") title = '一般利用';
@@ -238,7 +258,7 @@ export default {
     //       // triggers: 'hover',
     //     }
     //   }).$mount()
-    // },
+    },
     viewDidMount: function(e){
       // console.log('vi',e.view.type)
       let that = this

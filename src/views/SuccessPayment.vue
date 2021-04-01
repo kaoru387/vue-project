@@ -1,18 +1,19 @@
 <template>
   <div>
     <v-card 
+      class="text-center"
       :loading="loading"
       tile
       max-width="360px"
       :style="{'margin':'0 auto'}"
       >
-      <v-card-title class="pt-4 pb-3">
-        <v-row justify="center" align-content="center">
+      <v-card-title class="pt-5 pb-3">
+        <v-row class="d-flex justify-content-center">
           <h4 class="pt-2">カード決済成功</h4>
         </v-row>
       </v-card-title>
       <v-icon 
-        class="mb-2"
+        class="mb-2 text"
         large
         color="#03BFA5"
         :style="{'font-size':'50px'}"
@@ -21,10 +22,11 @@
         <el-alert
           class="text-left"
           type="success"
-          description="ご予約いただきありがとうございました。OKボタンをクリックしてください。"
+          description="カード決済に成功しました！ただいま予約処理中です..."
           show-icon>
         </el-alert>
       </div>
+      <!-- 
       <div class="p-2 pb-6">
         <v-btn
           block
@@ -33,7 +35,7 @@
           color="cyan"
           @click="submit" 
         ><span :style="{'color':'white'}">OK</span></v-btn>
-      </div>
+      </div> -->
     </v-card>
   </div>
 </template>
@@ -58,8 +60,76 @@ export default {
   },
   created: function () {
     console.log('payment!')
+    store.commit('SET_ISLOADING', true);
   },
   mounted() {
+    console.log('mounted!!!!!', store.state.auth.session);
+
+    // store.commit('SET_ISLOADING', true);
+
+    let that = this;
+    // let docName = "";
+    // let currentUser = Firebase.auth().currentUser;
+    // docName = currentUser.email;
+    // if(docName==null) docName = currentUser.phoneNumber;
+    // console.log('key', docName);
+
+    const processA = async function() {
+      const sessionId = await store.state.auth.session.session_id;
+      const params= await store.state.auth.session;
+
+      console.log(sessionId, params)
+      const response = await firebase.functions().httpsCallable('getStripe');
+      await response({
+        sessionId: sessionId
+      }).then((res) => {
+        store.commit('SET_ISLOADING', true);
+        console.log('success payment.', res.data);
+        const session = res.data
+        if(session.payment_status=='paid'){
+
+          // params.email=session.customer_details.email;
+          params.email=store.state.auth.email;
+
+          console.log('params', params);
+
+          // Sucpersass予約
+          store.dispatch('addAppointmentCard', {
+            params: params,
+            callback: function(res2){
+              store.commit('SET_ISLOADING', true);
+              console.log('save',res2);
+
+              setTimeout(function(){
+                that.$message({
+                  type: 'success',
+                  message: 'カード決済・予約に成功しました。',
+                });
+                
+                // データ再取得
+                store.dispatch('getUsers', 
+                  function(e){
+                    console.log('ok');
+                    store.commit('SET_EVENTS', []);
+                    // 予約取得
+                    store.dispatch('getBookings',{
+                      callback: function(res){
+                        if(res) store.commit('SET_ISLOADING', false);
+                        that.$router.push({path: '/about'});
+                      }
+                    });
+                });
+              },2000);
+            }
+          });
+        }
+      });
+    }
+    const processAll = async function() {
+      await processA();
+    }
+    processAll();
+
   },
   methods: {
     submit() {
@@ -82,24 +152,25 @@ export default {
       const processA = async function(docName) {
         store.commit('SET_ISLOADING', true)
         // Stripe Checkout
-        var docRef = Firebase.db().collection("sessions").doc(docName);
-        const docs = await docRef.get().then(function(doc) {
-            if (doc.exists) {
-                console.log("Document data:", doc.data().sessionId);
-                return doc.data();
-            } else {
-                // doc.data() will be undefined in this case
-                console.log("No such document!");
-            }
-        }).catch(function(error) {
-            console.log("Error getting document:", error);
-        });
+        // var docRef = Firebase.db().collection("sessions").doc(docName);
+        // const docs = await docRef.get().then(function(doc) {
+        //     if (doc.exists) {
+        //         console.log("Document data:", doc.data().sessionId);
+        //         return doc.data();
+        //     } else {
+        //         // doc.data() will be undefined in this case
+        //         console.log("No such document!");
+        //     }
+        // }).catch(function(error) {
+        //     console.log("Error getting document:", error);
+        // });
         const sessionId = await docs.sessionId;
         const params= await docs.params;
         const response = await firebase.functions().httpsCallable('getStripe');
         await response({
           sessionId: sessionId
         }).then((res) => {
+          console.log('success payment.', res.data);
           const session = res.data
           if(session.payment_status=='paid'){
             // params.email=session.customer_details.email;
@@ -113,16 +184,17 @@ export default {
                 store.commit('SET_ISLOADING', true)
                 console.log('save',res2)
                 
-                // セッションデータ削除
-                docRef.delete().then(function() {
-                    console.log("Document successfully deleted!");
-                    setTimeout(function(){
-                      window.location.href = "https://www.fandangos-okinawa.com/reservation/" 
-                      store.commit('SET_ISLOADING', false)
-                    },1000);
-                }).catch(function(error) {
-                    console.error("Error removing document: ", error);
-                });
+                // // セッションデータ削除
+                // docRef.delete().then(function() {
+                //     console.log("Document successfully deleted!");
+                //     setTimeout(function(){
+                //       window.location.href = "https://www.fandangos-okinawa.com/reservation/" 
+                //       store.commit('SET_ISLOADING', false)
+                //     },1000);
+                // }).catch(function(error) {
+                //     console.error("Error removing document: ", error);
+                // });
+
               }
             });
           }

@@ -1,7 +1,17 @@
 <template>
   <div id="calendar">
+    <div class="d-flex bd-highlight mt-2 mb-2">
+      <div class="p-0 flex-fill flex-shrink-1 bd-highlight text-right">
+        <span class="p-0 bd-highlight">
+          <span class="badge" :style="{'background-color': supersass.nagoColor, 'color':'white'}">ナゴスタジオ</span>
+        </span>
+        <span class="p-0 bd-highlight">
+          <span class="badge" :style="{'background-color': supersass.kozaColor, 'color':'white'}">コザスタジオ</span>
+        </span>
+      </div>
+    </div>
     <FullCalendar
-      :style="{'min-height':height-adjust+'px','height':height+'px'}"
+      :style="{'min-height':height-adjust+'px'}"
       ref="fullCalendar"
       defaultView="dayGridMonth"
       :options="calendarOptions">
@@ -94,14 +104,20 @@ export default {
         // editable: true,
         eventClick: this.changeEvent,
         weekends: true,
-        eventDidMount: this.eventDidMount,
+        // eventDidMount: this.eventDidMount,
         // customButtons: {
         //   myCustomButton: {
         //     text: '今日',
         //     click: this.todayEvent
         //   }
         // },
-        viewDidMount: this.viewDidMount
+        viewDidMount: this.viewDidMount,
+        businessHours: {
+          daysOfWeek: [ 0, 1, 2, 3, 4, 5, 6 ],
+          startTime: '7:00',
+          endTime: '24:00'
+        },
+        eventTimeFormat: { hour: 'numeric', minute: '2-digit' },
       },
       elDay: '',
       elToday: '',
@@ -132,6 +148,9 @@ export default {
     auth() {
       return store.state.auth;
     },
+    supersass() {
+      return store.state.auth.supersass;
+    },
   },
   created: function () {
     // store.commit('SET_ISLOADING', false)
@@ -151,33 +170,9 @@ export default {
       this.calendarOptions.weekends = !this.calendarOptions.weekends // update a property
     },
     handleDateClick(arg) {  // 日付選択
-
-      // this.$refs.reservationStudio.conditions(date, start);
-      // this.search_visible=true;
-
-      // console.log(arg)
-
-      // if(arg.view.type!=='dayGridMonth'){
-      //   return;
-      // }
       
-      // // 当日の背景色クリア
-      // var cells = document.getElementsByTagName("td");
-      // for (var i = 0; i < cells.length; i++) {
-      //   if(cells[i].getAttribute('data-date')==this.$moment().utc().format('YYYY-MM-DD')){
-      //     cells[i].classList.remove('fc-day-today');
-      //   }
-      // }
-
-      // // 選択日付の背景色を変更する ====
-      // if(this.elDay.style!==undefined) this.elDay.style.backgroundColor = 'white';
-      // this.elDay = arg.dayEl;
-      // // arg.dayEl.style.backgroundColor = 'rgba(255,0,0,0.15)';
-      // arg.dayEl.style.backgroundColor = 'rgba(255, 220, 40, 0.15)';
-      // // ==========================
-
-      // // 選択日付更新
-      // store.commit('SET_SELECT_DATE', arg.dateStr);
+      // 選択日付更新
+      store.commit('SET_SELECT_DATE', arg.dateStr);
       
       // 表示切り替え
       this.$refs.fullCalendar.getApi().gotoDate(arg.dateStr)
@@ -216,7 +211,7 @@ export default {
     },
     eventDidMount: function(info) { // 詳細表示
       // console.log(info.event.extendedProps)
-      if(info.event.extendedProps.studioName=='dummy') return;
+      // if(info.event.extendedProps.studioName=='dummy') return;
 
       let title = '一般利用';
       if(info.event.title!=='*') title = info.event.title;

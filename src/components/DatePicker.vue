@@ -1,5 +1,5 @@
 <template>
-  <v-menu v-model="menu" offset-y :close-on-content-click="false">
+  <v-menu v-model="menu" offset-y :close-on-content-click="false" :style="{'z-index':1200}" left>
     <template v-slot:activator="{ on }">
       <v-btn icon color="primary" dark elevation="0" v-on="on">
         <v-icon>mdi-calendar</v-icon>
@@ -11,11 +11,12 @@
         :style="{'font-size':'20px'}"
       >mdi-check-circle</v-icon> -->
     </template>
-    <v-date-picker v-model="picker"
+    <v-date-picker 
+      v-model="picker"
       locale="ja-jp"
       :day-format="date => new Date(date).getDate()"
       :month-format="date => (new Date(date).getMonth() + 1) + ' /'"
-       @click="menu = false"/>
+      @click="menu = false"/>
   </v-menu>
 </template>
 <script>

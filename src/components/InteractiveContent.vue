@@ -1,7 +1,7 @@
 <template>
-  <div :id='"my-container"+item.id' :style="{'border-color':'black !important'}">
+  <div :id='"my-container"+item.id' :style="{'border-color':'black !important'}" @click="confirm(item.extendedProps)">
       <v-list-item three-line>
-        <v-list-item-content :id='"popover-reactive-"+item.id' :ref='"item"+item.id' @click="confirm(item.extendedProps)">
+        <v-list-item-content :id='"popover-reactive-"+item.id' :ref='"item"+item.id'>
           <v-list-item-subtitle class="d-flex justify-content-start">
             <v-icon 
               class="pt-1"
@@ -24,7 +24,6 @@ import store from '../store/app';
 import moment from "moment"
 import _ from 'lodash';
 import { mdiRecordCircleOutline } from '@mdi/js'
-
 
 export default {
   props: {

@@ -1,23 +1,11 @@
-  <template>
+<template>
   <div>
-    <div class="mx-auto pb-3" :style="{'max-width':'360px'}">
-      <!-- <el-alert
-        v-if="isFirst"
-        :closable="false"
-        type="info"
-        class="text-left"
-        description="はじめてのお客様も登録情報をご入力いただき、このままお進みください。"
-        show-icon>
-      </el-alert> -->
-      <el-alert
-        v-if="!isFirst"
-        :closable="false"
-        type="warning"
-        class="text-left"
-        description="ログイン処理中..."
-        show-icon>
-      </el-alert>
-    </div>
+    <!-- <div class="mx-auto pb-3" :style="{'max-width':'360px'}">
+    </div> -->
+    <!-- <v-app class="p-2">
+      <el-page-header @back="backHome" content="ログイン" title="戻る" class="mt-2 mb-3">
+      </el-page-header>
+    </v-app> -->
     <div id="firebaseui-auth-container"></div>
     <div id="loader">Loading...</div>
     <v-divider></v-divider>
@@ -25,10 +13,9 @@
       <span>アカウントをお持ちですか？</span>
       <router-link to="/account" class="text-primary">新規アカウント作成</router-link>
     </div> -->
-    <div class="pt-4 pb-1">
-      <!-- <router-link to="/" class="button btn-light">キャンセル</router-link> -->
+    <!-- <div class="pt-4 pb-1">
       <button type="button" class="btn btn-light" @click="cancel">キャンセル</button>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -105,6 +92,8 @@ export default {
   },
   mounted() {
     console.log("Login mounted");
+    console.log(this.$route.path);
+    
     store.commit('SET_ISLOADING', false);
 
     let that = this;
@@ -215,7 +204,7 @@ export default {
           setTimeout(function(){
             store.commit('SET_AUTH', user)
             store.commit('SET_ISLOADING', false)
-          },2000);
+          },200);
         });
         // store.commit('SET_ISLOADING', false)
       }else{
@@ -237,8 +226,13 @@ export default {
   },
   methods: {
     cancel: function () {
+      store.commit('SET_BACK_URI', '/');
       this.$router.replace('/')
     },
+    backHome() {
+      store.commit('SET_BACK_URI', '/back');
+      this.$router.replace('/');
+    }
   }
 }
 </script>

@@ -15,7 +15,7 @@
           </div>
         </div>
         <v-list-item-subtitle>{{ item.studioName }}</v-list-item-subtitle>
-        <v-list-item-subtitle class="mt-1">料金：¥<span class="ml-1">{{ item.price.toLocaleString() }}</span></v-list-item-subtitle>
+        <!-- <v-list-item-subtitle class="mt-1">料金：¥<span class="ml-1">{{ item.price.toLocaleString() }}</span></v-list-item-subtitle> -->
         <!-- <v-list-item-title class="headline mb-1">
           {{ item.title }}<span v-if="item.isReserve" class="ml-2">さん</span>
         </v-list-item-title>
@@ -39,13 +39,93 @@
     </v-list-item>
 
     <v-card-actions class="justify-content-end p-0">
-      <v-btn
-        outlined
-        text
-        @click="deleteReservation"
-      >
-        予約取消
-      </v-btn>
+      <!-- <el-alert
+        v-if="item.isCard"
+        class="text-left m-1"
+        type="error"
+        description="カード決済の取消は、お問い合わせください。"
+        show-icon>
+      </el-alert> -->
+        <v-btn
+          v-if="!item.isCard"
+          outlined
+          text
+          @click.stop="delconfirm = true"
+        >
+          予約取消
+        </v-btn>
+        <v-btn
+          v-if="item.isCard"
+          color="error"
+          text
+          @click.stop="dialog = true"
+        >
+          予約取消
+        </v-btn>
+        
+        <v-dialog
+          v-model="delconfirm"
+          max-width="290"
+        >
+          <v-card>
+            <v-card-title class="headline">予約取消の確認</v-card-title>
+
+            <v-card-text>
+              本当に予約を取消してよろしいですか？
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                outlined
+                text
+                @click.stop="delconfirm = false"
+              >
+                キャンセル
+              </v-btn>
+              <v-btn
+                color="error"
+                outlined
+                text
+                @click="deleteReservation"
+              >
+                はい
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
+        <v-dialog
+          v-model="dialog"
+          max-width="290"
+        >
+          <v-card>
+            <v-card-title class="headline">お問い合わせください</v-card-title>
+
+            <v-card-text>
+              カード決済で支払いのため、こちらで取消できません。予約の取消が必要な方は、管理者へお問い合わせください。
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                color="gray darken-1"
+                outlined
+                text
+                @click="dialog = false"
+              >
+                閉じる
+              </v-btn>
+              <!-- <v-btn
+                color="error"
+                text
+                @click="dialog = false"
+              >
+                問い合わせる
+              </v-btn> -->
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
     </v-card-actions>
   </v-card>
 </template>
@@ -69,11 +149,13 @@ export default {
   },
   data() {
     return {
-      loading: false,
-      title: '',
-      isTarget: false,
-      useType: '',
-      targetDate: '',
+      dialog: false,
+      delconfirm: false,
+      // loading: false,
+      // title: '',
+      // isTarget: false,
+      // useType: '',
+      // targetDate: '',
       // item: {
       //   isReserve: false,
       //   studioName: 'aaa',
@@ -108,16 +190,16 @@ export default {
   },
   methods: {
     deleteReservation() {
+      store.commit('SET_ISLOADING', true);
 
       let that = this;
       // console.log(that.item.price)
-      this.$confirm('<strong class="text-left">本当に取消してもよろしいですか？</strong>', '予約取消', {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: 'OK',
-          type: 'warning',
-          center: true,
-        }).then(() => {
-          store.commit('SET_ISLOADING', true)
+      // this.$confirm('<strong class="text-left">本当に取消してもよろしいですか？</strong>', '予約取消', {
+      //     dangerouslyUseHTMLString: true,
+      //     confirmButtonText: 'OK',
+      //     type: 'warning',
+      //     center: true,
+      //   }).then(() => {
           // ポイント戻す
           // let credit = store.state.auth.credit.replace(/,/, '');
           // credit = Number(credit) + Number(that.item.price.replace(/,/, ''));
@@ -151,27 +233,28 @@ export default {
                       callback: function(res){
                       }
                     });
-                    // 自身の予約
-                    store.dispatch('getUserAgenda',{
-                      params: {
-                        from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
-                        user_email: that.auth.email
-                      },
-                    });
+                    // // 自身の予約
+                    // store.dispatch('getUserAgenda',{
+                    //   params: {
+                    //     from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
+                    //     user_email: that.auth.email
+                    //   },
+                    // });
                     store.dispatch('getUsers',function(e){
                       store.commit('SET_ISLOADING', false)
                     });
-                  },1200);
+                  },1000);
                 }
               });
             }
           });
-        }).catch(() => {
-          that.$message({
-            type: 'info',
-            message: '予約取消キャンセルしました。'
-          });          
-        });
+
+        // }).catch(() => {
+        //   that.$message({
+        //     type: 'info',
+        //     message: '予約取消キャンセルしました。'
+        //   });          
+        // });
     },
   }
 }
