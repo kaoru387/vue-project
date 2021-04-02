@@ -1,5 +1,5 @@
 <template>
-  <div id="home">
+  <div>
   	<!-- Login -->
     <section class="container p-0 g-mt-50 g-pb-20">
       <div class="row justify-content-between">

@@ -1,9 +1,9 @@
 <template>
   <div>
-    <v-app class="p-2">
-      <el-page-header @back="backHome" content="LINEログイン" title="戻る" class="mt-2 mb-3">
-      </el-page-header>
-    </v-app>
+    <!-- <v-app class="p-2">
+    </v-app> -->
+    <el-page-header @back="backHome" content="LINEログイン" title="戻る" class="mt-2 mb-3">
+    </el-page-header>
     <v-card 
       tile
       max-width="360px"

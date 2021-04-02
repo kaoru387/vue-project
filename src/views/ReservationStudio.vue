@@ -30,14 +30,14 @@
         </el-page-header> -->
         <div class="container">
           <div class="row align-items-center g-bg-white g-py-10">
-            <div v-if="auth.email!=='' && !isSearch" @click="drawerOpen" class="p-4 pt-2 pb-3">
+            <!-- <div v-if="auth.email!=='' && !isSearch" @click="drawerOpen" class="p-4 pt-2 pb-3">
               <el-alert
                 class="text-left"
                 type="warning"
                 description="空き時間を検索して、予約時間を選択し予約してください。"
                 show-icon>
               </el-alert>
-            </div>
+            </div> -->
             <div class="col-md-12 g-pl-20 g-mb-5 g-mb-0--md p-0 d-flex justify-content-center">
 
               <!-- Product Info -->
@@ -394,10 +394,10 @@ export default {
   mounted() {
     var that = this;
     setTimeout(function(){
-      // that.$message({
-      //   type: 'warning',
-      //   message: '空き時間を検索して、予約時間を選択し予約してください。',
-      // });
+      that.$message({
+        type: 'warning',
+        message: '空き時間を検索して、予約時間を選択し予約してください。',
+      });
       store.commit('SET_ISLOADING', false);
     },500);
   },
