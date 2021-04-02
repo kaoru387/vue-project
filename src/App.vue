@@ -1,7 +1,7 @@
 <template>
-<body>
-  <main>
-    <v-app v-loading="loading || lineLogin!==''">
+  <v-app v-loading="loading || lineLogin!==''">
+<!-- <body>
+  <main> -->
       <!-- Header -->
       <header id="js-header" class="u-header u-header--static u-shadow-v19">
         <!-- Top Bar -->
@@ -15,7 +15,7 @@
                 <ul class="list-inline mb-0">
                   <li class="list-inline-item">
                     <!-- <a class="g-color-black g-color-primary--hover g-pa-3" href="#"><i class="fa fa-facebook"></i></a> -->
-                    <!-- <v-app-bar-nav-icon @click.stop="drawer = !drawer" class="float-left"></v-app-bar-nav-icon> -->
+                    <v-app-bar-nav-icon @click.stop="drawer = !drawer" class="float-left"></v-app-bar-nav-icon>
                   </li>
                   <!-- <li class="list-inline-item">
                     <a class="g-color-black g-color-primary--hover g-pa-3" href="#"><i class="fa fa-twitter"></i></a>
@@ -40,7 +40,7 @@
                 </a>
               </div> -->
 
-              <!-- <div class="col-sm-auto g-hidden-sm-down g-color-white-opacity-0_6 g-font-weight-400 g-pl-15 g-pl-0--sm g-py-14">
+              <div class="g-color-white-opacity-0_6 g-font-weight-400 g-pl-15 g-pl-0--sm g-py-14">
                 <v-btn
                   icon
                   color="green"
@@ -48,7 +48,7 @@
                 >
                   <v-icon>mdi-cached</v-icon>
                 </v-btn>
-              </div> -->
+              </div>
 
               <!-- <div class="col-sm-auto g-pos-rel g-py-14"> -->
                 <div class="g-pos-rel g-py-14">
@@ -62,7 +62,7 @@
                   <li v-else class="list-inline-item g-mx-4">
                     <!-- <a class="g-color-text g-color-primary--hover g-font-weight-400 g-text-underline--none--hover" href="#" @click="backHome">ログインしてください</a> -->
 
-                    <P>FlamencoartsOkinawa</P>
+                    <!-- <P>FlamencoartsOkinawa</P> -->
                   </li>
                 </ul>
               </div>
@@ -72,13 +72,12 @@
         </div>
         <!-- End Top Bar -->
       </header>
-      <!-- End Header -->
-
+  
       <!-- Promo Slider -->
       <v-container>
         <router-view @drawerOpen="drawerOpen" />
       </v-container>
-    
+
       <div class="g-bg-gray-light-v5">
         <div class="container">
           <div class="text-center mx-auto g-max-width-600 g-mt-30 g-mb-5">
@@ -488,9 +487,69 @@
         :close-modal="close_modal"
         @reload="reload"
        />
-    </v-app>
-  </main>
-</body>
+
+    <v-navigation-drawer
+      v-model="drawer"
+      :style="{'z-index':1000, 'height': height+adjust+'px'}"
+      absolute
+      temporary
+    >
+      <v-card
+        outlined
+        v-scroll.self="onScroll"
+        class="overflow-y-auto"
+        :max-height="height"
+      >
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="text-center">
+              <h4 class="h4 pt-5">スタジオ予約</h4>
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-divider></v-divider>
+
+        <div v-if="auth.email!==''">
+          <div class="text-center">
+            <div class="mb-0">
+              <h5 class="pt-2 g-text-underline text-primary" @click="myReserve">あなたの情報</h5>
+            </a>
+            </div>
+            <div class="mb-4">
+              ポイント：<span class="g-color-primary g-font-weight-300 g-font-size-20 mr-2">{{ auth.credit.toLocaleString() }}</span>
+            </div>
+          </div>
+          <v-divider></v-divider>
+          <div class="pl-4 pr-4">
+            <div class="text-center">
+              <h5 class="pt-2 pb-2">空き時間検索</h5>
+            </div>
+            <search-studio 
+              ref="searchStudio"
+              @searchStudio="searchStudio"
+              @cancel="cancel"
+             />
+          </div>
+        </div>
+        <div v-else class="p-2">
+          <el-alert
+            class="text-left mb-5"
+            type="warning"
+            description="ログインしてください"
+            show-icon>
+          </el-alert>
+        </div>
+
+        <v-list class="p-2 pb-5" dense>
+          <v-list-item>
+            <v-list-item-title v-if="auth.email!==''" @click="logout">ログアウト</v-list-item-title>
+          </v-list-item>
+        </v-list>
+    </v-card>
+  </v-navigation-drawer>
+
+</v-app>
+
 </template>
 <style>
   .js-scrollable {
@@ -539,6 +598,7 @@ export default {
     return {
       modal_editaccount_visible: false,
       drawer: false,
+      scrollInvoked: 0,
       // isSearch: false,
       // sheet: false,
       // drawer: false,
@@ -560,6 +620,12 @@ export default {
     }
   },
   computed: {
+    // items () {
+    //   return Array.from({ length: this.length }, (k, v) => v + 1)
+    // },
+    // length () {
+    //   return 7000
+    // },
     adjust () {
       switch (this.$vuetify.breakpoint.name) {
         case 'xs': return 220
@@ -714,6 +780,9 @@ export default {
     this.reload();   
   },
   methods: {
+    onScroll () {
+      this.scrollInvoked++
+    },
     loginUser() {
       const code = this.lineLogin.code;
       const state = this.lineLogin.state;

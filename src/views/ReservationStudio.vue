@@ -38,32 +38,36 @@
                 show-icon>
               </el-alert>
             </div>
-            <div class="col-md-12 g-pl-20 g-mb-5 g-mb-0--md p-0 d-flex justify-content-center" @click="drawerOpen"  >
+            <div class="col-md-12 g-pl-20 g-mb-5 g-mb-0--md p-0 d-flex justify-content-center">
+
               <!-- Product Info -->
-              <div v-if="!isSearch" class="media">
-                <div class="d-flex align-self-center mr-3">
-                  <span class="u-icon-v2 g-color-primary g-bg-secondary rounded-circle">
-                    <i class="fa fa-group u-line-icon-pro"></i>
-                  </span>
-                </div>
-                <div class="media-body align-self-center">
-                  <h3 class="h5 g-color-black mb-0">スタジオ予約</h3>
-                  <span class="d-block g-color-gray-dark-v5">全体予約スケジュール</span>
-                </div>
-              </div>
-              <div v-else class="d-flex justify-content-center">
-                <div class="media">
+              <div @click="drawerOpen">
+                <div v-if="!isSearch" class="media">
                   <div class="d-flex align-self-center mr-3">
-                    <span class="u-icon-v2 g-color-white g-bg-primary rounded-circle">
-                      <i class="icon-education-141 u-line-icon-pro"></i>
+                    <span class="u-icon-v2 g-color-primary g-bg-secondary rounded-circle">
+                      <i class="fa fa-group u-line-icon-pro"></i>
                     </span>
                   </div>
+                  <div class="media-body align-self-center">
+                    <h3 class="h5 g-color-black mb-0">スタジオ予約</h3>
+                    <span class="d-block g-color-gray-dark-v5">全体予約スケジュール</span>
+                  </div>
                 </div>
-                <div class="media-body align-self-center">
-                  <h3 class="h5 g-color-black mb-0">検索結果</h3>
-                  <span class="d-block g-color-gray-dark-v5">スタジオ空き時間</span>
+                <div v-else class="d-flex justify-content-center">
+                  <div class="media">
+                    <div class="d-flex align-self-center mr-3">
+                      <span class="u-icon-v2 g-color-white g-bg-primary rounded-circle">
+                        <i class="icon-education-141 u-line-icon-pro"></i>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="media-body align-self-center">
+                    <h3 class="h5 g-color-black mb-0">検索結果</h3>
+                    <span class="d-block g-color-gray-dark-v5">スタジオ空き時間</span>
+                  </div>
                 </div>
               </div>
+
               <!-- Accordion -->
               <!-- <div id="accordion-01" role="tablist" aria-multiselectable="true">
                 <div id="accordion-01-heading-01" class="g-brd-y g-brd-gray-light-v3 py-3" role="tab">
@@ -294,6 +298,7 @@ export default {
       // drawer: false,
       dialog: false,
       confirm_name: '',
+      message: 'You loaded this page on ' + new Date().toLocaleString()
     }
   },
   // beforeRouteEnter (to, from, next) {
@@ -302,6 +307,17 @@ export default {
   //   next();
   // },
   computed: {
+    textState: function (e) {
+      if (this.count <= 150) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    count: function () {
+      return 2;
+      // return this.$store.state.TweetDialog.message.length;
+    },
     loading() {
       return store.state.isLoading;
     },
@@ -376,7 +392,12 @@ export default {
     // store.commit('SET_SELECT_RESOURCES', [])
   },
   mounted() {
+    var that = this;
     setTimeout(function(){
+      // that.$message({
+      //   type: 'warning',
+      //   message: '空き時間を検索して、予約時間を選択し予約してください。',
+      // });
       store.commit('SET_ISLOADING', false);
     },500);
   },
