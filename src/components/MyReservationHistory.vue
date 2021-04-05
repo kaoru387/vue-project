@@ -22,12 +22,6 @@
           </div>
         </div>
         <v-list-item-subtitle>{{ item.product_name }}</v-list-item-subtitle>
-        <!-- <v-list-item-title class="headline mb-1">
-          {{ item.title }}<span v-if="item.isReserve" class="ml-2">さん</span>
-        </v-list-item-title> -->
-        <!-- <v-list-item-subtitle><span class="mr-2">{{ targetDate }}</span>{{ item.datetime }}</v-list-item-subtitle> -->
-        <!-- <v-list-item-subtitle v-if="item.isReserve">{{ useType }}</v-list-item-subtitle> -->
-        <!-- <v-list-item-subtitle><span class="sample">{{ item.description }}</span></v-list-item-subtitle> -->
         <div class="d-flex justify-content-between pt-2 pb-2">
           <label class="form-check-inline u-check g-color-gray-dark-v5 g-font-size-14 g-pl-25 mt-2">
             <input v-model="used.op1" type="checkbox" name='checkbox' class="d-block u-check-icon-checkbox-v6 g-absolute-centered--y g-left-0" :disabled="isOption"><i class="fa" data-check-icon="&#xf00c"></i></input>
@@ -42,14 +36,6 @@
             </p>
           </div>
         </div>
-        <!-- <v-btn
-          outlined
-          rounded
-          text
-          @click="deleteReservation"
-        >
-          予約取消
-        </v-btn> -->
       </v-list-item-content>
       <!-- <v-list-item-avatar
         tile
@@ -69,24 +55,14 @@
       >
         ポイント精算する
       </v-btn>
-
       <v-btn
-        v-if="!item.isCard"
+        :disabled="true"
         outlined
         text
-        @click.stop="delconfirm = true"
       >
         予約取消
       </v-btn>
-      
-      <v-btn
-        v-if="item.isCard"
-        color="error"
-        text
-        @click.stop="dialog = true"
-      >
-        予約取消
-      </v-btn>
+
 
       <!-- エアコン代の支払い確認 -->
       <v-dialog
@@ -126,80 +102,15 @@
         </v-card>
       </v-dialog>
 
-      <!-- 予約取消 -->
-      <v-dialog
-        v-model="delconfirm"
-        max-width="290"
-      >
-        <v-card>
-          <v-card-title class="headline">予約取消の確認</v-card-title>
-
-          <v-card-text>
-            本当に予約を取消してよろしいですか？
-          </v-card-text>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn
-              outlined
-              text
-              @click.stop="delconfirm = false"
-            >
-              キャンセル
-            </v-btn>
-            <v-btn
-              color="error"
-              outlined
-              text
-              @click="deleteReservation"
-            >
-              取消
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-
-      <!-- 予約取消の問い合わせ -->
-      <v-dialog
-        v-model="dialog"
-        max-width="290"
-      >
-        <v-card>
-          <v-card-title class="headline">お問い合わせください</v-card-title>
-
-          <v-card-text>
-            カード決済で支払いのため、こちらで取消できません。予約の取消が必要な方は、管理者へお問い合わせください。
-          </v-card-text>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn
-              color="gray darken-1"
-              outlined
-              text
-              @click="dialog = false"
-            >
-              閉じる
-            </v-btn>
-            <!-- <v-btn
-              color="error"
-              text
-              @click="dialog = false"
-            >
-              問い合わせる
-            </v-btn> -->
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
     </v-card-actions>
   </v-card>
 </template>
-<style scoped>
+<!-- <style scoped>
   .item {
     margin-top: 10px;
     margin-right: 0px;
   }
-</style>
+</style> -->
 <script>
 import store from '../store/app';
 import axios from "axios"
@@ -253,10 +164,20 @@ export default {
     // 対象日付
     this.targetDate = moment(this.item.start).utc().format("MM月DD日");
 
-    // 利用時間を数値変換
-    this.hours = Number(this.item.hours);
-    this.minutes = Number(this.item.minutes);
+    // 過去データは取消不可
+    // if(this.$moment().format('YYYY-MM-DD')<=this.targetDate) {
+    //   if(this.item.user_id==this.auth.user_id) {
+    //     this.isTarget=true;
+    //     this.isOption=true;
+    //   }
+    // }
+    // this.useType = this.item.use_type
 
+    // 利用時間を数値変換
+    this.hours = Number(this.item.hours)
+    this.minutes = Number(this.item.minutes)
+
+    console.log(this.item);
     // エアコン利用料
     if(0<this.item.superField) {
       this.optionAmount=this.item.superField;
@@ -341,10 +262,6 @@ export default {
       let that = this;
       let credit = that.auth.credit;
       credit = Number(that.auth.credit) + Number(that.item.price);
-
-      // エアコン利用の場合、戻す
-      if(that.isOption) credit = credit + that.billingAmount;
-
       store.dispatch('saveUser',{
         params: {
           credit: credit,

@@ -1,10 +1,6 @@
 <template>
   <div id="free-calendar">
-    <!-- <div class="text-center pt-3 pb-3 text-primary">
-      <h4>空き時間表示</h4>
-    </div> -->
-
-    <div class="pl-3 pr-3">
+    <div class="pl-3 pr-3 pt-0">
       <el-alert
         class="mb-10 text-left"
         type="success"
@@ -12,7 +8,6 @@
         show-icon>
       </el-alert>
     </div>
-
     <v-row justify="center" align-content="center">
       <h5>{{ initialDate }}</h5>
     </v-row>

@@ -1,6 +1,6 @@
 <template>
   <div id="calendar">
-    <div class="d-flex bd-highlight mt-2 mb-2">
+    <div class="d-flex bd-highlight mt-0 mb-2">
       <div class="p-0 flex-fill flex-shrink-1 bd-highlight text-right">
         <span class="p-0 bd-highlight">
           <span class="badge" :style="{'background-color': supersass.nagoColor, 'color':'white'}">ナゴスタジオ</span>
@@ -111,7 +111,7 @@ export default {
         //     click: this.todayEvent
         //   }
         // },
-        viewDidMount: this.viewDidMount,
+        // viewDidMount: this.viewDidMount,
         businessHours: {
           daysOfWeek: [ 0, 1, 2, 3, 4, 5, 6 ],
           startTime: '7:00',
@@ -239,21 +239,21 @@ export default {
     },
     viewDidMount: function(e){
       // console.log('vi',e.view.type)
-      // let that = this
-      // // 今日の日付の背景色をリセット
-      // let today = this.$moment().utc().format('YYYY-MM-DD');
-      // var cells = document.getElementsByTagName("td");
-      // for (var i = 0; i < cells.length; i++) {
-      //   // if(today<=cells[i].getAttribute('data-date')){
-      //   //   // cells[i].classList.remove('fc-day-today');
-      //   //   // that.elToday=cells[i];
-      //   //   cells[i].style.backgroundColor = 'rgba(255,153,106,0.08)';
-      //   // }
-      //   // 過去の日付は選択できないため背景色を変更
-      //   if(cells[i].getAttribute('data-date')<today){
-      //     cells[i].style.backgroundColor = 'rgba(128,128,128,0.08)';
-      //   }
-      // }
+      let that = this
+      // 今日の日付の背景色をリセット
+      let today = this.$moment().utc().format('YYYY-MM-DD');
+      var cells = document.getElementsByTagName("td");
+      for (var i = 0; i < cells.length; i++) {
+        // if(today<=cells[i].getAttribute('data-date')){
+        //   // cells[i].classList.remove('fc-day-today');
+        //   // that.elToday=cells[i];
+        //   cells[i].style.backgroundColor = 'rgba(255,153,106,0.08)';
+        // }
+        // 過去の日付は選択できないため背景色を変更
+        if(cells[i].getAttribute('data-date')<today){
+          cells[i].style.backgroundColor = 'rgba(128,128,128,0.08)';
+        }
+      }
     },
     todayEvent: function(){
       // 今日にリセット

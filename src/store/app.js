@@ -51,6 +51,7 @@ const state = {
       resources: [],
       myschedules: [],
       my: [],
+      history: [],
     },
     master:{},
     form:{
@@ -92,10 +93,6 @@ const state = {
     search: {},
     isSearch: false,
     lineLogin: '',
-    // lineLogin: {
-    //   code: '',
-    //   state: '',
-    // },
 }
 
 const actions = {
@@ -526,9 +523,10 @@ const actions = {
         }).then((res) => {
           // xml to json
           store.state.result.bookings=[];
-          // // ログインユーザー予約
+          // ログインユーザー予約
           store.state.result.myschedules=[];
           store.state.result.my=[];
+          store.state.result.history=[];
           // let my = [];
 
           parser.parseString(res.data, function (err, result) {
@@ -544,6 +542,7 @@ const actions = {
               if(1<_datas.reservation.length){
 
                 _.forEach(_datas.reservation, function(v, k) {
+                  // console.log(v)
                   setScheduleEvent(store, v);
 
                   // ログインユーザーの予約
@@ -659,6 +658,36 @@ const actions = {
           }
         }).then((res) => {
           console.log("success add?", res);
+          callback(res)
+        });
+      }
+      const processAll = async function() {
+        await processA()
+      }
+      processAll()
+    } catch(error){
+      console.log(error)
+    }
+  },
+  editAppointment: (store,{params,callback}) => {  // 予約編集
+    try {
+      const processA = async function() {  
+        const httpEvent = firebase.functions().httpsCallable('postSSass');
+        await httpEvent({ 
+          path: '/bookings/'+params.id+'.json',
+          method: 'POST',
+          params: {
+            schedule_id: supersassConfig.resourceId,
+            'booking[super_field]': params.amount,
+          },
+          headers: {
+            "Access-Control-Allow-Credentials": "true",
+            "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.apiKey),
+            "Accept": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          }
+        }).then((res) => {
+          console.log("success edit.", res);
           callback(res)
         });
       }
@@ -937,6 +966,20 @@ function setScheduleEvent(store, v) {
   let _start = moment(v['start']['_']).utc().format("HH:mm");
   let _finish = moment(v['finish']['_']).utc().format("HH:mm");
 
+  // 合計時間を取得 -----------------------------------------------
+  const start = moment.duration(_start, "HH:mm");
+  const end = moment.duration(_finish, "HH:mm");
+  const diff = end.subtract(start);
+  if (diff.hours() < 0 || diff.minutes() < 0) {
+    return "00:00";
+  }
+  let hours = diff.hours() < 10 ? "0" + diff.hours() : diff.hours();
+  let minutes = diff.minutes() < 10 ? "0" + diff.minutes() : diff.minutes();
+  // console.log('diff', hours + ":" + minutes);
+  // 30分ごとなので、変換
+  if(minutes==30) minutes=1;
+  // End -----------------------------------------------
+
   // Firestore更新用-start
   let product_name = '管理者変更';
   let obj = Object.prototype.toString.call(v['field-2'])
@@ -997,14 +1040,52 @@ function setScheduleEvent(store, v) {
   // ログインユーザーの予約
   if(store.state.auth.email==v['email']){
 
+    // オプション金額
+    let option_price=0;
+    let obj4 = Object.prototype.toString.call(v['super-field'])
+    if(obj4 == '[object String]') {
+      if(v['super-field']!==''){
+        option_price = Number(v['super-field'].replace(/,/, ''));
+      }
+    }
     // 取消可能か
     let isEdit=true;
     // 当日以前の予約は取消不可
     let today = moment().format("YYYY-MM-DD HH:mm");
     let target = moment(v['start']['_']).utc().format("YYYY-MM-DD HH:mm");
-    if(target<today) isEdit=false;
+    if(target<today) {
+      isEdit=false;
 
-    // カード決済は取消不可
+      // 予約履歴
+      store.state.result.history.push({
+        id: v['id']['_'],
+        title: title+' '+price+' '+v['res-name'],
+        price: price,
+        start: v['start']['_'],
+        end: v['finish']['_'],
+        description: description,
+        datetime: _start+'〜'+_finish,
+        product_name: product_name,
+        studioName: v['res-name'],
+        iconColor: color,
+        // color: color,
+        borderColor: color,
+        color: 'white',
+        fontColor: 'black',
+        display: '',
+        created: v['created-on']['_'],
+        user_id: v['user-id']['_'],
+        allDay: allDay,
+        isEdit: isEdit,
+        isCard: isCard,
+        hours: hours,
+        minutes: minutes,
+        superField: option_price
+      });
+      return;
+    }
+
+    // 予約
     store.state.result.my.push({
       id: v['id']['_'],
       title: title+' '+price+' '+v['res-name'],
@@ -1025,8 +1106,12 @@ function setScheduleEvent(store, v) {
       user_id: v['user-id']['_'],
       allDay: allDay,
       isEdit: isEdit,
-      isCard: isCard
+      isCard: isCard,
+      hours: hours,
+      minutes: minutes,
+      superField: option_price
     });
+
   }
 };
 
@@ -1103,6 +1188,7 @@ const mutations = {
     state.auth.user_id = supersassuser.id;
 
     // ポイント
+    if('cre!', supersassuser.credit);
     let credit = Number(supersassuser.credit.replace(/,/, ''));
     state.auth.credit = credit;
     // console.log(state.auth.credit);
@@ -1139,6 +1225,11 @@ const mutations = {
   SET_INFO_BROUSER (state, browser){
     state.info.browser = browser;
   },
+  RESET_DATA (state) {
+    state.result.bookings = [];
+    state.result.my = [];
+    state.result.history = [];
+  },
   // RESET_VUEX_STATE(state) {
   //   // ローカルストレージ初期化
   //   Object.assign(state, JSON.parse(localStorage.getItem('state')));
@@ -1160,7 +1251,7 @@ const mutations = {
     state.info.isResetPassword = is_reset
   },
   SET_ACTIONCODE (state, actionCode){
-    console.log('get actioncode')
+    // console.log('get actioncode')
     state.info.actionCode = actionCode
   },
   SET_ACTIONEMAIL (state, email){

@@ -14,21 +14,8 @@
                   <!-- <ul class="list-inline g-py-14 mb-0"> -->
                   <ul class="list-inline mb-0">
                     <li class="list-inline-item">
-                      <!-- <a class="g-color-black g-color-primary--hover g-pa-3" href="#"><i class="fa fa-facebook"></i></a> -->
                       <v-app-bar-nav-icon @click.stop="drawer = !drawer" class="float-left"></v-app-bar-nav-icon>
                     </li>
-                    <!-- <li class="list-inline-item">
-                      <a class="g-color-black g-color-primary--hover g-pa-3" href="#"><i class="fa fa-twitter"></i></a>
-                    </li>
-                    <li class="list-inline-item">
-                      <a class="g-color-black g-color-primary--hover g-pa-3" href="#"><i class="fa fa-tumblr"></i></a>
-                    </li>
-                    <li class="list-inline-item">
-                      <a class="g-color-black g-color-primary--hover g-pa-3" href="#"><i class="fa fa-pinterest-p"></i></a>
-                    </li>
-                    <li class="list-inline-item">
-                      <a class="g-color-black g-color-primary--hover g-pa-3" href="#"><i class="fa fa-google"></i></a>
-                    </li> -->
                   </ul>
                   <!-- End Social Icons -->
                 </div>
@@ -60,8 +47,7 @@
                       <a v-else href="#" @click="editAccount" class="text-decoration-underline">{{ auth.username }}</a><span v-if="!auth.isNeedName" class="sample pl-1 pt-1">さん</span>
                     </li>
                     <li v-else class="list-inline-item g-mx-4">
-                      <!-- <a class="g-color-text g-color-primary--hover g-font-weight-400 g-text-underline--none--hover" href="#" @click="backHome">ログインしてください</a> -->
-
+                      <a class="g-color-text g-color-primary--hover g-font-weight-400 g-text-underline--none--hover" href="#" @click="backHome">ログインしてください</a>
                       <!-- <P>FlamencoartsOkinawa</P> -->
                     </li>
                   </ul>
@@ -433,7 +419,7 @@
                 <p class="g-font-size-13 mb-0">2021 &copy; Flamencoarts Okinawa.</p>
               </div>
 
-              <div class="col-md-6 text-md-right g-mb-20">
+              <!-- <div class="col-md-6 text-md-right g-mb-20">
                 <ul class="list-inline g-color-gray-dark-v5 g-font-size-25 mb-0">
                   <li class="list-inline-item g-cursor-pointer mr-1">
                     <i class="fa fa-cc-visa" title="Visa"
@@ -461,7 +447,7 @@
                        data-placement="top"></i>
                   </li>
                 </ul>
-              </div>
+              </div> -->
 
             </div>
           </div>
@@ -500,18 +486,19 @@
               v-scroll.self="onScroll"
               class="overflow-y-auto"
               :max-height="height"
+              flat
             >
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title class="text-center">
-                    <h4 class="h4 pt-5">スタジオ予約</h4>
+                    <h4 class="h4 pt-5 g-font-weight-700">スタジオ予約</h4>
                   </v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
               <v-divider></v-divider>
 
-              <div v-if="auth.email!==''">
-                <div class="text-center">
+              <div v-if="auth.email!==''" class="p-3 mb-2">
+                <!-- <div class="text-center">
                   <div class="mb-0">
                     <h5 class="pt-2 g-text-underline text-primary" @click="myReserve">あなたの情報</h5>
                   </a>
@@ -519,20 +506,27 @@
                   <div class="mb-4">
                     ポイント：<span class="g-color-primary g-font-weight-300 g-font-size-20 mr-2">{{ auth.credit.toLocaleString() }}</span>
                   </div>
-                </div>
+                </div> 
                 <v-divider></v-divider>
-                <div class="pl-4 pr-4">
-                  <div class="text-center">
-                    <h5 class="pt-2 pb-2">空き時間検索</h5>
-                  </div>
-                  <search-studio 
-                    ref="searchStudio"
-                    @searchStudio="searchStudio"
-                    @cancel="cancel"
-                   />
+                -->
+                <el-alert
+                  class="text-left m-1"
+                  type="warning"
+                  description="スタジオ空き時間を検索して、予約時間を選択し予約してください。"
+                  show-icon>
+                </el-alert>
+                
+                <div class="text-center g-color-primary">
+                  <h4 class="pt-6 pb-2 g-font-weight-600 g-font-size-20">空き時間検索</h4>
                 </div>
+                <search-studio 
+                  ref="searchStudio"
+                  @searchStudio="searchStudio"
+                  @cancel="cancel"
+                 />
+              
               </div>
-              <div v-else class="p-2">
+              <div v-else class="mt-5">
                 <el-alert
                   class="text-left mb-5"
                   type="warning"
@@ -541,9 +535,10 @@
                 </el-alert>
               </div>
 
+              <v-divider></v-divider>
               <v-list class="p-2 pb-5" dense>
                 <v-list-item>
-                  <v-list-item-title v-if="auth.email!==''" @click="logout">ログアウト</v-list-item-title>
+                  <v-list-item-title v-if="auth.email!==''" @click="logout" class="text-secondary">ログアウト</v-list-item-title>
                 </v-list-item>
               </v-list>
           </v-card>
@@ -722,7 +717,7 @@ export default {
     // ログイン確認
     if(store.state.auth.email!=='') {
       console.log('login');
-      // ログイン済
+      // ログイン済の場合
       that.$nextTick(function () {
         store.commit('SET_ISLOADING', true);
         store.commit('SET_BACK_URI', '/schedule');
@@ -730,7 +725,7 @@ export default {
       });
     }else{
       console.log('none login', store.state.backuri);
-      // ログイン未だ
+      // ログイン未だの場合
       that.$nextTick(function () {
         store.commit('SET_BACK_URI', '/back');
         if(that.$route.path!=='/' && that.$route.path!=='') {
@@ -783,7 +778,7 @@ export default {
   },
   methods: {
     onScroll () {
-      this.scrollInvoked++
+      this.scrollInvoked++;
     },
     loginUser() {
       const code = this.lineLogin.code;
@@ -1088,28 +1083,32 @@ export default {
     },
     refresh() {
       this.reload();
-      let backuri=store.state.backuri;
+      console.log('backu', store.state.backuri)
       store.commit('SET_BACK_URI', '');
       store.commit('SET_LINE_LOGIN', '');
+      store.commit('RESET_DATA');
       setTimeout(function(){
         store.commit('SET_ISLOADING', false);
-        if(backuri=="") window.location.reload();
-      },300);
+        // if(backuri=="") window.location.reload();
+      },1000);
+      // if(this.$route.path=='/schedule') return;
+      // if(store.state.backuri=="") window.location.reload();
     },
     myReserve() {
       console.log(this.$route.path);
       // LINEログイン後、パス指定されている場合
       let that = this;
       if(this.$route.path=='/schedule'){
-        // 初期化後に、再パス指定
-        setTimeout(function(){
-          that.$router.push({path: '/about'});
-        },400);
+        // // 初期化後に、再パス指定
+        // setTimeout(function(){
+        //   // that.$router.push({path: '/about'});
+        // },400);
         return;
       }
-      if(this.$route.path=='/about') return;
-      // 通常パス指定
-      this.$router.push({path: '/about'});
+      if(store.state.backuri=="") window.location.reload();
+      // if(this.$route.path=='/about') return;
+      // // 通常パス指定
+      // this.$router.push({path: '/about'});
     },
     backHome() {
       setTimeout(function(){

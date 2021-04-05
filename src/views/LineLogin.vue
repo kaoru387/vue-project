@@ -85,11 +85,11 @@ export default {
           
       store.commit('SET_ISLOADING', true);
       // const url = "https://localhost:4006";
-      // const url = "https://r.flamencoarts.okinawa/";
+      const url = this.supersass.baseHost;
       store.dispatch('getLineLogin',{
         params: {
           channel_id: '1655706276',
-          redirect_uri: this.supersass.baseHost+'/?mode=successLineLogin',
+          redirect_uri: url+'/?mode=successLineLogin',
         },
         callback: function(res){
           console.log('success linelogin.', res);

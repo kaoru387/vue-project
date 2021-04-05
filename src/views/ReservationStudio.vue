@@ -1,132 +1,70 @@
 <template>
-  <div class="d-flex justify-content-center">
-    <v-container class="fill-height g-bg-gray-light-v5 p-0 g-pt-10">
-      <!-- <v-app> -->
-        <!-- <el-page-header v-if="isSearch" @back="drawer = !drawer" content="検索結果" title="再検索" class="m-2">
-        </el-page-header> -->
-        <!-- <div v-if="auth.email!=='' && !isSearch" >
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-app-bar-nav-icon 
-                v-bind="attrs"
-                v-on="on"
-                @click.stop="drawer = !drawer" class="float-left m-1 mr-4"></v-app-bar-nav-icon>
-            </template>
-            <span>空き時間検索</span>
-          </v-tooltip>
-          <span class="d-block g-color-text g-font-weight-200 g-py-5 g-px-10 mt-1" href="#">← 空き時間を検索する</span>
-          <el-alert
-            class="text-left m-1"
-            type="warning"
-            description="スタジオ空き時間を検索して、予約時間を選択し予約してください。"
-            show-icon>
-          </el-alert>
-        </div> -->
+  <div class="row align-items-center g-bg-white g-py-10">
+    <el-page-header v-if="isSearch" @back="drawerOpen" content="空き時間検索中..." title="スタジオ予約" class="p-2"></el-page-header>
+    <div class="col-md-12 d-flex justify-content-center">
+      <div class="mb-0">
+        あなたのポイント：<span class="g-color-primary g-font-weight-500 g-font-size-20 mr-2">{{ auth.credit.toLocaleString() }}</span>
+      </div>
+    </div>
+    <v-row v-if="!isSearch" justify="center" align-content="center" class="p-4 mb-2">
+      <el-button :style="{'width':'100%'}" @click="drawerOpen" :disabled="auth.email==''" round>
+        スタジオ予約
+      </el-button>
+      <!-- <el-alert
+        class="text-left"
+        type="warning"
+        description="空き時間を検索して、予約時間を選択し予約してください。"
+        show-icon>
+      </el-alert> -->
+    </v-row>
 
-        <!-- <div class="block">
-          <v-app-bar-nav-icon v-if="auth.email!=='' && !isSearch" @click.stop="drawer = !drawer" class="float-left m-1 mr-2"></v-app-bar-nav-icon><span class="d-block g-color-text g-font-weight-300 g-py-5 g-px-10 mt-1" href="#">空き時間を検索</span>
-        </div> -->
-        <!-- <el-page-header v-if="auth.email==''" @back="backHome" content="予約スケジュール" title="戻る" class="m-2">
-        </el-page-header> -->
-        <div class="container">
-          <div class="row align-items-center g-bg-white g-py-10">
-            <!-- <div v-if="auth.email!=='' && !isSearch" @click="drawerOpen" class="p-4 pt-2 pb-3">
-              <el-alert
-                class="text-left"
-                type="warning"
-                description="空き時間を検索して、予約時間を選択し予約してください。"
-                show-icon>
+    <!-- <div class="col-md-12 g-pl-20 g-mb-5 g-mb-0--md p-0 d-flex justify-content-center"> -->
+    <div class="col-md-4 g-mb-10 g-mb-0--md" :style="{'min-height':adjust+100+'px'}">
+      <!-- Product Info -->
+      <v-tabs
+        v-if="!isSearch"
+        v-model="tab"
+        centered
+      >
+        <v-tabs-slider></v-tabs-slider>
+        <v-tab href="#tab-1">予約</v-tab>
+        <v-tab href="#tab-2">予約履歴</v-tab>
+        <v-tab href="#tab-3">全体スケジュール</v-tab>
+      </v-tabs>
+      <v-tabs-items v-model="tab">
+        <v-tab-item :value="'tab-1'">
+            <div v-if="contens.length==0" class="p-0">
+                  <el-alert
+                  class="text-left"
+                  type="warning"
+                  description="あなたの予約はありません。"
+                  show-icon>
               </el-alert>
-            </div> -->
-            <div class="col-md-12 g-pl-20 g-mb-5 g-mb-0--md p-0 d-flex justify-content-center">
-
-              <!-- Product Info -->
-              <div @click="drawerOpen">
-                <div v-if="!isSearch" class="media">
-                  <div class="d-flex align-self-center mr-3">
-                    <span class="u-icon-v2 g-color-primary g-bg-secondary rounded-circle">
-                      <i class="fa fa-group u-line-icon-pro"></i>
-                    </span>
-                  </div>
-                  <div class="media-body align-self-center">
-                    <h3 class="h5 g-color-black mb-0">スタジオ予約</h3>
-                    <span class="d-block g-color-gray-dark-v5">全体予約スケジュール</span>
-                  </div>
-                </div>
-                <div v-else class="d-flex justify-content-center">
-                  <div class="media">
-                    <div class="d-flex align-self-center mr-3">
-                      <span class="u-icon-v2 g-color-white g-bg-primary rounded-circle">
-                        <i class="icon-education-141 u-line-icon-pro"></i>
-                      </span>
-                    </div>
-                  </div>
-                  <div class="media-body align-self-center">
-                    <h3 class="h5 g-color-black mb-0">検索結果</h3>
-                    <span class="d-block g-color-gray-dark-v5">スタジオ空き時間</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Accordion -->
-              <!-- <div id="accordion-01" role="tablist" aria-multiselectable="true">
-                <div id="accordion-01-heading-01" class="g-brd-y g-brd-gray-light-v3 py-3" role="tab">
-                  <h5 class="g-font-weight-400 g-font-size-default mb-0">
-                    <a class="d-block g-color-gray-dark-v5 g-text-underline--none--hover" href="#accordion-01-body-01" data-toggle="collapse" data-parent="#accordion-01" aria-expanded="false" aria-controls="accordion-01-body-01">スタジオ予約する
-                      <span class="float-right g-pos-rel g-top-3 mr-1 fa fa-angle-down"></span></a>
-                  </h5>
-                </div>
-                <div id="accordion-01-body-01" class="collapse" role="tabpanel" aria-labelledby="accordion-01-heading-01">
-                  <div class="g-py-10">
-                    <search-studio
-                      :is-search="isSearch"
-                      @searchStudio="searchStudio" />
-                  </div>
-                </div>
-              </div> -->
-              <!-- End Accordion -->
-
-              <!-- Buttons -->
-              <!-- <div class="text-center">
-                <button class="btn u-btn-primary g-font-size-12 text-uppercase g-py-12 g-px-25" type="button">
-                  Add to Cart <i class="align-middle ml-2 icon-finance-100 u-line-icon-pro"></i>
-                </button>
-              </div> -->
-              <!-- <div class="d-flex bd-highlight justify-content-center pt-2 pb-2" v-loading="loading">
-                <span class="p-0 bd-highlight pr-2">
-                  <el-button :style="{'background-color':'#3bb18f', 'border-color':'#3bb18f', 'color':'white'}" @click="searchStudioNago">
-                    + 名護スタジオ予約
-                  </el-button>
-                </span>
-                <span class="p-0 bd-highlight">
-                  <el-button :style="{'background-color':'#FFA611', 'border-color':'#FFA611', 'color':'white'}" @click="searchStudioKoza">
-                      + コザスタジオ予約
-                  </el-button>
-                </span>
-              </div> -->
-              <!-- End Buttons -->
-            </div>
-            <!-- <div v-else class="col-md-4 g-mb-5 g-mb-0--md">
-              <el-alert
-                class="text-left"
-                type="warning"
-                description="ログインしてください。"
-                show-icon>
-              </el-alert>
-            </div> -->
-
-            <div class="col-md-12 p-0">
-              <!-- <div v-if="auth.email!=''" class="text-center">
-                <div class="mb-2">
-                  あなたのポイント：<span class="g-color-primary g-font-weight-300 g-font-size-20 mr-2">{{ auth.credit.toLocaleString() }}</span>
-                </div>
-              </div> -->
+          </div>
+          <div v-else class="p-0">
+            <my-reservation
+              v-for="(item, index) in contens"
+              :key="'course-detail'+item.id" 
+              :item="item" />
+          </div>
+          </v-tab-item>
+          <v-tab-item :value="'tab-2'">
+            <v-card flat>
+                <!-- <v-card-text>{{ text }}</v-card-text> -->
+              <my-reservation-history
+                v-for="(item, index) in history"
+                :key="'history-detail'+item.id" 
+                :item="item" />
+            </v-card>
+          </v-tab-item>
+          <v-tab-item :value="'tab-3'">
+            <v-card flat>
               <full-calendar ref="calendar" 
                 v-if="!isSearch"
                 :events="events"
                 :view-name="'dayGridMonth'">      
               </full-calendar>
-              <div class="p-3 pt-5">
+              <div class="p-3 pt-0">
                 <el-alert
                   v-if="isSearch && items.length==0"
                   class="text-left"
@@ -135,37 +73,34 @@
                   show-icon>
                 </el-alert>
               </div>
-              <free-time-full-calendar
-                v-if="isSearch && 0<items.length"
-                :events="items"
-                :initialDate="search.date"
-                @confirm="confirm"
-                @cancel="cancel" />
-              </free-time-full-calendar>
-            </div>
-            
-            <!-- <div v-if="!isSearch" class="col-12 pt-5">
-              <div class="block">
-                <el-button class="m-0" type="warning" :style="{'width':'100%'}" @click="searchStudio">
-                  スタジオ空き時間を検索する
-                </el-button>
-              </div>
-            </div> -->
-            <div v-if="isSearch" class="col-12 pt-5">
-              <div class="block">
-                <el-button class="m-0" type="secondary" :style="{'width':'100%'}" @click="cancel">
-                  検索を中止する
-                </el-button>
-              </div>
-            </div>
-          </div>
+            </v-card>
+              <!-- <my-full-calendar ref="calendar" 
+            v-if="contens.length"
+              :events="contens"
+              :view-name="'dayGridMonth'"
+              @close="cancel">
+          </my-full-calendar> -->
+          </v-tab-item>
+      </v-tabs-items>
+
+      <!-- 利用可能時間 -->
+      <free-time-full-calendar
+        v-if="isSearch && 0<items.length"
+        :events="items"
+        :initialDate="search.date"
+        @confirm="confirm"
+        @cancel="cancel" />
+      </free-time-full-calendar>
+
+      <div v-if="isSearch" class="col-12 pt-5">
+        <div class="block">
+          <el-button class="m-0" type="danger" :style="{'width':'100%'}" @click="cancel" round>
+            検索を中止する
+          </el-button>
         </div>
-      <!-- </div> -->
-      <!-- End Promo Slider -->
+      </div>
+    </div>
 
-
-      <!-- </v-app> -->
-    </v-container>
     <!-- <studio-resource
       :item="item"
       :dialog-form-visible="modal_visible"
@@ -180,7 +115,6 @@
       @confirmPay="confirmPay"
       @payment="payment">
     </studio-resource>
-
 
     <v-dialog
       v-model="dialog"
@@ -224,7 +158,9 @@
     </v-card>
   </v-dialog>
 
+
   </div>
+
 </template>
 
 <script>
@@ -239,7 +175,9 @@
   import FullCalendar from '../components/FullCalendar.vue'
   import FreeTimeFullCalendar from "../components/FreeTimeFullCalendar";
   import SearchStudio from '../components/SearchStudio';
-  
+  import MyReservation from '../components/MyReservation';
+  import MyReservationHistory from '../components/MyReservationHistory';
+
   import { ValidationProvider, ValidationObserver } from 'vee-validate';
   import VeeValidate, { localize } from'vee-validate'
   import ja from 'vee-validate/dist/locale/ja.json';
@@ -260,7 +198,9 @@ export default {
     FullCalendar,
     FreeTimeFullCalendar,
     StudioResource,
-    SearchStudio
+    SearchStudio,
+    MyReservation,
+    MyReservationHistory
   },
   data() {
     return {
@@ -298,8 +238,20 @@ export default {
       // drawer: false,
       dialog: false,
       confirm_name: '',
-      message: 'You loaded this page on ' + new Date().toLocaleString()
+      message: 'You loaded this page on ' + new Date().toLocaleString(),
+      // isTimeout: false,
+      tab: null,
     }
+  },
+  watch: {
+    // 'isSearch': function (val) {
+    //   // 検索中の場合、タブ3を表示
+    //   if(!val) return;
+    //   let that = this;
+    //   setTimeout(function(){
+    //     that.tab = 'tab-3';
+    //   },500);
+    // },
   },
   // beforeRouteEnter (to, from, next) {
   //   //ページの更新
@@ -307,13 +259,13 @@ export default {
   //   next();
   // },
   computed: {
-    textState: function (e) {
-      if (this.count <= 150) {
-        return true;
-      } else {
-        return false;
-      }
-    },
+    // textState: function (e) {
+    //   if (this.count <= 150) {
+    //     return true;
+    //   } else {
+    //     return false;
+    //   }
+    // },
     count: function () {
       return 2;
       // return this.$store.state.TweetDialog.message.length;
@@ -336,10 +288,6 @@ export default {
     isSearch() {
       return store.state.isSearch;
     },
-    
-    // height() {
-    //   return window.screen.height;
-    // },
     adjust () {
       switch (this.$vuetify.breakpoint.name) {
         case 'xs': return 220
@@ -352,8 +300,15 @@ export default {
     supersass() {
       return store.state.auth.supersass;
     },
+    contens() {
+      return store.state.result.my;
+    },
+    history() {
+      return store.state.result.history;
+    },
   },
   beforeRouteEnter (to, from, next) {
+    console.log('what')
     console.log('beforeRouteEnter /sche', to.fullPath, store.state.backuri);
     if(to.fullPath=='/schedule') {
       store.commit('SET_LINE_LOGIN', '');
@@ -392,14 +347,14 @@ export default {
     // store.commit('SET_SELECT_RESOURCES', [])
   },
   mounted() {
-    var that = this;
-    setTimeout(function(){
-      that.$message({
-        type: 'warning',
-        message: '空き時間を検索して、予約時間を選択し予約してください。',
-      });
-      store.commit('SET_ISLOADING', false);
-    },500);
+    // var that = this;
+    // setTimeout(function(){
+    // //   // that.$message({
+    // //   //   type: 'warning',
+    // //   //   message: '空き時間を検索して、予約時間を選択し予約してください。',
+    // //   // });
+    // //   store.commit('SET_ISLOADING', false);
+    // },500);
   },
   methods: {
     drawerOpen() {
@@ -721,6 +676,7 @@ export default {
 
           }
         });
+        
       }
       const all = async function() {
         await supersass()
@@ -734,7 +690,7 @@ export default {
       this.$router.replace('/');
     },
     confirm(item) {
-      // console.log('confirm', item)
+      console.log('confirm', item)
       this.item = item;
       this.modal_visible=true;
     },

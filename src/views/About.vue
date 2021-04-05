@@ -1,55 +1,67 @@
 <template>
 	<!-- Promo Slider -->
   <div class="g-bg-gray-light-v5">
-    <div class="container">
-        <div class="row align-items-center g-bg-white g-py-15">
-        	<el-page-header @back="cancel" content="あなたの情報" title="戻る" class="p-2">
-      		</el-page-header>
-          <div class="col-md-4 g-pl-20 g-mb-10 g-mb-0--md">
-            <!-- Product Info -->
-            <div class="text-center">
-              <div class="mb-0">
-                <h4 class="h4">あなたの予約</h4>
-              </a>
-              </div>
-              <!-- <div class="mb-4">
-                ポイント：<span class="g-color-primary g-font-weight-300 g-font-size-20 mr-2">{{ auth.credit.toLocaleString() }}</span>
-              </div> -->
-            </div>
-            <div v-if="contens.length==0" class="p-4 pl-3 pr-3">
-	          	<el-alert
-			        class="text-left"
-			        type="warning"
-			        description="あなたの予約はありません。"
-			        show-icon>
-			    </el-alert>
+    <div class="container p-1">
+        <div class="row align-items-center g-bg-white">
+        	<!-- <el-page-header @back="cancel" content="あなたの情報" title="戻る" class="p-2">
+      		</el-page-header> -->
+
+		 	<!-- Product Info -->
+			<div class="col-md-4 g-mb-10 g-mb-0--md">
+				<div class="text-center">
+		          <div class="mb-4">
+		            あなたのポイント：<span class="g-color-primary g-font-weight-300 g-font-size-20 mr-2">{{ auth.credit.toLocaleString() }}</span>
+		          </div>
+		        </div>
+				<v-tabs
+				  v-model="tab"
+				  centered
+				>
+				  <v-tabs-slider></v-tabs-slider>
+				  <v-tab href="#tab-1">予約</v-tab>
+				  <v-tab href="#tab-2">履歴</v-tab>
+				  <v-tab href="#tab-3">全体スケジュール</v-tab>
+				</v-tabs>
+				<v-tabs-items v-model="tab" :style="{'min-height':adjust+100+'px'}">
+					<v-tab-item :value="'tab-1'">
+				    	<div v-if="contens.length==0" class="p-0">
+				          	<el-alert
+						        class="text-left"
+						        type="warning"
+						        description="あなたの予約はありません。"
+						        show-icon>
+						    </el-alert>
+						</div>
+						<div v-else class="p-0">
+							<my-reservation
+							    v-for="(item, index) in contens"
+								:key="'course-detail'+item.id" 
+								:item="item"
+								:ref="'courseDetail'+item.id"
+								@apply="apply" />
+						</div>
+				  	</v-tab-item>
+				  	<v-tab-item :value="'tab-2'">
+				  		<v-card flat>
+				          <!-- <v-card-text>{{ text }}</v-card-text> -->
+				        </v-card>
+				  	</v-tab-item>
+				  	<v-tab-item :value="'tab-3'">
+				  		<!-- <v-card flat>
+				          <v-card-text>{{ text }}</v-card-text>
+				        </v-card> -->
+				        <!-- <my-full-calendar ref="calendar" 
+							v-if="contens.length"
+					    	:events="contens"
+					    	:view-name="'dayGridMonth'"
+					    	@close="cancel">
+						</my-full-calendar> -->
+				  	</v-tab-item>
+				</v-tabs-items>
+
 			</div>
 
-            <!-- Accordion -->
-            <!-- <div id="accordion-01" role="tablist" aria-multiselectable="true">
-              <div id="accordion-01-heading-01" class="g-brd-y g-brd-gray-light-v3 py-3" role="tab">
-                <h5 class="g-font-weight-400 g-font-size-default mb-0">
-                  <a class="d-block g-color-gray-dark-v5 g-text-underline--none--hover" href="#accordion-01-body-01" data-toggle="collapse" data-parent="#accordion-01" aria-expanded="false" aria-controls="accordion-01-body-01">詳細
-                    <span class="float-right g-pos-rel g-top-3 mr-1 fa fa-angle-down"></span></a>
-                </h5>
-              </div>
-              <div id="accordion-01-body-01" class="collapse" role="tabpanel" aria-labelledby="accordion-01-heading-01">
-                <div class="g-py-10">
-                  <p class="g-font-size-12 ml-2 mb-2">これまでの練習回数：</p>
-                </div>
-              </div>
-            </div> -->
-            <!-- End Accordion -->
-
-			<my-reservation
-			    v-for="(item, index) in contens"
-				:key="'course-detail'+item.id" 
-				:item="item"
-				:ref="'courseDetail'+item.id"
-				@apply="apply" />
-          </div>
-
-          <div class="col-md-8 p-0">
+          <!-- <div class="col-md-8 p-0">
           	<div class="d-flex justify-content-center">
 		      <div class="media g-mb-15">
 		        <div class="d-flex align-self-center mr-3">
@@ -78,11 +90,12 @@
 		          	</el-button>
 		        </div>
 		    </div>
-          </div>
+          </div> -->
+
         </div>
     </div>
-  </div>
-    <!-- End Promo Slider -->
+</div>
+<!-- End Promo Slider -->
 
   <!-- <div> --> 	
     <!-- <h1>スタジオ予約（会員専用）</h1> -->
@@ -135,6 +148,7 @@ export default {
   	},
 	data: function () {
 	    return {
+	    	tab: null,
 	    }
 	},
 	// props: {
@@ -144,9 +158,10 @@ export default {
 	//     },
 	// },
 	computed: {
-	    height() {
-        	return window.screen.height;
-      	},
+	    // height() {
+     //    	// return window.screen.height;
+     //    	return window.innerHeight;
+     //  	},
       	auth() {
 	        return store.state.auth;
 	    },
