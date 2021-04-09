@@ -27,14 +27,32 @@
                   </a>
                 </div> -->
 
-                <div class="g-color-white-opacity-0_6 g-font-weight-400 g-pl-15 g-pl-0--sm g-py-14">
-                  <v-btn
+                <!-- <div class="g-color-white-opacity-0_6 g-font-weight-400 g-pl-15 g-pl-0--sm g-py-14"> -->
+                <div v-if="auth.email!==''" class="g-color-white-opacity-0_6 g-font-weight-400 g-pl-15 g-pl-0--sm">
+                  <figure class="text-right m-0" :style="{'line-height':'15px'}">
+                    <p class="g-color-gray-dark-v5 g-font-size-11">あなたのポイント</p>
+                    <span class="g-color-primary g-font-size-14 pr-1">{{ auth.credit.toLocaleString() }}</span>
+                  </figure>
+
+                  <!-- <div class="text-center">
+                    <span class="g-color-gray-dark-v5 g-font-size-10">あなたのポイント</span>
+                    <ul class="u-list-inline">
+                      <li class="list-inline-item g-color-primary g-font-size-14">
+                        <span>{{ auth.credit.toLocaleString() }}</span>
+                      </li>
+                    </ul>
+                  </div> -->
+                  <!-- <div class="mb-0">
+                    <span class="g-color-primary g-font-size-10">あなたのポイント：</span>
+                    <span class="g-color-primary g-font-size-10">{{ auth.credit.toLocaleString() }}</span>
+                  </div> -->
+                  <!-- <v-btn
                     icon
                     color="green"
                     @click="refresh"
                   >
                     <v-icon>mdi-cached</v-icon>
-                  </v-btn>
+                  </v-btn> -->
                 </div>
 
                 <!-- <div class="col-sm-auto g-pos-rel g-py-14"> -->
@@ -61,6 +79,19 @@
     
         <!-- Promo Slider -->
         <v-container>
+          <!-- <div class="d-flex bd-highlight justify-content-center pt-2 pb-2" v-loading="loading"> -->
+          <v-row v-if="auth.email!=='' && !isSearch" justify="center" align-content="center" class="d-flex bd-highlight p-3">
+            <span class="p-0 bd-highlight pr-2">
+              <el-button :style="{'width':'100%'}" @click="drawerOpen" :disabled="auth.email==''" round>
+                スタジオ予約
+              </el-button>
+            </span>
+            <span class="p-0 bd-highlight">
+              <el-button :style="{'width':'100%'}" @click="moveClass" :disabled="auth.email==''" round>
+                クラス受付予約
+              </el-button>
+            </span>
+          </v-row>
           <router-view @drawerOpen="drawerOpen" />
         </v-container>
 
@@ -139,7 +170,6 @@
                   <div class="g-max-width-100 g-mr-15">
                     <!-- <img class="d-flex w-100" src="assets/img-temp/150x150/img2.jpg" alt="Image Description"> -->
                     <img class="d-flex w-100" src="/images/1.jpg" alt="Image Description">
-                    
                   </div>
                   <!-- End Article Image -->
 
@@ -285,7 +315,7 @@
         <div class="container g-pb-100">
           <div class="text-center mx-auto g-max-width-600 g-mt-30 g-mb-50">
             <h2 class="g-color-black mb-4">スタジオ紹介</h2>
-            <p class="lead">サクラの木を使用・・・</p>
+            <!-- <p class="lead">サクラの木を使用・・・</p> -->
           </div>
 
           <div id="carouselCus1" class="js-carousel g-pb-100"
@@ -321,7 +351,7 @@
                         名護スタジオ
                       </a>
                     </h4>
-                    <a class="d-inline-block g-color-gray-dark-v5 g-font-size-13" href="#">明るくて爽やかな室内、緑に囲まれて癒やされます。</a>
+                    <a class="d-inline-block g-color-gray-dark-v5 g-font-size-13" href="#">大変静かで、自分の世界に集中できます。県外から合宿的に利用される方もいます。</a>
                     <!-- <span class="d-block g-color-black g-font-size-17">$52.00</span> -->
                   </div>
                   <!-- End Product Info -->
@@ -376,7 +406,7 @@
                         コザスタジオ
                       </a>
                     </h4>
-                    <a class="d-inline-block g-color-gray-dark-v5 g-font-size-13" href="#">クジラの壁画が特徴的、アートな雰囲気です。</a>
+                    <a class="d-inline-block g-color-gray-dark-v5 g-font-size-13" href="#">併設されたステージでは定期的にLIVEも行われています。</a>
                     <!-- <span class="d-block g-color-black g-font-size-17">$99.00</span> -->
                   </div>
                   <!-- End Product Info -->
@@ -418,7 +448,6 @@
                 <!-- <p class="g-font-size-13 mb-0">2020 &copy; Htmlstream. All Rights Reserved.</p> -->
                 <p class="g-font-size-13 mb-0">2021 &copy; Flamencoarts Okinawa.</p>
               </div>
-
               <!-- <div class="col-md-6 text-md-right g-mb-20">
                 <ul class="list-inline g-color-gray-dark-v5 g-font-size-25 mb-0">
                   <li class="list-inline-item g-cursor-pointer mr-1">
@@ -448,7 +477,6 @@
                   </li>
                 </ul>
               </div> -->
-
             </div>
           </div>
           <!-- End Copyright -->
@@ -524,7 +552,6 @@
                   @searchStudio="searchStudio"
                   @cancel="cancel"
                  />
-              
               </div>
               <div v-else class="mt-5">
                 <el-alert
@@ -538,12 +565,55 @@
               <v-divider></v-divider>
               <v-list class="p-2 pb-5" dense>
                 <v-list-item>
-                  <v-list-item-title v-if="auth.email!==''" @click="logout" class="text-secondary">ログアウト</v-list-item-title>
+                  <!-- <v-list-item-title v-if="auth.email!==''" @click="logout" class="text-secondary">ログアウト</v-list-item-title> -->
+                  <v-btn
+                    v-if="auth.email!==''"
+                    color="gray"
+                    text
+                    @click.stop="isLogout = true"
+                  >
+                    ログアウト
+                  </v-btn>
                 </v-list-item>
               </v-list>
           </v-card>
         </v-navigation-drawer>
         <!-- End slide bar -->
+
+        <!-- ログアウト確認 -->
+        <v-dialog
+          v-model="isLogout"
+          max-width="290"
+          :style="{'z-index':1000}"
+        >
+          <v-card>
+            <v-card-title class="headline">ログアウト確認</v-card-title>
+
+            <v-card-text>
+              本当にログアウトしてよろしいですか？
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                outlined
+                text
+                @click.stop="isLogout = false"
+              >
+                キャンセル
+              </v-btn>
+              <v-btn
+                color="error"
+                outlined
+                text
+                @click="logout"
+              >
+                ログアウトする
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
       </v-app>
     </main>
   </body>
@@ -596,6 +666,7 @@ export default {
       modal_editaccount_visible: false,
       drawer: false,
       scrollInvoked: 0,
+      isLogout: false,
       // isSearch: false,
       // sheet: false,
       // drawer: false,
@@ -777,6 +848,19 @@ export default {
     this.reload();   
   },
   methods: {
+    drawerOpen() {
+      // this.$emit('drawerOpen');
+      // store.commit('SET_ISLOADING', true);
+    },
+    moveClass() {
+      store.commit('SET_ISLOADING', true);
+      // this.$emit('moveClass');
+      this.$router.push({path: '/about'});
+      setTimeout(function(){
+        store.commit('SET_IS_SEARCH', true);
+        store.commit('SET_ISLOADING', false);
+      },1000);
+    },
     onScroll () {
       this.scrollInvoked++;
     },
@@ -921,12 +1005,12 @@ export default {
       });
      
     },
-    onScroll(e){
-      if (typeof window === 'undefined') return
-      const top = window.pageYOffset ||   e.target.scrollTop || 0
-      // console.log(top)
-      this.fab = top > 50
-    },
+    // onScroll(e){
+    //   if (typeof window === 'undefined') return
+    //   const top = window.pageYOffset ||   e.target.scrollTop || 0
+    //   // console.log(top)
+    //   this.fab = top > 50
+    // },
     toTop() {
       this.$vuetify.goTo("#app")
     },
@@ -1050,6 +1134,10 @@ export default {
     },
     reload() {
       store.commit('SET_ISLOADING', true);
+      store.commit('RESET_DATA');
+      // 日付取得
+      let _date = this.$moment().format('YYYY-MM-DD');
+
       let that = this;
       const processA = async function() {
         await store.commit('SET_ISLOADING', true);
@@ -1065,6 +1153,25 @@ export default {
             if(res) store.commit('SET_ISLOADING', false)
           }
         });
+        // await store.dispatch('getClass',{
+        //   callback: function(res){
+        //     if(res) store.commit('SET_ISLOADING', false)
+        //   }
+        // });
+        // クラス受付を取得
+        await store.dispatch('getAgenda',{
+          params: {
+            from_date: _date,
+            time: '09:00',
+            resource_id: 563549,
+            user_id: that.auth.user_id
+          },
+          callback: function(res){
+            console.log('hi', res)
+            // that.items=res.data.slots;
+          }
+        });
+
         // // クラス取得
         // await store.dispatch('getClass',{})
         //  // 自身の予約

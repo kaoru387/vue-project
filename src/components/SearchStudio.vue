@@ -204,11 +204,10 @@ export default {
     },
   },
   created: function () {
-    // console.log('hi');
     // 初期値
     this.form.date = this.$moment().format('YYYY-MM-DD');
     this.form.time = moment().format('07:00');
-    this.form.studio_name = this.search.studio_name;
+    // this.form.studio_name = this.search.studio_name;
     store.commit('SET_SELECT_RESOURCES', [])
   },
   mounted() { 

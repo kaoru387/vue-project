@@ -1,25 +1,13 @@
 <template>
-  <div class="row align-items-center g-bg-white g-py-10">
-    <el-page-header v-if="isSearch" @back="drawerOpen" content="空き時間検索中..." title="スタジオ予約" class="p-2"></el-page-header>
-    <div class="col-md-12 d-flex justify-content-center">
+  <div class="row align-items-center g-bg-white">
+    <el-page-header v-if="isSearch" @back="drawerOpen" content="空き時間検索" title="スタジオ予約" class="p-3 pb-2"></el-page-header>
+    <!-- <div class="col-md-12 d-flex justify-content-center">
       <div class="mb-0">
         あなたのポイント：<span class="g-color-primary g-font-weight-500 g-font-size-20 mr-2">{{ auth.credit.toLocaleString() }}</span>
       </div>
-    </div>
-    <v-row v-if="!isSearch" justify="center" align-content="center" class="p-4 mb-2">
-      <el-button :style="{'width':'100%'}" @click="drawerOpen" :disabled="auth.email==''" round>
-        スタジオ予約
-      </el-button>
-      <!-- <el-alert
-        class="text-left"
-        type="warning"
-        description="空き時間を検索して、予約時間を選択し予約してください。"
-        show-icon>
-      </el-alert> -->
-    </v-row>
-
+    </div> -->
     <!-- <div class="col-md-12 g-pl-20 g-mb-5 g-mb-0--md p-0 d-flex justify-content-center"> -->
-    <div class="col-md-4 g-mb-10 g-mb-0--md" :style="{'min-height':adjust+100+'px'}">
+    <div class="col-md-12 g-mb-10 g-mb-0--md p-2" :style="{'min-height':adjust+100+'px', 'width': '100%'}">
       <!-- Product Info -->
       <v-tabs
         v-if="!isSearch"
@@ -27,60 +15,98 @@
         centered
       >
         <v-tabs-slider></v-tabs-slider>
-        <v-tab href="#tab-1">予約</v-tab>
-        <v-tab href="#tab-2">予約履歴</v-tab>
-        <v-tab href="#tab-3">全体スケジュール</v-tab>
+        <v-tab href="#tab-1">
+          <figure class="text-center m-0" :style="{'line-height':'17px'}">
+            <p class="g-font-size-11">全体</p>
+            <span class="g-color-gray-dark-v3 g-font-weight-500">スケジュール</span>
+          </figure>
+        </v-tab>
+        <v-tab href="#tab-2">
+          <figure class="text-center m-0" :style="{'line-height':'17px'}">
+            <p class="g-font-size-11">あなたの</p>
+            <span class="g-color-gray-dark-v3 g-font-weight-500">スタジオ予約</span>
+          </figure>
+        </v-tab>
+        <v-tab href="#tab-3">
+          <figure class="text-center m-0" :style="{'line-height':'17px'}">
+            <p class="g-font-size-11">あなたの</p>
+            <span class="g-color-gray-dark-v3 g-font-weight-500">クラス予約</span>
+          </figure>
+        </v-tab>
       </v-tabs>
-      <v-tabs-items v-model="tab">
+      <v-tabs-items v-if="!isSearch" v-model="tab">
         <v-tab-item :value="'tab-1'">
-            <div v-if="contens.length==0" class="p-0">
-                  <el-alert
-                  class="text-left"
-                  type="warning"
-                  description="あなたの予約はありません。"
-                  show-icon>
+          <v-card flat>
+            <full-calendar ref="calendar" 
+              v-if="!isSearch"
+              :events="events"
+              :view-name="'dayGridMonth'">      
+            </full-calendar>
+            <!-- <div class="p-3 pt-0">
+              <el-alert
+                v-if="isSearch && items.length==0"
+                class="text-left"
+                type="error"
+                description="予約可能な空き時間はありません。"
+                show-icon>
               </el-alert>
+            </div> -->
+            <!-- <my-full-calendar ref="calendar" 
+          v-if="contens.length"
+            :events="contens"
+            :view-name="'dayGridMonth'"
+            @close="cancel">
+        </my-full-calendar> -->
+          </v-card>
+        </v-tab-item>
+        <v-tab-item :value="'tab-2'">
+          <div v-if="contens.length==0 && classes.length==0" class="p-0">
+            <el-alert
+              class="text-left"
+              type="warning"
+              description="あなたの予約はありません。"
+              show-icon>
+            </el-alert>
           </div>
           <div v-else class="p-0">
-            <my-reservation
-              v-for="(item, index) in contens"
-              :key="'course-detail'+item.id" 
-              :item="item" />
+            <my-reservation />
           </div>
-          </v-tab-item>
-          <v-tab-item :value="'tab-2'">
-            <v-card flat>
-                <!-- <v-card-text>{{ text }}</v-card-text> -->
-              <my-reservation-history
-                v-for="(item, index) in history"
-                :key="'history-detail'+item.id" 
-                :item="item" />
-            </v-card>
-          </v-tab-item>
-          <v-tab-item :value="'tab-3'">
-            <v-card flat>
-              <full-calendar ref="calendar" 
-                v-if="!isSearch"
-                :events="events"
-                :view-name="'dayGridMonth'">      
-              </full-calendar>
-              <div class="p-3 pt-0">
-                <el-alert
-                  v-if="isSearch && items.length==0"
-                  class="text-left"
-                  type="error"
-                  description="予約可能な空き時間はありません。"
-                  show-icon>
-                </el-alert>
-              </div>
-            </v-card>
-              <!-- <my-full-calendar ref="calendar" 
-            v-if="contens.length"
-              :events="contens"
-              :view-name="'dayGridMonth'"
-              @close="cancel">
-          </my-full-calendar> -->
-          </v-tab-item>
+          <!-- <table class="table table-borderless table-striped">
+            <thead>
+              <tr>
+                <th scope="col" class="text-center w-20">日時</th>
+                <th scope="col" class="text-center w-10">予約名</th>
+                <th scope="col" class="text-center w-5">料金</th>
+                <th scope="col" class="text-center w-10">エアコン利用</th>
+                <th scope="col" class="text-center"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <my-reservation
+                v-for="(item, index) in contens"
+                :key="'course-detail'+item.id" 
+                :item="item"
+                @openDetail="openDetail" />
+            </tbody>
+          </table> -->
+
+          <!-- <div v-if="0<classes.length" class="p-0">
+            <my-class
+              v-for="(item, index) in classes"
+              :key="'class-detail'+item.id" 
+              :item="item" />
+          </div> -->
+        </v-tab-item>
+        <v-tab-item :value="'tab-3'">
+          <!-- <v-card flat>
+            <v-card-text>{{ text }}</v-card-text>
+            <my-reservation-history
+              v-for="(item, index) in history"
+              :key="'history-detail'+item.id" 
+              :item="item" />
+          </v-card> -->
+          <my-class />
+        </v-tab-item>
       </v-tabs-items>
 
       <!-- 利用可能時間 -->
@@ -116,16 +142,18 @@
       @payment="payment">
     </studio-resource>
 
+    <!-- 予約・支払い実行の確認 -->
     <v-dialog
       v-model="dialog"
       append-to-body
       max-width="290"
+      class="pb-2"
     >
     <v-card>
       <v-card-title class="headline">{{ confirm_name }}の確認</v-card-title>
 
       <v-card-text>
-        本当に支払い・予約の処理を開始してもよろしいですか？
+        本当に予約・{{ confirm_name }}を実行してもよろしいですか？
       </v-card-text>
 
       <v-card-actions>
@@ -144,7 +172,7 @@
           outlined
           @click="payment"
         >
-          カード決済する
+          はい
         </v-btn>
         <v-btn
           v-else
@@ -152,7 +180,7 @@
           outlined
           @click="payoff"
         >
-          ポイント精算する
+          はい
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -176,7 +204,8 @@
   import FreeTimeFullCalendar from "../components/FreeTimeFullCalendar";
   import SearchStudio from '../components/SearchStudio';
   import MyReservation from '../components/MyReservation';
-  import MyReservationHistory from '../components/MyReservationHistory';
+  // import MyReservationHistory from '../components/MyReservationHistory';
+  import MyClass from '../components/MyClass';
 
   import { ValidationProvider, ValidationObserver } from 'vee-validate';
   import VeeValidate, { localize } from'vee-validate'
@@ -200,7 +229,8 @@ export default {
     StudioResource,
     SearchStudio,
     MyReservation,
-    MyReservationHistory
+    // MyReservationHistory,
+    MyClass
   },
   data() {
     return {
@@ -224,14 +254,19 @@ export default {
         studio_name: 'ナゴスタジオ',
         is_stripe: false,
         is_framenco: 1,
-        use_name: 'フラメンコ練習'
+        use_name: 'フラメンコ練習',
+        is_option: false,
       },
       // isShort: false,
       // shortPoint: 0,
       targetDate: '',
       datetime: '',
       modal_visible: false,
-      item: {},
+      item: {
+        datetime: '',
+        price: 0,
+        isOption: false,
+      },
       search_visible: false,
       activeName: '',
       // isSearch: false,
@@ -241,6 +276,8 @@ export default {
       message: 'You loaded this page on ' + new Date().toLocaleString(),
       // isTimeout: false,
       tab: null,
+      // scrollInvoked: 0,
+      // dialogDetail: false,
     }
   },
   watch: {
@@ -306,12 +343,17 @@ export default {
     history() {
       return store.state.result.history;
     },
+    classes() {
+      return store.state.result.myClass;
+    },
   },
   beforeRouteEnter (to, from, next) {
-    console.log('what')
     console.log('beforeRouteEnter /sche', to.fullPath, store.state.backuri);
     if(to.fullPath=='/schedule') {
       store.commit('SET_LINE_LOGIN', '');
+      setTimeout(function(){
+          store.commit('SET_ISLOADING', false);
+      },2000);
       next();
     }
 
@@ -345,6 +387,24 @@ export default {
     //   store.commit('SET_ISLOADING', false)
     // });
     // store.commit('SET_SELECT_RESOURCES', [])
+
+    // // 日付取得
+    // let _date = this.$moment().format('YYYY-MM-DD');
+    // // クラス受付を取得
+    // let that = this;
+    // store.dispatch('getAgenda',{
+    //   params: {
+    //     from_date: _date,
+    //     time: '09:00',
+    //     resource_id: 563549,
+    //     user_id: that.auth.user_id
+    //   },
+    //   callback: function(res){
+    //     console.log('hi', res)
+    //     // that.items=res.data.slots;
+    //   }
+    // });
+
   },
   mounted() {
     // var that = this;
@@ -357,6 +417,12 @@ export default {
     // },500);
   },
   methods: {
+    // openDetail (item) { 
+    //   // 予約詳細
+    //   this.targetDate=moment(item.date).utc().format("MM月DD日");
+    //   this.item=item;
+    //   this.dialogDetail=true;
+    // },
     drawerOpen() {
       this.$emit('drawerOpen');
     },
@@ -413,34 +479,34 @@ export default {
       let price = 0;
       Firebase.db().collection("schedules").doc(_documentName)
       .get().then(function(querySnapshot) {
-          if (querySnapshot.exists) {
+        if (querySnapshot.exists) {
 
-            let resource = querySnapshot.data()
-            that.form.price = resource.resources[that.form.time_zone].price;
-            console.log('free doc', that.form.price);
+          let resource = querySnapshot.data()
+          that.form.price = resource.resources[that.form.time_zone].price;
+          console.log('free doc', that.form.price);
 
-            // 決済以外（ポイント精算）
-            let credit = store.state.auth.credit;
-            if(credit<=that.form.price) that.form.is_stripe = true;
-            store.commit('SET_SELECT_SEARCH', that.form);
+          // 決済以外（ポイント精算）
+          let credit = store.state.auth.credit;
+          if(credit<=that.form.price) that.form.is_stripe = true;
+          store.commit('SET_SELECT_SEARCH', that.form);
 
-            // 利用可能時間を取得
-            store.dispatch('getFree', {
-              params: that.form,
-              callback: function(res) {
-                // store.commit('SET_SELECT_RESOURCES', res);
-                // that.isSearch = true;
-                // store.commit('SET_IS_SEARCH', true);
-                store.commit('SET_ISLOADING', false);
-                // 検索閉じる
-                that.drawer = false;
-              }
-            });
+          // 利用可能時間を取得
+          store.dispatch('getFree', {
+            params: that.form,
+            callback: function(res) {
+              // store.commit('SET_SELECT_RESOURCES', res);
+              // that.isSearch = true;
+              // store.commit('SET_IS_SEARCH', true);
+              store.commit('SET_ISLOADING', false);
+              // 検索閉じる
+              that.drawer = false;
+            }
+          });
 
-          } else {
-              // doc.data() will be undefined in this case
-              console.log("No such document!");
-          }
+        } else {
+            // doc.data() will be undefined in this case
+            console.log("No such document!");
+        }
       }).catch(function(error) {
           console.log("Error getting document:", error);
       });
@@ -484,7 +550,6 @@ export default {
       // console.log(item)
     },
     payment() { //カード決済
-
       store.commit('SET_ISLOADING', true)
       
       // var currentUser = Firebase.auth().currentUser;
@@ -632,45 +697,37 @@ export default {
 
                   that.$message({
                     type: 'success',
-                    message: 'ポイント精算・予約に成功しました。',
+                    message: '予約・ポイント精算を完了しました。',
                   });
+
+                  that.dialog=false;
 
                   // データ再取得
                   store.dispatch('getUsers', 
                     function(e){
-                      store.commit('SET_EVENTS', []);
+                      // 初期化
+                      store.commit('RESET_DATA');
                       // 予約取得
                       store.dispatch('getBookings',{
                         callback: function(res){
-                          if(res) store.commit('SET_ISLOADING', false);
-                          that.$router.push({path: '/about'});
+                          // 自身の予約
+                          store.dispatch('getAgenda',{
+                            params: {
+                              from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
+                              user_id: that.auth.user_id,
+                              resource_id: _resource_id,
+                            },
+                            callback: function(res3) {
+                              // 検索終了
+                              store.commit('SET_IS_SEARCH', false);
+                              store.commit('SET_ISLOADING', false);
+                            }
+                          });
                         }
                       });
                   });
 
-                  // // 予約
-                  // store.commit('SET_EVENTS', []);
-                  // store.dispatch('getBookings', {
-                  //   callback: function(res){
-                  //     store.dispatch('getUsers',function(e) {
-                  //       // store.commit('SET_AUTH', currentUser);
-                  //       if(that.$route.path!=='/') that.$router.push({path: '/'});
-                  //       that.$router.push({path: '/schedule'});
-                  //       // that.closeModal();
-                  //       that.dialog=false;
-                  //       store.commit('SET_ISLOADING', false);
-                  //     });
-                  //   }
-                  // });
-
-                  // // 自身の予約
-                  // store.dispatch('getUserAgenda',{
-                  //   params: {
-                  //     from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
-                  //     user_email: that.auth.email
-                  //   },
-                  // });
-                }, 2000);
+                }, 1000);
               }
             });
 
@@ -690,7 +747,7 @@ export default {
       this.$router.replace('/');
     },
     confirm(item) {
-      console.log('confirm', item)
+      // console.log('confirm', item)
       this.item = item;
       this.modal_visible=true;
     },

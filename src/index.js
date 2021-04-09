@@ -83,17 +83,17 @@ require("../assets/js/custom.js");
 
 
 // // 検証用
-// store.dispatch('addAppointment',{
+// store.dispatch('getClass',{
 // 	params: {
-// 	  start: '2021-02-12 09:00:00',
-// 	  finish: '2021-02-12 10:00:00',
-// 	  resource_id: 794202,
-// 	  price: 800,
+// 		date: '2021-04-05',
+// 		time: '09:00'
+// 	  // start: '2021-04-05 09:00:00',
+// 	  // finish: '2021-06-05 10:00:00',
+// 	  // resource_id: 794202,
+// 	  // price: 800,
 // 	},
 // 	callback: function(res){
-// 	  // 初期化
-// 	  localStorage.setItem('OK', res);
-// 	  // window.location.href = '/';
+// 		console.log('getc', res)
 // 	}
 // });
 

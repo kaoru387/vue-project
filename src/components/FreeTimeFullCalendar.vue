@@ -81,7 +81,7 @@ export default {
         dateClick: this.handleDateClick,
         locale:ja,
         // editable: true,
-        eventClick: this.changeEvent,
+        // eventClick: this.changeEvent,
         weekends: true,
         eventDidMount: this.eventDidMount,
         // customButtons: {
@@ -147,17 +147,17 @@ export default {
       // this.$refs.reservationStudio.conditions(date, start);
       // this.search_visible=true;
 
-      if(arg.view.type!=='dayGridMonth'){
-        let date = this.$moment(arg.dateStr).utc().format('YYYY-MM-DD');
-        let start = this.$moment(arg.dateStr).utc().format('HH:mm');
-        let search = {
-          date: date,
-          start: start
-        }
-        store.commit('SET_SELECT_SEARCH', search)
-        this.$router.replace('/schedule')
-        return;
-      }
+      // if(arg.view.type!=='dayGridMonth'){
+      //   let date = this.$moment(arg.dateStr).utc().format('YYYY-MM-DD');
+      //   let start = this.$moment(arg.dateStr).utc().format('HH:mm');
+      //   let search = {
+      //     date: date,
+      //     start: start
+      //   }
+      //   store.commit('SET_SELECT_SEARCH', search)
+      //   this.$router.replace('/schedule')
+      //   return;
+      // }
       
       // // 当日の背景色クリア
       // var cells = document.getElementsByTagName("td");
@@ -186,45 +186,45 @@ export default {
       // // 詳細表示
       // this.$emit('date-selected',arg.dateStr);
     },
-    changeEvent: function(eventInfo) {
-      console.log('change event')
-      //イベント選択
-      let event = eventInfo.event.toJSON();
-      // 選択日付更新
-      let date = moment(event.start).utc().format('YYYY-MM-DD')
-      let start = moment(event.start).format('HH:mm');
-      let search = {
-        date: date,
-        start: start
-      }
-      store.commit('SET_SELECT_SEARCH', search);
+    // changeEvent: function(eventInfo) {
+    //   console.log('change event')
+    //   //イベント選択
+    //   let event = eventInfo.event.toJSON();
+    //   // 選択日付更新
+    //   let date = moment(event.start).utc().format('YYYY-MM-DD')
+    //   let start = moment(event.start).format('HH:mm');
+    //   let search = {
+    //     date: date,
+    //     start: start
+    //   }
+    //   store.commit('SET_SELECT_SEARCH', search);
       
-      // //イベント選択
-      // let event = eventInfo.event.toJSON()
-      // this.item = event;
-      // this.content_visible = true
+    //   // //イベント選択
+    //   // let event = eventInfo.event.toJSON()
+    //   // this.item = event;
+    //   // this.content_visible = true
 
-      // // this.$emit('eventChange',event)
-      // // 選択日付更新
-      // let date = moment(event.start).utc().format('YYYY-MM-DD')
+    //   // // this.$emit('eventChange',event)
+    //   // // 選択日付更新
+    //   // let date = moment(event.start).utc().format('YYYY-MM-DD')
 
-      // var result = event.start.indexOf('Z');
-      // if(result==-1) date = moment(event.start).format('YYYY-MM-DD')  
-      // store.commit('SET_SELECT_DATE', date);
+    //   // var result = event.start.indexOf('Z');
+    //   // if(result==-1) date = moment(event.start).format('YYYY-MM-DD')  
+    //   // store.commit('SET_SELECT_DATE', date);
 
-      // // 表示切り替え
-      // this.$refs.fullCalendar.getApi().gotoDate(date)
-      // this.$refs.fullCalendar.getApi().changeView('timeGridDay');
+    //   // // 表示切り替え
+    //   // this.$refs.fullCalendar.getApi().gotoDate(date)
+    //   // this.$refs.fullCalendar.getApi().changeView('timeGridDay');
 
-      // // 背景色
-      // var cells = document.getElementsByTagName("td");
-      // for (var i = 0; i < cells.length; i++) {
-      //   cells[i].classList.remove('fc-day-today');
-      //   if(cells[i].getAttribute('data-date')==date){
-      //     cells[i].classList.add('fc-day-today');
-      //   }
-      // }
-    },
+    //   // // 背景色
+    //   // var cells = document.getElementsByTagName("td");
+    //   // for (var i = 0; i < cells.length; i++) {
+    //   //   cells[i].classList.remove('fc-day-today');
+    //   //   if(cells[i].getAttribute('data-date')==date){
+    //   //     cells[i].classList.add('fc-day-today');
+    //   //   }
+    //   // }
+    // },
     eventDidMount: function(info) { // 詳細表示
       // console.log('mount',info)
     //   // if(!info.event.allDay) return;

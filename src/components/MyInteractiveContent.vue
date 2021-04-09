@@ -1,25 +1,25 @@
 <template>
   <div :id='"my-container"+item.id' :style="{'border-color':'black !important'}">
-      <v-list-item three-line>
-        <v-list-item-content :id='"popover-reactive-"+item.id' :ref='"item"+item.id'>
-          <v-list-item-subtitle class="d-flex justify-content-start">
-            <p class="sample">{{ item.extendedProps.datetime+' '+item.title }}</p>
-            <!-- <a v-if="item.extendedProps.isEdit && !item.extendedProps.isCard" class="text-decoration-underline sample" @click="deleteReservation">
-              取消
-            </a> -->
-            <!-- <v-icon 
-              class="pt-1"
-              color="#03BFA5"
-              :style="{'font-size':'10px !important'}"
-            >{{ mdiRecordCircleOutline }}</v-icon> -->
+    <v-list-item three-line>
+      <v-list-item-content :id='"popover-reactive-"+item.id' :ref='"item"+item.id'>
+        <v-list-item-subtitle class="d-flex justify-content-start">
+          <p class="sample">{{ item.extendedProps.datetime+' '+item.title }}</p>
+          <!-- <a v-if="item.extendedProps.isEdit && !item.extendedProps.isCard" class="text-decoration-underline sample" @click="deleteReservation">
+            取消
+          </a> -->
+          <!-- <v-icon 
+            class="pt-1"
+            color="#03BFA5"
+            :style="{'font-size':'10px !important'}"
+          >{{ mdiRecordCircleOutline }}</v-icon> -->
 
-            <!--<p v-if="item._context.viewApi.type!='dayGridMonth'">
-              {{ item.extendedProps.datetime }}<span class="pl-2">{{ item.extendedProps.studioName }}</span>
-            </p> -->
-            <!-- <i v-if="item._context.viewApi.type=='timeGridDay'" class="el-icon-circle-plus-outline ml-2" :style="{'color':'#F56C6C','font-weight': 800}" @click="payment(item.extendedProps)"></i> -->
-          </v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
+          <!--<p v-if="item._context.viewApi.type!='dayGridMonth'">
+            {{ item.extendedProps.datetime }}<span class="pl-2">{{ item.extendedProps.studioName }}</span>
+          </p> -->
+          <!-- <i v-if="item._context.viewApi.type=='timeGridDay'" class="el-icon-circle-plus-outline ml-2" :style="{'color':'#F56C6C','font-weight': 800}" @click="payment(item.extendedProps)"></i> -->
+        </v-list-item-subtitle>
+      </v-list-item-content>
+    </v-list-item>
   </div>
 </template>
 
@@ -97,7 +97,7 @@ export default {
                   created: moment(that.item.created).format("YYYY-MM-DD"),
                   start: that.item.start,
                   // user_id: that.item.user_id,
-                  resource_id: that.item.resource_id,
+                  resourceId: that.item.resource_id,
                 },
                 callback: function(res) {
                   // 完了メッセージ
