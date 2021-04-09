@@ -1,9 +1,7 @@
 <template>
   <div>
-    <v-app class="p-2">
-      <el-page-header @back="backHome" content="LINEログイン" title="戻る" class="mt-2 mb-3">
-      </el-page-header>
-    </v-app>
+    <el-page-header @back="backHome" content="LINEログイン" title="戻る" class="mt-2 mb-3">
+    </el-page-header>
     <v-card 
       tile
       max-width="360px"
@@ -85,11 +83,11 @@ export default {
           
       store.commit('SET_ISLOADING', true);
       // const url = "https://localhost:4006";
-      // const url = "https://r.flamencoarts.okinawa/";
+      const url = this.supersass.baseHost;
       store.dispatch('getLineLogin',{
         params: {
           channel_id: '1655706276',
-          redirect_uri: this.supersass.baseHost+'/?mode=successLineLogin',
+          redirect_uri: url+'/?mode=successLineLogin',
         },
         callback: function(res){
           console.log('success linelogin.', res);

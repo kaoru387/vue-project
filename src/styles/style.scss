@@ -213,6 +213,16 @@ td{
 .v-navigation-drawer {
   width: 40% !important;
 }
+
+.v-data-table__mobile-row{
+  min-height: 34px !important;
+}
+.v-data-table__mobile-row__cell {
+  font-size: 13pt !important;
+}
+.v-data-table > .v-data-table__wrapper > table > tbody > tr > th, .v-data-table > .v-data-table__wrapper > table > thead > tr > th, .v-data-table > .v-data-table__wrapper > table > tfoot > tr > th {
+  height: 10px !important;
+}
 // // element ui
 // .el-badge__content.is-fixed{
 //   right: 0px !important;
@@ -447,7 +457,7 @@ td{
 /*-- iPhone Vertical View--*/
 @media screen and (min-width: 414px) {
   .v-navigation-drawer {
-    width: 82% !important;
+    width: 80% !important;
   }
   th{
     font-size: 12px !important;

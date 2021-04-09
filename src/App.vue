@@ -1,496 +1,622 @@
 <template>
-<body>
-  <main>
-    <v-app v-loading="loading || lineLogin!==''">
-      <!-- Header -->
-      <header id="js-header" class="u-header u-header--static u-shadow-v19">
-        <!-- Top Bar -->
-        <div class="u-header__section g-brd-bottom g-brd-gray-light-v4 g-transition-0_3">
-          <div class="container">
-            <div class="row justify-content-between align-items-center g-mx-0--lg">
-              <!-- <div class="col-sm-auto g-hidden-sm-down"> -->
-              <div>
-                <!-- Social Icons -->
-                <!-- <ul class="list-inline g-py-14 mb-0"> -->
-                <ul class="list-inline mb-0">
-                  <li class="list-inline-item">
-                    <!-- <a class="g-color-black g-color-primary--hover g-pa-3" href="#"><i class="fa fa-facebook"></i></a> -->
-                    <!-- <v-app-bar-nav-icon @click.stop="drawer = !drawer" class="float-left"></v-app-bar-nav-icon> -->
-                  </li>
-                  <!-- <li class="list-inline-item">
-                    <a class="g-color-black g-color-primary--hover g-pa-3" href="#"><i class="fa fa-twitter"></i></a>
-                  </li>
-                  <li class="list-inline-item">
-                    <a class="g-color-black g-color-primary--hover g-pa-3" href="#"><i class="fa fa-tumblr"></i></a>
-                  </li>
-                  <li class="list-inline-item">
-                    <a class="g-color-black g-color-primary--hover g-pa-3" href="#"><i class="fa fa-pinterest-p"></i></a>
-                  </li>
-                  <li class="list-inline-item">
-                    <a class="g-color-black g-color-primary--hover g-pa-3" href="#"><i class="fa fa-google"></i></a>
-                  </li> -->
-                </ul>
-                <!-- End Social Icons -->
+  <body>
+    <main>
+      <v-app v-loading="loading || lineLogin!==''">
+        <!-- Header -->
+        <header id="js-header" class="u-header u-header--static u-shadow-v19">
+          <!-- Top Bar -->
+          <div class="u-header__section g-brd-bottom g-brd-gray-light-v4 g-transition-0_3">
+            <div class="container">
+              <div class="row justify-content-between align-items-center g-mx-0--lg">
+                <!-- <div class="col-sm-auto g-hidden-sm-down"> -->
+                <div>
+                  <!-- Social Icons -->
+                  <!-- <ul class="list-inline g-py-14 mb-0"> -->
+                  <ul class="list-inline mb-0">
+                    <li class="list-inline-item">
+                      <v-app-bar-nav-icon @click.stop="drawer = !drawer" class="float-left"></v-app-bar-nav-icon>
+                    </li>
+                  </ul>
+                  <!-- End Social Icons -->
+                </div>
+
+                <!-- <div class="col-sm-auto g-hidden-sm-down g-color-text g-font-weight-400 g-pl-15 g-pl-0--sm g-py-14">
+                  <i class="icon-communication-163 u-line-icon-pro g-font-size-18 g-valign-middle g-color-black g-mr-10 g-mt-minus-2"></i>
+                  <a v-if="auth.email==''" class="text-decoration-underline sample" @click="openModal" :disabled="loading">
+                    電話番号ログイン
+                  </a>
+                </div> -->
+
+                <!-- <div class="g-color-white-opacity-0_6 g-font-weight-400 g-pl-15 g-pl-0--sm g-py-14"> -->
+                <div v-if="auth.email!==''" class="g-color-white-opacity-0_6 g-font-weight-400 g-pl-15 g-pl-0--sm">
+                  <figure class="text-right m-0" :style="{'line-height':'15px'}">
+                    <p class="g-color-gray-dark-v5 g-font-size-11">あなたのポイント</p>
+                    <span class="g-color-primary g-font-size-14 pr-1">{{ auth.credit.toLocaleString() }}</span>
+                  </figure>
+
+                  <!-- <div class="text-center">
+                    <span class="g-color-gray-dark-v5 g-font-size-10">あなたのポイント</span>
+                    <ul class="u-list-inline">
+                      <li class="list-inline-item g-color-primary g-font-size-14">
+                        <span>{{ auth.credit.toLocaleString() }}</span>
+                      </li>
+                    </ul>
+                  </div> -->
+                  <!-- <div class="mb-0">
+                    <span class="g-color-primary g-font-size-10">あなたのポイント：</span>
+                    <span class="g-color-primary g-font-size-10">{{ auth.credit.toLocaleString() }}</span>
+                  </div> -->
+                  <!-- <v-btn
+                    icon
+                    color="green"
+                    @click="refresh"
+                  >
+                    <v-icon>mdi-cached</v-icon>
+                  </v-btn> -->
+                </div>
+
+                <!-- <div class="col-sm-auto g-pos-rel g-py-14"> -->
+                  <div class="g-pos-rel g-py-14">
+                  <!-- List -->
+                  <!-- <ul class="list-inline g-overflow-hidden g-pt-1 g-mx-minus-4 mb-0"> -->
+                  <ul class="list-inline g-pt-1 g-mx-minus-4 mb-0  mr-4">
+                    <li v-if="auth.email!==''" class="list-inline-item g-mx-4">
+                      <a v-if="auth.isNeedName" href="#" class="text-decoration-underline" :style="{'color':'red'}" @click="editAccount">名前を変更してください</a>
+                      <a v-else href="#" @click="editAccount" class="text-decoration-underline">{{ auth.username }}</a><span v-if="!auth.isNeedName" class="sample pl-1 pt-1">さん</span>
+                    </li>
+                    <li v-else class="list-inline-item g-mx-4">
+                      <a class="g-color-text g-color-primary--hover g-font-weight-400 g-text-underline--none--hover" href="#" @click="backHome">ログインしてください</a>
+                      <!-- <P>FlamencoartsOkinawa</P> -->
+                    </li>
+                  </ul>
+                </div>
+
               </div>
-
-              <!-- <div class="col-sm-auto g-hidden-sm-down g-color-text g-font-weight-400 g-pl-15 g-pl-0--sm g-py-14">
-                <i class="icon-communication-163 u-line-icon-pro g-font-size-18 g-valign-middle g-color-black g-mr-10 g-mt-minus-2"></i>
-                <a v-if="auth.email==''" class="text-decoration-underline sample" @click="openModal" :disabled="loading">
-                  電話番号ログイン
-                </a>
-              </div> -->
-
-              <!-- <div class="col-sm-auto g-hidden-sm-down g-color-white-opacity-0_6 g-font-weight-400 g-pl-15 g-pl-0--sm g-py-14">
-                <v-btn
-                  icon
-                  color="green"
-                  @click="refresh"
-                >
-                  <v-icon>mdi-cached</v-icon>
-                </v-btn>
-              </div> -->
-
-              <!-- <div class="col-sm-auto g-pos-rel g-py-14"> -->
-                <div class="g-pos-rel g-py-14">
-                <!-- List -->
-                <!-- <ul class="list-inline g-overflow-hidden g-pt-1 g-mx-minus-4 mb-0"> -->
-                <ul class="list-inline g-pt-1 g-mx-minus-4 mb-0  mr-4">
-                  <li v-if="auth.email!==''" class="list-inline-item g-mx-4">
-                    <a v-if="auth.isNeedName" href="#" class="text-decoration-underline" :style="{'color':'red'}" @click="editAccount">名前を変更してください</a>
-                    <a v-else href="#" @click="editAccount" class="text-decoration-underline">{{ auth.username }}</a><span v-if="!auth.isNeedName" class="sample pl-1 pt-1">さん</span>
-                  </li>
-                  <li v-else class="list-inline-item g-mx-4">
-                    <!-- <a class="g-color-text g-color-primary--hover g-font-weight-400 g-text-underline--none--hover" href="#" @click="backHome">ログインしてください</a> -->
-
-                    <P>FlamencoartsOkinawa</P>
-                  </li>
-                </ul>
-              </div>
-
             </div>
           </div>
-        </div>
-        <!-- End Top Bar -->
-      </header>
-      <!-- End Header -->
-
-      <!-- Promo Slider -->
-      <v-container>
-        <router-view @drawerOpen="drawerOpen" />
-      </v-container>
+          <!-- End Top Bar -->
+        </header>
     
-      <div class="g-bg-gray-light-v5">
-        <div class="container">
-          <div class="text-center mx-auto g-max-width-600 g-mt-30 g-mb-5">
-            <h2 class="g-color-black mb-0">利用タイプ・料金</h2>
-          </div>
+        <!-- Promo Slider -->
+        <v-container>
+          <!-- <div class="d-flex bd-highlight justify-content-center pt-2 pb-2" v-loading="loading"> -->
+          <v-row v-if="auth.email!=='' && !isSearch" justify="center" align-content="center" class="d-flex bd-highlight p-3">
+            <span class="p-0 bd-highlight pr-2">
+              <el-button :style="{'width':'100%'}" @click="drawerOpen" :disabled="auth.email==''" round>
+                スタジオ予約
+              </el-button>
+            </span>
+            <span class="p-0 bd-highlight">
+              <el-button :style="{'width':'100%'}" @click="moveClass" :disabled="auth.email==''" round>
+                クラス受付予約
+              </el-button>
+            </span>
+          </v-row>
+          <router-view @drawerOpen="drawerOpen" />
+        </v-container>
 
-          <!-- Carousel Slider -->
-          <div id="carouselCus2" class="js-carousel g-pb-40 g-mx-minus-10"
-               data-infinite="true"
-               data-autoplay="false"
-               data-slides-show="4"
-               data-slides-scroll="1"
-               data-center-mode="true"
-               data-speed="8000"
-              data-arrows-classes="u-arrow-v1 g-pos-abs g-bottom-0 g-width-45 g-height-45 g-color-gray-dark-v5 g-bg-secondary g-color-white--hover g-bg-primary--hover rounded"
-              data-arrow-left-classes="fa fa-angle-left g-left-10"
-              data-arrow-right-classes="fa fa-angle-right g-right-10"
-              data-pagi-classes="u-carousel-indicators-v1 g-absolute-centered--x g-bottom-20 text-center"
-               >
-            <div class="js-slide g-px-10 g-py-20">
-              <!-- Article -->
-              <article class="media g-bg-white rounded g-pa-15">
-                <!-- Article Image -->
-                <div class="g-max-width-100 g-mr-15">
-                  <!-- <img class="d-flex w-100" src="assets/img-temp/150x150/img1.jpg" alt="Image Description"> -->
-                  <img class="d-flex w-100" src="/images/7.jpg" alt="Image Description">
-                  <!-- <img class="d-flex w-100" src="http://www.fandangos-okinawa.com/wordpress/wp-content/uploads/2016/10/img_nag.jpg" alt="Image Description"> -->
-                </div>
-                <!-- End Article Image -->
-
-                <!-- Article Info -->
-                <div class="media-body align-self-center">
-                  <h4 class="h5 g-mb-7">
-                    <p class="g-color-black g-color-primary--hover g-text-underline--none--hover" href="#">個人練習</p>
-                  </h4>
-                  <p class="d-inline-block g-color-gray-dark-v5 g-font-size-13 g-mb-10" href="#">一人集中して練習する方。</p>
-                  <!-- End Article Info -->
-
-                  <!-- Article Footer -->
-                  <footer class="d-flex justify-content-between g-font-size-12 flex-column bd-highlight text-right">
-                    <!-- <span class="g-color-black g-line-height-1">1時間 ¥800</span>
-                    <span class="g-color-black g-line-height-1">1.5時間 ¥1,200</span> -->
-                    <div class="p-0 bd-highlight">1時間：¥800</div>
-                    <div class="p-0 bd-highlight">1.5時間：¥1,200</div>
-                    <div class="p-0 bd-highlight">2時間：¥1,600</div>
-                    <!-- <ul class="list-inline g-color-gray-light-v2 g-font-size-14 g-line-height-1">
-                      <li class="list-inline-item align-middle g-brd-right g-brd-gray-light-v3 g-pr-10 g-mr-6">
-                        <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Cart"
-                           data-toggle="tooltip"
-                           data-placement="top">
-                          <i class="icon-finance-100 u-line-icon-pro"></i>
-                        </a>
-                      </li>
-                      <li class="list-inline-item align-middle">
-                        <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Wishlist"
-                           data-toggle="tooltip"
-                           data-placement="top">
-                          <i class="icon-medical-022 u-line-icon-pro"></i>
-                        </a>
-                      </li>
-                    </ul> -->
-                  </footer>
-                  <!-- End Article Footer -->
-                </div>
-              </article>
-              <!-- End Article -->
+        <div class="g-bg-gray-light-v5">
+          <div class="container">
+            <div class="text-center mx-auto g-max-width-600 g-mt-30 g-mb-5">
+              <h2 class="g-color-black mb-0">利用タイプ・料金</h2>
             </div>
 
-            <div class="js-slide g-px-10 g-py-20">
-              <!-- Article -->
-              <article class="media g-bg-white rounded g-pa-15">
-                <!-- Article Image -->
-                <div class="g-max-width-100 g-mr-15">
-                  <!-- <img class="d-flex w-100" src="assets/img-temp/150x150/img2.jpg" alt="Image Description"> -->
-                  <img class="d-flex w-100" src="/images/1.jpg" alt="Image Description">
-                  
-                </div>
-                <!-- End Article Image -->
+            <!-- Carousel Slider -->
+            <div id="carouselCus2" class="js-carousel g-pb-40 g-mx-minus-10"
+                 data-infinite="true"
+                 data-autoplay="false"
+                 data-slides-show="4"
+                 data-slides-scroll="1"
+                 data-center-mode="true"
+                 data-speed="8000"
+                data-arrows-classes="u-arrow-v1 g-pos-abs g-bottom-0 g-width-45 g-height-45 g-color-gray-dark-v5 g-bg-secondary g-color-white--hover g-bg-primary--hover rounded"
+                data-arrow-left-classes="fa fa-angle-left g-left-10"
+                data-arrow-right-classes="fa fa-angle-right g-right-10"
+                data-pagi-classes="u-carousel-indicators-v1 g-absolute-centered--x g-bottom-20 text-center"
+                 >
+              <div class="js-slide g-px-10 g-py-20">
+                <!-- Article -->
+                <article class="media g-bg-white rounded g-pa-15">
+                  <!-- Article Image -->
+                  <div class="g-max-width-100 g-mr-15">
+                    <!-- <img class="d-flex w-100" src="assets/img-temp/150x150/img1.jpg" alt="Image Description"> -->
+                    <img class="d-flex w-100" src="/images/7.jpg" alt="Image Description">
+                    <!-- <img class="d-flex w-100" src="http://www.fandangos-okinawa.com/wordpress/wp-content/uploads/2016/10/img_nag.jpg" alt="Image Description"> -->
+                  </div>
+                  <!-- End Article Image -->
 
-                <!-- Article Info -->
-                <div class="media-body align-self-center">
-                  <h4 class="h5 g-mb-7">
-                    <p class="g-color-black g-color-primary--hover g-text-underline--none--hover" href="#">グループ練習</p>
-                  </h4>
-                  <p class="d-inline-block g-color-gray-dark-v5 g-font-size-13 g-mb-10" href="#">発表会前の合同練習など。</p>
-                  <!-- End Article Info -->
+                  <!-- Article Info -->
+                  <div class="media-body align-self-center">
+                    <h4 class="h5 g-mb-7">
+                      <p class="g-color-black g-color-primary--hover g-text-underline--none--hover" href="#">個人練習</p>
+                    </h4>
+                    <p class="d-inline-block g-color-gray-dark-v5 g-font-size-13 g-mb-10" href="#">一人集中して練習する方。</p>
+                    <!-- End Article Info -->
 
-                  <!-- Article Footer -->
-                  <!-- <footer class="d-flex justify-content-between g-font-size-16"> -->
-                  <footer class="d-flex justify-content-between g-font-size-12 flex-column bd-highlight text-right">
-                    <div class="p-0 bd-highlight">1時間：¥1,500</div>
-                    <div class="p-0 bd-highlight">1.5時間：¥2,000</div>
-                    <div class="p-0 bd-highlight">2時間：¥2,500</div>
-                    <!-- <span class="g-color-black g-line-height-1">$55.00</span>
-                    <ul class="list-inline g-color-gray-light-v2 g-font-size-14 g-line-height-1">
-                      <li class="list-inline-item align-middle g-brd-right g-brd-gray-light-v3 g-pr-10 g-mr-6">
-                        <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Cart"
-                           data-toggle="tooltip"
-                           data-placement="top">
-                          <i class="icon-finance-100 u-line-icon-pro"></i>
-                        </a>
-                      </li>
-                      <li class="list-inline-item align-middle">
-                        <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Wishlist"
-                           data-toggle="tooltip"
-                           data-placement="top">
-                          <i class="icon-medical-022 u-line-icon-pro"></i>
-                        </a>
-                      </li>
-                    </ul> -->
-                  </footer>
-                  <!-- End Article Footer -->
-                </div>
-              </article>
-              <!-- End Article -->
-            </div>
-
-            <div class="js-slide g-px-10 g-py-20">
-              <!-- Article -->
-              <article class="media g-bg-white rounded g-pa-15">
-                <!-- Article Image -->
-                <div class="g-max-width-100 g-mr-15">
-                  <img class="d-flex w-100" src="/images/event-3.jpg" alt="Image Description">
-                </div>
-                <!-- End Article Image -->
-
-                <!-- Article Info -->
-                <div class="media-body align-self-center">
-                  <h4 class="h5 g-mb-7">
-                    <p class="g-color-black g-color-primary--hover g-text-underline--none--hover" href="#">その他利用：個人</p>
-                  </h4>
-                  <p class="d-inline-block g-color-gray-dark-v5 g-font-size-13 g-mb-10" href="#">フラメンコ練習以外、個人（お一人）でご利用の方。</p>
-                  <!-- End Article Info -->
-
-                  <!-- Article Footer -->
-                  <!-- <footer class="d-flex justify-content-between g-font-size-16"> -->
-                  <footer class="d-flex justify-content-between g-font-size-12 flex-column bd-highlight text-right">
-                    <div class="p-0 bd-highlight">1時間：¥1,000</div>
-                    <div class="p-0 bd-highlight">1.5時間：¥1,500</div>
-                    <div class="p-0 bd-highlight">2時間：¥2,000</div>
-                    <!-- <span class="g-color-black g-line-height-1">$55.00</span>
-                    <ul class="list-inline g-color-gray-light-v2 g-font-size-14 g-line-height-1">
-                      <li class="list-inline-item align-middle g-brd-right g-brd-gray-light-v3 g-pr-10 g-mr-6">
-                        <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Cart"
-                           data-toggle="tooltip"
-                           data-placement="top">
-                          <i class="icon-finance-100 u-line-icon-pro"></i>
-                        </a>
-                      </li>
-                      <li class="list-inline-item align-middle">
-                        <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Wishlist"
-                           data-toggle="tooltip"
-                           data-placement="top">
-                          <i class="icon-medical-022 u-line-icon-pro"></i>
-                        </a>
-                      </li>
-                    </ul> -->
-                  </footer>
-                  <!-- End Article Footer -->
-                </div>
-              </article>
-              <!-- End Article -->
-            </div>
-
-            <div class="js-slide g-px-10 g-py-20">
-              <!-- Article -->
-              <article class="media g-bg-white rounded g-pa-15">
-                <!-- Article Image -->
-                <div class="g-max-width-100 g-mr-15">
-                  <img class="d-flex w-100" src="/images/event-2.jpg" alt="Image Description">
-                </div>
-                <!-- End Article Image -->
-
-                <!-- Article Info -->
-                <div class="media-body align-self-center">
-                  <h4 class="h5 g-mb-7">
-                    <p class="g-color-black g-color-primary--hover g-text-underline--none--hover" href="#">その他利用：グループ</p>
-                  </h4>
-                  <p class="d-inline-block g-color-gray-dark-v5 g-font-size-13 g-mb-10" href="#">フラメンコ練習以外、グループ（複数人）でご利用の方。</p>
-                  <!-- End Article Info -->
-
-                  <!-- Article Footer -->
-                  <!-- <footer class="d-flex justify-content-between g-font-size-16"> -->
+                    <!-- Article Footer -->
                     <footer class="d-flex justify-content-between g-font-size-12 flex-column bd-highlight text-right">
-                      <div class="p-0 bd-highlight">1時間：¥2,000</div>
-                      <div class="p-0 bd-highlight">1.5時間：¥2,500</div>
-                      <div class="p-0 bd-highlight">2時間：¥3,000</div>
-                    <!-- <span class="g-color-black g-line-height-1">$55.00</span>
-                    <ul class="list-inline g-color-gray-light-v2 g-font-size-14 g-line-height-1">
-                      <li class="list-inline-item align-middle g-brd-right g-brd-gray-light-v3 g-pr-10 g-mr-6">
-                        <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Cart"
-                           data-toggle="tooltip"
-                           data-placement="top">
-                          <i class="icon-finance-100 u-line-icon-pro"></i>
-                        </a>
-                      </li>
-                      <li class="list-inline-item align-middle">
-                        <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Wishlist"
-                           data-toggle="tooltip"
-                           data-placement="top">
-                          <i class="icon-medical-022 u-line-icon-pro"></i>
-                        </a>
-                      </li>
-                    </ul> -->
-                  </footer>
-                  <!-- End Article Content -->
-                </div>
-              </article>
-              <!-- End Article -->
-            </div>
-
-          </div>
-        </div>
-        <!-- End Carousel Slider -->
-        </div>
-      </div>
-
-      <!-- Products -->
-      <div class="container g-pb-100">
-        <div class="text-center mx-auto g-max-width-600 g-mt-30 g-mb-50">
-          <h2 class="g-color-black mb-4">スタジオ紹介</h2>
-          <p class="lead">サクラの木を使用・・・</p>
-        </div>
-
-        <div id="carouselCus1" class="js-carousel g-pb-100"
-             data-infinite="true"
-             data-slides-show="4"
-             data-arrows-classes="u-arrow-v1 g-pos-abs g-bottom-0 g-width-45 g-height-45 g-color-gray-dark-v5 g-bg-secondary g-color-white--hover g-bg-primary--hover rounded"
-             data-arrow-left-classes="fa fa-angle-left g-left-10"
-             data-arrow-right-classes="fa fa-angle-right g-right-10"
-             data-pagi-classes="u-carousel-indicators-v1 g-absolute-centered--x g-bottom-20 text-center">
-          <div class="js-slide">
-            <div class="g-px-10">
-              <!-- Product -->
-              <figure class="g-pos-rel g-mb-20">
-                <v-list-item-avatar
-                  class="p-0 mr-3"
-                  tile
-                  size="150"
-                  color="grey"
-                >
-                <img class="img-fluid" src="assets/img-temp/480x700/img1.jpg" alt="Image Description">
-                  <!-- <img class="img-fluid" src="https://www.fandangos-okinawa.com/wordpress/wp-content/uploads/2016/10/img_nag.jpg" alt="名護スタジオ"> -->
-                </v-list-item-avatar>
-                <!-- <figcaption class="w-100 g-bg-primary g-bg-black--hover text-center g-pos-abs g-bottom-0 g-transition-0_2 g-py-5">
-                  <a class="g-color-white g-font-size-11 text-uppercase g-letter-spacing-1 g-text-underline--none--hover" href="#">名護スタジオ</a>
-                </figcaption> -->
-              </figure>
-
-              <div class="media">
-                <!-- Product Info -->
-                <div class="d-flex flex-column">
-                  <h4 class="h6 g-color-black mb-1">
-                    <a class="u-link-v5 g-color-black g-color-primary--hover" href="#">
-                      名護スタジオ
-                    </a>
-                  </h4>
-                  <a class="d-inline-block g-color-gray-dark-v5 g-font-size-13" href="#">明るくて爽やかな室内、緑に囲まれて癒やされます。</a>
-                  <!-- <span class="d-block g-color-black g-font-size-17">$52.00</span> -->
-                </div>
-                <!-- End Product Info -->
-
-                <!-- Products Icons -->
-                <!-- <ul class="list-inline media-body text-right">
-                  <li class="list-inline-item align-middle mx-0">
-                    <a class="u-icon-v1 u-icon-size--sm g-color-gray-dark-v5 g-color-primary--hover g-font-size-15 rounded-circle" href="#"
-                       data-toggle="tooltip"
-                       data-placement="top"
-                       title="Add to Cart">
-                      <i class="icon-finance-100 u-line-icon-pro"></i>
-                    </a>
-                  </li>
-                  <li class="list-inline-item align-middle mx-0">
-                    <a class="u-icon-v1 u-icon-size--sm g-color-gray-dark-v5 g-color-primary--hover g-font-size-15 rounded-circle" href="#"
-                       data-toggle="tooltip"
-                       data-placement="top"
-                       title="Add to Wishlist">
-                      <i class="icon-medical-022 u-line-icon-pro"></i>
-                    </a>
-                  </li>
-                </ul> -->
-                <!-- End Products Icons -->
+                      <!-- <span class="g-color-black g-line-height-1">1時間 ¥800</span>
+                      <span class="g-color-black g-line-height-1">1.5時間 ¥1,200</span> -->
+                      <div class="p-0 bd-highlight">1時間：¥800</div>
+                      <div class="p-0 bd-highlight">1.5時間：¥1,200</div>
+                      <div class="p-0 bd-highlight">2時間：¥1,600</div>
+                      <!-- <ul class="list-inline g-color-gray-light-v2 g-font-size-14 g-line-height-1">
+                        <li class="list-inline-item align-middle g-brd-right g-brd-gray-light-v3 g-pr-10 g-mr-6">
+                          <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Cart"
+                             data-toggle="tooltip"
+                             data-placement="top">
+                            <i class="icon-finance-100 u-line-icon-pro"></i>
+                          </a>
+                        </li>
+                        <li class="list-inline-item align-middle">
+                          <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Wishlist"
+                             data-toggle="tooltip"
+                             data-placement="top">
+                            <i class="icon-medical-022 u-line-icon-pro"></i>
+                          </a>
+                        </li>
+                      </ul> -->
+                    </footer>
+                    <!-- End Article Footer -->
+                  </div>
+                </article>
+                <!-- End Article -->
               </div>
-              <!-- End Product -->
+
+              <div class="js-slide g-px-10 g-py-20">
+                <!-- Article -->
+                <article class="media g-bg-white rounded g-pa-15">
+                  <!-- Article Image -->
+                  <div class="g-max-width-100 g-mr-15">
+                    <!-- <img class="d-flex w-100" src="assets/img-temp/150x150/img2.jpg" alt="Image Description"> -->
+                    <img class="d-flex w-100" src="/images/1.jpg" alt="Image Description">
+                  </div>
+                  <!-- End Article Image -->
+
+                  <!-- Article Info -->
+                  <div class="media-body align-self-center">
+                    <h4 class="h5 g-mb-7">
+                      <p class="g-color-black g-color-primary--hover g-text-underline--none--hover" href="#">グループ練習</p>
+                    </h4>
+                    <p class="d-inline-block g-color-gray-dark-v5 g-font-size-13 g-mb-10" href="#">発表会前の合同練習など。</p>
+                    <!-- End Article Info -->
+
+                    <!-- Article Footer -->
+                    <!-- <footer class="d-flex justify-content-between g-font-size-16"> -->
+                    <footer class="d-flex justify-content-between g-font-size-12 flex-column bd-highlight text-right">
+                      <div class="p-0 bd-highlight">1時間：¥1,500</div>
+                      <div class="p-0 bd-highlight">1.5時間：¥2,000</div>
+                      <div class="p-0 bd-highlight">2時間：¥2,500</div>
+                      <!-- <span class="g-color-black g-line-height-1">$55.00</span>
+                      <ul class="list-inline g-color-gray-light-v2 g-font-size-14 g-line-height-1">
+                        <li class="list-inline-item align-middle g-brd-right g-brd-gray-light-v3 g-pr-10 g-mr-6">
+                          <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Cart"
+                             data-toggle="tooltip"
+                             data-placement="top">
+                            <i class="icon-finance-100 u-line-icon-pro"></i>
+                          </a>
+                        </li>
+                        <li class="list-inline-item align-middle">
+                          <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Wishlist"
+                             data-toggle="tooltip"
+                             data-placement="top">
+                            <i class="icon-medical-022 u-line-icon-pro"></i>
+                          </a>
+                        </li>
+                      </ul> -->
+                    </footer>
+                    <!-- End Article Footer -->
+                  </div>
+                </article>
+                <!-- End Article -->
+              </div>
+
+              <div class="js-slide g-px-10 g-py-20">
+                <!-- Article -->
+                <article class="media g-bg-white rounded g-pa-15">
+                  <!-- Article Image -->
+                  <div class="g-max-width-100 g-mr-15">
+                    <img class="d-flex w-100" src="/images/event-3.jpg" alt="Image Description">
+                  </div>
+                  <!-- End Article Image -->
+
+                  <!-- Article Info -->
+                  <div class="media-body align-self-center">
+                    <h4 class="h5 g-mb-7">
+                      <p class="g-color-black g-color-primary--hover g-text-underline--none--hover" href="#">その他利用：個人</p>
+                    </h4>
+                    <p class="d-inline-block g-color-gray-dark-v5 g-font-size-13 g-mb-10" href="#">フラメンコ練習以外、個人（お一人）でご利用の方。</p>
+                    <!-- End Article Info -->
+
+                    <!-- Article Footer -->
+                    <!-- <footer class="d-flex justify-content-between g-font-size-16"> -->
+                    <footer class="d-flex justify-content-between g-font-size-12 flex-column bd-highlight text-right">
+                      <div class="p-0 bd-highlight">1時間：¥1,000</div>
+                      <div class="p-0 bd-highlight">1.5時間：¥1,500</div>
+                      <div class="p-0 bd-highlight">2時間：¥2,000</div>
+                      <!-- <span class="g-color-black g-line-height-1">$55.00</span>
+                      <ul class="list-inline g-color-gray-light-v2 g-font-size-14 g-line-height-1">
+                        <li class="list-inline-item align-middle g-brd-right g-brd-gray-light-v3 g-pr-10 g-mr-6">
+                          <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Cart"
+                             data-toggle="tooltip"
+                             data-placement="top">
+                            <i class="icon-finance-100 u-line-icon-pro"></i>
+                          </a>
+                        </li>
+                        <li class="list-inline-item align-middle">
+                          <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Wishlist"
+                             data-toggle="tooltip"
+                             data-placement="top">
+                            <i class="icon-medical-022 u-line-icon-pro"></i>
+                          </a>
+                        </li>
+                      </ul> -->
+                    </footer>
+                    <!-- End Article Footer -->
+                  </div>
+                </article>
+                <!-- End Article -->
+              </div>
+
+              <div class="js-slide g-px-10 g-py-20">
+                <!-- Article -->
+                <article class="media g-bg-white rounded g-pa-15">
+                  <!-- Article Image -->
+                  <div class="g-max-width-100 g-mr-15">
+                    <img class="d-flex w-100" src="/images/event-2.jpg" alt="Image Description">
+                  </div>
+                  <!-- End Article Image -->
+
+                  <!-- Article Info -->
+                  <div class="media-body align-self-center">
+                    <h4 class="h5 g-mb-7">
+                      <p class="g-color-black g-color-primary--hover g-text-underline--none--hover" href="#">その他利用：グループ</p>
+                    </h4>
+                    <p class="d-inline-block g-color-gray-dark-v5 g-font-size-13 g-mb-10" href="#">フラメンコ練習以外、グループ（複数人）でご利用の方。</p>
+                    <!-- End Article Info -->
+
+                    <!-- Article Footer -->
+                    <!-- <footer class="d-flex justify-content-between g-font-size-16"> -->
+                      <footer class="d-flex justify-content-between g-font-size-12 flex-column bd-highlight text-right">
+                        <div class="p-0 bd-highlight">1時間：¥2,000</div>
+                        <div class="p-0 bd-highlight">1.5時間：¥2,500</div>
+                        <div class="p-0 bd-highlight">2時間：¥3,000</div>
+                      <!-- <span class="g-color-black g-line-height-1">$55.00</span>
+                      <ul class="list-inline g-color-gray-light-v2 g-font-size-14 g-line-height-1">
+                        <li class="list-inline-item align-middle g-brd-right g-brd-gray-light-v3 g-pr-10 g-mr-6">
+                          <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Cart"
+                             data-toggle="tooltip"
+                             data-placement="top">
+                            <i class="icon-finance-100 u-line-icon-pro"></i>
+                          </a>
+                        </li>
+                        <li class="list-inline-item align-middle">
+                          <a class="g-color-gray-dark-v5 g-color-primary--hover g-text-underline--none--hover" href="#" title="Add to Wishlist"
+                             data-toggle="tooltip"
+                             data-placement="top">
+                            <i class="icon-medical-022 u-line-icon-pro"></i>
+                          </a>
+                        </li>
+                      </ul> -->
+                    </footer>
+                    <!-- End Article Content -->
+                  </div>
+                </article>
+                <!-- End Article -->
+              </div>
+
             </div>
           </div>
+          <!-- End Carousel Slider -->
+          </div>
+        </div>
 
-          <div class="js-slide">
-            <div class="g-px-10">
-              <!-- Product -->
-              <figure class="g-pos-rel g-mb-20">
+        <!-- Products -->
+        <div class="container g-pb-100">
+          <div class="text-center mx-auto g-max-width-600 g-mt-30 g-mb-50">
+            <h2 class="g-color-black mb-4">スタジオ紹介</h2>
+            <!-- <p class="lead">サクラの木を使用・・・</p> -->
+          </div>
+
+          <div id="carouselCus1" class="js-carousel g-pb-100"
+               data-infinite="true"
+               data-slides-show="4"
+               data-arrows-classes="u-arrow-v1 g-pos-abs g-bottom-0 g-width-45 g-height-45 g-color-gray-dark-v5 g-bg-secondary g-color-white--hover g-bg-primary--hover rounded"
+               data-arrow-left-classes="fa fa-angle-left g-left-10"
+               data-arrow-right-classes="fa fa-angle-right g-right-10"
+               data-pagi-classes="u-carousel-indicators-v1 g-absolute-centered--x g-bottom-20 text-center">
+            <div class="js-slide">
+              <div class="g-px-10">
+                <!-- Product -->
+                <figure class="g-pos-rel g-mb-20">
+                  <v-list-item-avatar
+                    class="p-0 mr-3"
+                    tile
+                    size="150"
+                    color="grey"
+                  >
+                  <img class="img-fluid" src="assets/img-temp/480x700/img1.jpg" alt="Image Description">
+                    <!-- <img class="img-fluid" src="https://www.fandangos-okinawa.com/wordpress/wp-content/uploads/2016/10/img_nag.jpg" alt="名護スタジオ"> -->
+                  </v-list-item-avatar>
+                  <!-- <figcaption class="w-100 g-bg-primary g-bg-black--hover text-center g-pos-abs g-bottom-0 g-transition-0_2 g-py-5">
+                    <a class="g-color-white g-font-size-11 text-uppercase g-letter-spacing-1 g-text-underline--none--hover" href="#">名護スタジオ</a>
+                  </figcaption> -->
+                </figure>
+
+                <div class="media">
+                  <!-- Product Info -->
+                  <div class="d-flex flex-column">
+                    <h4 class="h6 g-color-black mb-1">
+                      <a class="u-link-v5 g-color-black g-color-primary--hover" href="#">
+                        名護スタジオ
+                      </a>
+                    </h4>
+                    <a class="d-inline-block g-color-gray-dark-v5 g-font-size-13" href="#">大変静かで、自分の世界に集中できます。県外から合宿的に利用される方もいます。</a>
+                    <!-- <span class="d-block g-color-black g-font-size-17">$52.00</span> -->
+                  </div>
+                  <!-- End Product Info -->
+
+                  <!-- Products Icons -->
+                  <!-- <ul class="list-inline media-body text-right">
+                    <li class="list-inline-item align-middle mx-0">
+                      <a class="u-icon-v1 u-icon-size--sm g-color-gray-dark-v5 g-color-primary--hover g-font-size-15 rounded-circle" href="#"
+                         data-toggle="tooltip"
+                         data-placement="top"
+                         title="Add to Cart">
+                        <i class="icon-finance-100 u-line-icon-pro"></i>
+                      </a>
+                    </li>
+                    <li class="list-inline-item align-middle mx-0">
+                      <a class="u-icon-v1 u-icon-size--sm g-color-gray-dark-v5 g-color-primary--hover g-font-size-15 rounded-circle" href="#"
+                         data-toggle="tooltip"
+                         data-placement="top"
+                         title="Add to Wishlist">
+                        <i class="icon-medical-022 u-line-icon-pro"></i>
+                      </a>
+                    </li>
+                  </ul> -->
+                  <!-- End Products Icons -->
+                </div>
+                <!-- End Product -->
+              </div>
+            </div>
+
+            <div class="js-slide">
+              <div class="g-px-10">
+                <!-- Product -->
+                <figure class="g-pos-rel g-mb-20">
+                  
+                  <v-list-item-avatar
+                    class="p-0 mr-3"
+                    tile
+                    size="150"
+                    color="grey"
+                  >
+                    <img class="img-fluid" src="assets/img-temp/480x700/img2.jpg" alt="Image Description">
+                    <!-- <img class="img-fluid" src="https://www.fandangos-okinawa.com/wordpress/wp-content/uploads/2016/10/img_cdd.jpg" alt="コザスタジオ"> -->
+                  </v-list-item-avatar>
+                  <!-- <span class="u-ribbon-v1 g-width-40 g-height-40 g-color-white g-bg-primary g-font-size-13 text-center text-uppercase g-rounded-50x g-top-10 g-right-minus-10 g-px-2 g-py-10">-40%</span> -->
+                </figure>
+
+                <div class="media">
+                  <!-- Product Info -->
+                  <div class="d-flex flex-column">
+                    <h4 class="h6 g-color-black mb-1">
+                      <a class="u-link-v5 g-color-black g-color-primary--hover" href="#">
+                        コザスタジオ
+                      </a>
+                    </h4>
+                    <a class="d-inline-block g-color-gray-dark-v5 g-font-size-13" href="#">併設されたステージでは定期的にLIVEも行われています。</a>
+                    <!-- <span class="d-block g-color-black g-font-size-17">$99.00</span> -->
+                  </div>
+                  <!-- End Product Info -->
+
+                  <!-- Products Icons -->
+                  <!-- <ul class="list-inline media-body text-right">
+                    <li class="list-inline-item align-middle mx-0">
+                      <a class="u-icon-v1 u-icon-size--sm g-color-gray-dark-v5 g-color-primary--hover g-font-size-15 rounded-circle" href="#"
+                         data-toggle="tooltip"
+                         data-placement="top"
+                         title="Add to Cart">
+                        <i class="icon-finance-100 u-line-icon-pro"></i>
+                      </a>
+                    </li>
+                    <li class="list-inline-item align-middle mx-0">
+                      <a class="u-icon-v1 u-icon-size--sm g-color-gray-dark-v5 g-color-primary--hover g-font-size-15 rounded-circle" href="#"
+                         data-toggle="tooltip"
+                         data-placement="top"
+                         title="Add to Wishlist">
+                        <i class="icon-medical-022 u-line-icon-pro"></i>
+                      </a>
+                    </li>
+                  </ul> -->
+                  <!-- End Products Icons -->
+                </div>
+                <!-- End Product -->
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- End Products -->
+
+        <!-- Footer -->
+        <footer class="g-bg-main-light-v1">
+          <!-- Copyright -->
+          <div class="container g-pt-30 g-pb-10">
+            <div class="row justify-content-between align-items-center">
+              <div class="col-md-6 g-mb-20">
+                <!-- <p class="g-font-size-13 mb-0">2020 &copy; Htmlstream. All Rights Reserved.</p> -->
+                <p class="g-font-size-13 mb-0">2021 &copy; Flamencoarts Okinawa.</p>
+              </div>
+              <!-- <div class="col-md-6 text-md-right g-mb-20">
+                <ul class="list-inline g-color-gray-dark-v5 g-font-size-25 mb-0">
+                  <li class="list-inline-item g-cursor-pointer mr-1">
+                    <i class="fa fa-cc-visa" title="Visa"
+                       data-toggle="tooltip"
+                       data-placement="top"></i>
+                  </li>
+                  <li class="list-inline-item g-cursor-pointer mx-1">
+                    <i class="fa fa-cc-mastercard" title="Master Card"
+                       data-toggle="tooltip"
+                       data-placement="top"></i>
+                  </li>
+                  <li class="list-inline-item g-cursor-pointer ml-1">
+                    <i class="fa fa-cc-discover" title="Discover"
+                       data-toggle="tooltip"
+                       data-placement="top"></i>
+                  </li>
+                  <li class="list-inline-item g-cursor-pointer ml-1">
+                    <i class="fa fa-cc-jcb" title="JCB"
+                       data-toggle="tooltip"
+                       data-placement="top"></i>
+                  </li>
+                  <li class="list-inline-item g-cursor-pointer ml-1">
+                    <i class="fa fa-cc-stripe" title="Stripe"
+                       data-toggle="tooltip"
+                       data-placement="top"></i>
+                  </li>
+                </ul>
+              </div> -->
+            </div>
+          </div>
+          <!-- End Copyright -->
+        </footer>
+        <!-- End Footer -->
+
+        <a class="js-go-to u-go-to-v2" href="#"
+           data-type="fixed"
+           data-position='{
+             "bottom": 15,
+             "right": 15
+           }'
+           data-offset-top="400"
+           data-compensation="#js-header"
+           data-show-effect="zoomIn">
+          <i class="hs-icon hs-icon-arrow-top"></i>
+        </a>
+
+        <modal-edit-account 
+          ref="dialogEditAccount"
+          :dialog-form-visible="modal_editaccount_visible" 
+          :close-modal="close_modal"
+          @reload="reload"
+         />
+
+          <!-- slide bar -->
+          <v-navigation-drawer
+            v-model="drawer"
+            :style="{'z-index':1000, 'height': height+adjust+'px'}"
+            absolute
+            temporary
+          >
+            <v-card
+              outlined
+              v-scroll.self="onScroll"
+              class="overflow-y-auto"
+              :max-height="height"
+              flat
+            >
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title class="text-center">
+                    <h4 class="h4 pt-5 g-font-weight-700">スタジオ予約</h4>
+                  </v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider></v-divider>
+
+              <div v-if="auth.email!==''" class="p-3 mb-2">
+                <!-- <div class="text-center">
+                  <div class="mb-0">
+                    <h5 class="pt-2 g-text-underline text-primary" @click="myReserve">あなたの情報</h5>
+                  </a>
+                  </div>
+                  <div class="mb-4">
+                    ポイント：<span class="g-color-primary g-font-weight-300 g-font-size-20 mr-2">{{ auth.credit.toLocaleString() }}</span>
+                  </div>
+                </div> 
+                <v-divider></v-divider>
+                -->
+                <el-alert
+                  class="text-left m-1"
+                  type="warning"
+                  description="スタジオ空き時間を検索して、予約時間を選択し予約してください。"
+                  show-icon>
+                </el-alert>
                 
-                <v-list-item-avatar
-                  class="p-0 mr-3"
-                  tile
-                  size="150"
-                  color="grey"
-                >
-                  <img class="img-fluid" src="assets/img-temp/480x700/img2.jpg" alt="Image Description">
-                  <!-- <img class="img-fluid" src="https://www.fandangos-okinawa.com/wordpress/wp-content/uploads/2016/10/img_cdd.jpg" alt="コザスタジオ"> -->
-                </v-list-item-avatar>
-                <!-- <span class="u-ribbon-v1 g-width-40 g-height-40 g-color-white g-bg-primary g-font-size-13 text-center text-uppercase g-rounded-50x g-top-10 g-right-minus-10 g-px-2 g-py-10">-40%</span> -->
-              </figure>
-
-              <div class="media">
-                <!-- Product Info -->
-                <div class="d-flex flex-column">
-                  <h4 class="h6 g-color-black mb-1">
-                    <a class="u-link-v5 g-color-black g-color-primary--hover" href="#">
-                      コザスタジオ
-                    </a>
-                  </h4>
-                  <a class="d-inline-block g-color-gray-dark-v5 g-font-size-13" href="#">クジラの壁画が特徴的、アートな雰囲気です。</a>
-                  <!-- <span class="d-block g-color-black g-font-size-17">$99.00</span> -->
+                <div class="text-center g-color-primary">
+                  <h4 class="pt-6 pb-2 g-font-weight-600 g-font-size-20">空き時間検索</h4>
                 </div>
-                <!-- End Product Info -->
-
-                <!-- Products Icons -->
-                <!-- <ul class="list-inline media-body text-right">
-                  <li class="list-inline-item align-middle mx-0">
-                    <a class="u-icon-v1 u-icon-size--sm g-color-gray-dark-v5 g-color-primary--hover g-font-size-15 rounded-circle" href="#"
-                       data-toggle="tooltip"
-                       data-placement="top"
-                       title="Add to Cart">
-                      <i class="icon-finance-100 u-line-icon-pro"></i>
-                    </a>
-                  </li>
-                  <li class="list-inline-item align-middle mx-0">
-                    <a class="u-icon-v1 u-icon-size--sm g-color-gray-dark-v5 g-color-primary--hover g-font-size-15 rounded-circle" href="#"
-                       data-toggle="tooltip"
-                       data-placement="top"
-                       title="Add to Wishlist">
-                      <i class="icon-medical-022 u-line-icon-pro"></i>
-                    </a>
-                  </li>
-                </ul> -->
-                <!-- End Products Icons -->
+                <search-studio 
+                  ref="searchStudio"
+                  @searchStudio="searchStudio"
+                  @cancel="cancel"
+                 />
               </div>
-              <!-- End Product -->
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- End Products -->
+              <div v-else class="mt-5">
+                <el-alert
+                  class="text-left mb-5"
+                  type="warning"
+                  description="ログインしてください"
+                  show-icon>
+                </el-alert>
+              </div>
 
-       <!-- Footer -->
-      <footer class="g-bg-main-light-v1">
-        <!-- Copyright -->
-        <div class="container g-pt-30 g-pb-10">
-          <div class="row justify-content-between align-items-center">
-            <div class="col-md-6 g-mb-20">
-              <!-- <p class="g-font-size-13 mb-0">2020 &copy; Htmlstream. All Rights Reserved.</p> -->
-              <p class="g-font-size-13 mb-0">2021 &copy; Flamencoarts Okinawa.</p>
-            </div>
+              <v-divider></v-divider>
+              <v-list class="p-2 pb-5" dense>
+                <v-list-item>
+                  <!-- <v-list-item-title v-if="auth.email!==''" @click="logout" class="text-secondary">ログアウト</v-list-item-title> -->
+                  <v-btn
+                    v-if="auth.email!==''"
+                    color="gray"
+                    text
+                    @click.stop="isLogout = true"
+                  >
+                    ログアウト
+                  </v-btn>
+                </v-list-item>
+              </v-list>
+          </v-card>
+        </v-navigation-drawer>
+        <!-- End slide bar -->
 
-            <div class="col-md-6 text-md-right g-mb-20">
-              <ul class="list-inline g-color-gray-dark-v5 g-font-size-25 mb-0">
-                <li class="list-inline-item g-cursor-pointer mr-1">
-                  <i class="fa fa-cc-visa" title="Visa"
-                     data-toggle="tooltip"
-                     data-placement="top"></i>
-                </li>
-                <li class="list-inline-item g-cursor-pointer mx-1">
-                  <i class="fa fa-cc-mastercard" title="Master Card"
-                     data-toggle="tooltip"
-                     data-placement="top"></i>
-                </li>
-                <li class="list-inline-item g-cursor-pointer ml-1">
-                  <i class="fa fa-cc-discover" title="Discover"
-                     data-toggle="tooltip"
-                     data-placement="top"></i>
-                </li>
-                <li class="list-inline-item g-cursor-pointer ml-1">
-                  <i class="fa fa-cc-jcb" title="JCB"
-                     data-toggle="tooltip"
-                     data-placement="top"></i>
-                </li>
-                <li class="list-inline-item g-cursor-pointer ml-1">
-                  <i class="fa fa-cc-stripe" title="Stripe"
-                     data-toggle="tooltip"
-                     data-placement="top"></i>
-                </li>
-              </ul>
-            </div>
+        <!-- ログアウト確認 -->
+        <v-dialog
+          v-model="isLogout"
+          max-width="290"
+          :style="{'z-index':1000}"
+        >
+          <v-card>
+            <v-card-title class="headline">ログアウト確認</v-card-title>
 
-          </div>
-        </div>
-        <!-- End Copyright -->
-      </footer>
-      <!-- End Footer -->
+            <v-card-text>
+              本当にログアウトしてよろしいですか？
+            </v-card-text>
 
-      <a class="js-go-to u-go-to-v2" href="#"
-         data-type="fixed"
-         data-position='{
-           "bottom": 15,
-           "right": 15
-         }'
-         data-offset-top="400"
-         data-compensation="#js-header"
-         data-show-effect="zoomIn">
-        <i class="hs-icon hs-icon-arrow-top"></i>
-      </a>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                outlined
+                text
+                @click.stop="isLogout = false"
+              >
+                キャンセル
+              </v-btn>
+              <v-btn
+                color="error"
+                outlined
+                text
+                @click="logout"
+              >
+                ログアウトする
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
 
-      <modal-edit-account 
-        ref="dialogEditAccount"
-        :dialog-form-visible="modal_editaccount_visible" 
-        :close-modal="close_modal"
-        @reload="reload"
-       />
-    </v-app>
-  </main>
-</body>
+      </v-app>
+    </main>
+  </body>
 </template>
 <style>
   .js-scrollable {
@@ -539,6 +665,8 @@ export default {
     return {
       modal_editaccount_visible: false,
       drawer: false,
+      scrollInvoked: 0,
+      isLogout: false,
       // isSearch: false,
       // sheet: false,
       // drawer: false,
@@ -560,6 +688,12 @@ export default {
     }
   },
   computed: {
+    // items () {
+    //   return Array.from({ length: this.length }, (k, v) => v + 1)
+    // },
+    // length () {
+    //   return 7000
+    // },
     adjust () {
       switch (this.$vuetify.breakpoint.name) {
         case 'xs': return 220
@@ -654,7 +788,7 @@ export default {
     // ログイン確認
     if(store.state.auth.email!=='') {
       console.log('login');
-      // ログイン済
+      // ログイン済の場合
       that.$nextTick(function () {
         store.commit('SET_ISLOADING', true);
         store.commit('SET_BACK_URI', '/schedule');
@@ -662,7 +796,7 @@ export default {
       });
     }else{
       console.log('none login', store.state.backuri);
-      // ログイン未だ
+      // ログイン未だの場合
       that.$nextTick(function () {
         store.commit('SET_BACK_URI', '/back');
         if(that.$route.path!=='/' && that.$route.path!=='') {
@@ -714,6 +848,22 @@ export default {
     this.reload();   
   },
   methods: {
+    drawerOpen() {
+      // this.$emit('drawerOpen');
+      // store.commit('SET_ISLOADING', true);
+    },
+    moveClass() {
+      store.commit('SET_ISLOADING', true);
+      // this.$emit('moveClass');
+      this.$router.push({path: '/about'});
+      setTimeout(function(){
+        store.commit('SET_IS_SEARCH', true);
+        store.commit('SET_ISLOADING', false);
+      },1000);
+    },
+    onScroll () {
+      this.scrollInvoked++;
+    },
     loginUser() {
       const code = this.lineLogin.code;
       const state = this.lineLogin.state;
@@ -855,12 +1005,12 @@ export default {
       });
      
     },
-    onScroll(e){
-      if (typeof window === 'undefined') return
-      const top = window.pageYOffset ||   e.target.scrollTop || 0
-      // console.log(top)
-      this.fab = top > 50
-    },
+    // onScroll(e){
+    //   if (typeof window === 'undefined') return
+    //   const top = window.pageYOffset ||   e.target.scrollTop || 0
+    //   // console.log(top)
+    //   this.fab = top > 50
+    // },
     toTop() {
       this.$vuetify.goTo("#app")
     },
@@ -984,6 +1134,10 @@ export default {
     },
     reload() {
       store.commit('SET_ISLOADING', true);
+      store.commit('RESET_DATA');
+      // 日付取得
+      let _date = this.$moment().format('YYYY-MM-DD');
+
       let that = this;
       const processA = async function() {
         await store.commit('SET_ISLOADING', true);
@@ -999,6 +1153,25 @@ export default {
             if(res) store.commit('SET_ISLOADING', false)
           }
         });
+        // await store.dispatch('getClass',{
+        //   callback: function(res){
+        //     if(res) store.commit('SET_ISLOADING', false)
+        //   }
+        // });
+        // クラス受付を取得
+        await store.dispatch('getAgenda',{
+          params: {
+            from_date: _date,
+            time: '09:00',
+            resource_id: 563549,
+            user_id: that.auth.user_id
+          },
+          callback: function(res){
+            console.log('hi', res)
+            // that.items=res.data.slots;
+          }
+        });
+
         // // クラス取得
         // await store.dispatch('getClass',{})
         //  // 自身の予約
@@ -1017,28 +1190,32 @@ export default {
     },
     refresh() {
       this.reload();
-      let backuri=store.state.backuri;
+      console.log('backu', store.state.backuri)
       store.commit('SET_BACK_URI', '');
       store.commit('SET_LINE_LOGIN', '');
+      store.commit('RESET_DATA');
       setTimeout(function(){
         store.commit('SET_ISLOADING', false);
-        if(backuri=="") window.location.reload();
-      },300);
+        // if(backuri=="") window.location.reload();
+      },1000);
+      // if(this.$route.path=='/schedule') return;
+      // if(store.state.backuri=="") window.location.reload();
     },
     myReserve() {
       console.log(this.$route.path);
       // LINEログイン後、パス指定されている場合
       let that = this;
       if(this.$route.path=='/schedule'){
-        // 初期化後に、再パス指定
-        setTimeout(function(){
-          that.$router.push({path: '/about'});
-        },400);
+        // // 初期化後に、再パス指定
+        // setTimeout(function(){
+        //   // that.$router.push({path: '/about'});
+        // },400);
         return;
       }
-      if(this.$route.path=='/about') return;
-      // 通常パス指定
-      this.$router.push({path: '/about'});
+      if(store.state.backuri=="") window.location.reload();
+      // if(this.$route.path=='/about') return;
+      // // 通常パス指定
+      // this.$router.push({path: '/about'});
     },
     backHome() {
       setTimeout(function(){

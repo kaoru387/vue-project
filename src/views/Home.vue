@@ -198,7 +198,6 @@
               </tbody>
             </table> 
           </div>
-
         </div>
       </div>
     </section>
@@ -407,7 +406,6 @@ export default {
     console.log('beforeRouteEnter /Home', store.state.backuri, '-' , to.fullPath);
 
     let that = this;
-
     // // if(store.state.backuri=='' || to.fullPath=='/') {
     if(store.state.backuri=='/') {
       // ログイン済の場合、以下コメントでOK
@@ -417,6 +415,7 @@ export default {
     
     // linelogin後
     if(store.state.backuri=='/schedule') {
+    // if(store.state.backuri=='/about') { 
       // 初期化
       store.commit('SET_BACK_URI', '');
       store.commit('SET_LINE_LOGIN', '');

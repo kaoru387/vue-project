@@ -77,10 +77,10 @@
       </div>
       <div class="col-12 pt-2">
         <div class="block">
-          <el-button class="m-0" type="warning" :style="{'width':'100%'}" @click="searchStudio" :disabled="loading">
+          <el-button class="m-0" type="secondary" :style="{'width':'100%'}" @click="searchStudio" :disabled="loading" round>
             スタジオ空き時間を検索する
           </el-button>
-          <el-button v-if="isSearch" class="m-0 mt-5" type="danger" :style="{'width':'100%'}" @click="cancel" :disabled="loading">
+          <el-button v-if="isSearch" class="m-0 mt-5" type="danger" :style="{'width':'100%'}" @click="cancel" :disabled="loading" round>
             検索を中止する
           </el-button>
         </div>
@@ -204,11 +204,10 @@ export default {
     },
   },
   created: function () {
-    // console.log('hi');
     // 初期値
     this.form.date = this.$moment().format('YYYY-MM-DD');
     this.form.time = moment().format('07:00');
-    this.form.studio_name = this.search.studio_name;
+    // this.form.studio_name = this.search.studio_name;
     store.commit('SET_SELECT_RESOURCES', [])
   },
   mounted() { 

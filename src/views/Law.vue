@@ -1,5 +1,5 @@
 <template>
-  <div id="home">
+  <div>
   	<!-- Login -->
     <section class="container p-0 g-mt-50 g-pb-20">
       <div class="row justify-content-between">
@@ -31,7 +31,7 @@
                     <span class="g-font-size-12">販売業者</span>
                   </th>
                   <td class="text-left p-3 text-secondary">
-                    <span class="g-font-size-14">N.F.STUDIO 和田有佳</span>
+                    <span class="g-font-size-14">N.F.STUDIO 和田健</span>
                   </td>
                 </tr>
                 <tr>
@@ -39,7 +39,7 @@
                     <span class="g-font-size-12">代表者</span>
                   </th>
                   <td class="text-left p-3 text-secondary">
-                    <span class="g-font-size-14">和田有佳</span>
+                    <span class="g-font-size-14">和田健</span>
                   </td>
                 </tr>
                 <tr>
