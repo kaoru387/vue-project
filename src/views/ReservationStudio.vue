@@ -7,7 +7,7 @@
       </div>
     </div> -->
     <!-- <div class="col-md-12 g-pl-20 g-mb-5 g-mb-0--md p-0 d-flex justify-content-center"> -->
-    <div class="col-md-12 g-mb-10 g-mb-0--md p-2" :style="{'min-height':adjust+100+'px', 'width': '100%'}">
+    <div class="col-md-12 g-mb-10 g-mb-0--md p-2 pt-0" :style="{'min-height':adjust+100+'px', 'width': '100%'}">
       <!-- Product Info -->
       <v-tabs
         v-if="!isSearch"
@@ -15,22 +15,40 @@
         centered
       >
         <v-tabs-slider></v-tabs-slider>
-        <v-tab href="#tab-1">
+        <v-tab href="#tab-1"" class="pl-3 pr-3">
           <figure class="text-center m-0" :style="{'line-height':'17px'}">
-            <p class="g-font-size-11">全体</p>
-            <span class="g-color-gray-dark-v3 g-font-weight-500">スケジュール</span>
+            <p class="g-font-size-11">全体</p>                        
+            <span class="g-color-gray-dark-v3 g-font-weight-500">
+              スケジュール
+            </span>
           </figure>
         </v-tab>
-        <v-tab href="#tab-2">
+        <v-tab href="#tab-2" class="pl-3 pr-3">
           <figure class="text-center m-0" :style="{'line-height':'17px'}">
             <p class="g-font-size-11">あなたの</p>
-            <span class="g-color-gray-dark-v3 g-font-weight-500">スタジオ予約</span>
+            <!-- <span class="g-color-gray-dark-v3 g-font-weight-500">スタジオ予約</span> -->
+            <span class="d-inline-block g-pos-rel">
+              <span v-if="0<countMyStudio" class="u-badge-v2 g-font-size-10 g-bg-deeporange g-color-white">
+                {{ countMyStudio }}
+              </span>
+              <span class="g-color-gray-dark-v3 g-font-weight-500 pr-1">
+                スタジオ予約
+              </span>
+            </span>
           </figure>
         </v-tab>
-        <v-tab href="#tab-3">
+        <v-tab href="#tab-3" class="pl-3 pr-3">
           <figure class="text-center m-0" :style="{'line-height':'17px'}">
             <p class="g-font-size-11">あなたの</p>
-            <span class="g-color-gray-dark-v3 g-font-weight-500">クラス予約</span>
+            <!-- <span class="g-color-gray-dark-v3 g-font-weight-500">クラス予約</span> -->
+            <span class="d-inline-block g-pos-rel">
+              <span v-if="0<countMyClass" class="u-badge-v2 g-font-size-10 g-bg-yellow g-color-white">
+                {{ countMyClass }}
+              </span>
+              <span class="g-color-gray-dark-v3 g-font-weight-500 pr-1">
+                クラス予約
+              </span>
+            </span>
           </figure>
         </v-tab>
       </v-tabs>
@@ -60,36 +78,17 @@
           </v-card>
         </v-tab-item>
         <v-tab-item :value="'tab-2'">
-          <div v-if="contens.length==0 && classes.length==0" class="p-0">
+          <div v-if="contens.length==0" class="p-0">
             <el-alert
               class="text-left"
               type="warning"
-              description="あなたの予約はありません。"
+              description="あなたのスタジオ予約はありません。"
               show-icon>
             </el-alert>
           </div>
-          <div v-else class="p-0">
+          <div v-else class="p-0 ml-2 mr-2">
             <my-reservation />
           </div>
-          <!-- <table class="table table-borderless table-striped">
-            <thead>
-              <tr>
-                <th scope="col" class="text-center w-20">日時</th>
-                <th scope="col" class="text-center w-10">予約名</th>
-                <th scope="col" class="text-center w-5">料金</th>
-                <th scope="col" class="text-center w-10">エアコン利用</th>
-                <th scope="col" class="text-center"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <my-reservation
-                v-for="(item, index) in contens"
-                :key="'course-detail'+item.id" 
-                :item="item"
-                @openDetail="openDetail" />
-            </tbody>
-          </table> -->
-
           <!-- <div v-if="0<classes.length" class="p-0">
             <my-class
               v-for="(item, index) in classes"
@@ -98,14 +97,18 @@
           </div> -->
         </v-tab-item>
         <v-tab-item :value="'tab-3'">
-          <!-- <v-card flat>
-            <v-card-text>{{ text }}</v-card-text>
-            <my-reservation-history
-              v-for="(item, index) in history"
-              :key="'history-detail'+item.id" 
-              :item="item" />
-          </v-card> -->
-          <my-class />
+          <div v-if="classes.length==0" class="p-0">
+            <el-alert
+              class="text-left"
+              type="warning"
+              description="あなたのクラス予約はありません。"
+              show-icon>
+            </el-alert>
+          </div>
+          <div v-else class="p-0 ml-2 mr-2">
+            <my-class />
+          </div>
+          
         </v-tab-item>
       </v-tabs-items>
 
@@ -346,6 +349,12 @@ export default {
     classes() {
       return store.state.result.myClass;
     },
+    countMyClass() {
+      return store.state.info.countMyClass;
+    },
+    countMyStudio() {
+      return store.state.info.countMyStudio;
+    },
   },
   beforeRouteEnter (to, from, next) {
     console.log('beforeRouteEnter /sche', to.fullPath, store.state.backuri);
@@ -353,7 +362,7 @@ export default {
       store.commit('SET_LINE_LOGIN', '');
       setTimeout(function(){
           store.commit('SET_ISLOADING', false);
-      },2000);
+      },4000);
       next();
     }
 

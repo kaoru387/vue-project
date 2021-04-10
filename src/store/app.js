@@ -90,6 +90,8 @@ const state = {
       actionCode: '',
       accountEmail: '',
       isResetPassword: false,
+      countMyStudio: 0,
+      countMyClass: 0,
     },
     search: {},
     isSearch: false,
@@ -903,6 +905,9 @@ function setMyEvent(store, v, resource_id) {
   let target = moment(v.slot['start']).format("YYYY-MM-DD");
   if(target<today) isEdit=false;
 
+  // 自身の今後の予約数
+  if(isEdit) store.state.info.countMyClass+=1;
+
   let _start = moment(v.slot['start']).format("HH:mm");
   let _finish = moment(v.slot['finish']).format("HH:mm");
   let color='pink';
@@ -1089,8 +1094,8 @@ function setScheduleEvent(store, v) {
     let target = moment(v['start']['_']).utc().format("YYYY-MM-DD");
     if(target<today) isEdit=false;
 
-    // // 検証用
-    // isEdit=false;
+    // 自身の今後の予約数
+    if(isEdit) store.state.info.countMyStudio+=1;
 
     // 予約
     store.state.result.my.push({
@@ -1243,6 +1248,8 @@ const mutations = {
     state.result.my = [];
     // state.result.history = [];
     state.result.myClass = [];
+    state.info.countMyStudio=0;
+    state.info.countMyClass=0;
   },
   // RESET_VUEX_STATE(state) {
   //   // ローカルストレージ初期化

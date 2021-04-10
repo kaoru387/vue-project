@@ -363,6 +363,19 @@ td{
   th{
     font-size: 10px !important;
   }
+  // vuetify
+  .v-data-table > .v-data-table__wrapper .v-data-table__mobile-row{
+    min-height: unset !important;
+    line-height: 1.0 !important;
+  }
+  .v-data-table__mobile-row {
+    min-height: 18px !important;
+    line-height: 1.0 !important;
+  }
+  // .v-data-table > .v-data-table__wrapper > table > tbody > tr > td {
+  //   font-size: 0.7rem;
+  //   height: 10px ;
+  // }
 
   // 小さい文字
   .sample {
@@ -462,6 +475,17 @@ td{
   th{
     font-size: 12px !important;
   }
+
+  // vuetify
+  .v-data-table > .v-data-table__wrapper .v-data-table__mobile-row{
+    min-height: unset !important;
+    line-height: 1.1 !important;
+  }
+  .v-data-table__mobile-row {
+    min-height: 18px !important;
+    line-height: 1.1 !important;
+  }
+
   // 小さい文字
   .sample {
     font-size:12px;

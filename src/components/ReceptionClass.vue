@@ -11,11 +11,15 @@
       @page-count="pageCount = $event"
     >
       <template v-slot:item.date="{ item }">
-        <span>{{ item.date }}</span>
-        <span class="g-font-size-13 g-color-gray-dark-v4 ml-1">{{ item.start + '-' + item.finish }}</span>
+        <div class="mt-2 mb-1">
+          <span>{{ item.date }}</span>
+          <span class="g-font-size-13 g-color-gray-dark-v4 ml-1">{{ item.start + '-' + item.finish }}</span>
+        </div>
       </template>
       <template v-slot:item.title="{ item }">
-        <span class="g-color-gray-dark-v2">{{ item.title }}</span>
+        <div class="mb-2">
+          <span class="g-color-gray-dark-v4">{{ item.title }}</span>
+        </div>
       </template>
       <!-- <template v-slot:expanded-item="{ headers, item }">
         <td :colspan="headers.length">

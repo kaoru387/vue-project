@@ -25,8 +25,15 @@
         <!-- <span class="g-font-size-13 g-color-gray-dark-v4">スタジオ予約はありません。</span>    -->
       </template>
       <template v-slot:item.date="{ item }">
-        <span>{{ item.date }}</span>
-        <span class="g-font-size-13 g-color-gray-dark-v4 ml-1">{{ item.datetime }}</span>
+        <div class="mt-2 mb-1">
+          <span>{{ item.date }}</span>
+          <span class="g-font-size-13 g-color-gray-dark-v4 ml-1">{{ item.datetime }}</span>
+        </div>
+      </template>
+      <template v-slot:item.title="{ item }">
+        <div class="mb-2">
+          <span class="g-color-gray-dark-v4">{{ item.title }}</span>
+        </div>
       </template>
       <template v-slot:item.price="{ item }">
         <span>¥{{ item.price.toLocaleString() }}</span>
@@ -365,7 +372,8 @@ export default {
                 that.payconfirm=false;
                
                 // 予約
-                store.commit('SET_EVENTS', []);
+                // store.commit('SET_EVENTS', []);
+
                 // データ初期化
                 store.commit('RESET_DATA');
                 store.dispatch('getBookings',{

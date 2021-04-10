@@ -90,6 +90,7 @@ export default {
 	        		isPoint: isPoint
 	        	});
 	        });
+	        store.commit('SET_IS_SEARCH', true);
 	        store.commit('SET_ISLOADING', false);
 	      }
 	    });

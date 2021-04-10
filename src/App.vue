@@ -856,10 +856,6 @@ export default {
       store.commit('SET_ISLOADING', true);
       // this.$emit('moveClass');
       this.$router.push({path: '/about'});
-      setTimeout(function(){
-        store.commit('SET_IS_SEARCH', true);
-        store.commit('SET_ISLOADING', false);
-      },1000);
     },
     onScroll () {
       this.scrollInvoked++;
