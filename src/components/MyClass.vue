@@ -30,15 +30,20 @@
         </div>
       </template>
       <template v-slot:item.price="{ item }">
+        <div class="mb-1">
+          <span v-if="item.isPaid" class="mr-2 g-font-size-12 g-color-gray-dark-v5">{{ item.status }}</span>
+          <span v-else class="mr-2 g-font-size-12">未払い</span>
+          <span>¥{{item.price.toLocaleString()}}</span>
+        </div>
         <!-- <span>¥{{ item.price.toLocaleString() }}</span> -->
-        <span v-if="!item.isPaid" class="g-color-gray-dark-v5">
+        <!-- <span v-if="!item.isPaid" class="g-color-gray-dark-v5">
           <span class="mr-2 g-font-size-12">未払い</span> ¥{{item.price.toLocaleString()}}
         </span>
         <span v-else class="pl-2">
           <v-icon small color="#03BFA5"
           >mdi-check-circle</v-icon>
         <span class="mr-2 g-font-size-12">支払済</span> ¥{{item.price.toLocaleString()}}
-        </span>
+        </span> -->
       </template>
       <template v-slot:item.description="{ item }">
         <span class="g-font-size-12">{{ item.description }}</span>
@@ -49,7 +54,7 @@
       <template v-slot:item.isEdit="{ item }">
         <v-btn
           v-if="!item.isPaid"
-          class="mt-1 mb-1"
+          class="mt-2 mb-2"
           outlined
           text
           color="indigo"
@@ -60,14 +65,14 @@
         </v-btn>
         <v-btn 
           v-if="!item.isEdit"
-          class="mt-1 mb-1" 
+          class="mt-2 mb-2" 
           :disabled="true"
           text>
           終了
         </v-btn>
         <el-button 
           v-else
-          class="mt-1 mb-1"
+          class="mt-2 mb-2"
           @click="confirmDelete(item)">
           予約取消
         </el-button>
@@ -132,20 +137,20 @@
         <v-card-title class="headline">ポイント精算の確認</v-card-title>
 
         <v-card-text>
-          本当にポイント精算してよろしいですか？
+          ポイント精算してよろしいですか？
         </v-card-text>
-
+        
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
             outlined
             text
-            @click.stop="delconfirm = false"
+            @click.stop="payconfirm = false"
           >
             キャンセル
           </v-btn>
           <v-btn
-            color="success"
+            color="indigo"
             outlined
             text
             @click="payPoint"
@@ -229,7 +234,7 @@ export default {
       ],
       page: 1,
       pageCount: 0,
-      itemsPerPage: 3,
+      itemsPerPage: 2,
       expanded: [],
       item: [],
     }
@@ -270,7 +275,7 @@ export default {
       this.delconfirm=true;
     },
     confirmPayPoint(item) { // ポイント精算の確認
-      console.log(item);
+      // console.log(item);
       this.item=item;
       this.payconfirm=true;
     },
@@ -295,6 +300,7 @@ export default {
               id: that.item.id,
               amount: that.item.price,
               resource_id: that.item.resource_id,
+              description: 'ポイント精算'
             },
             callback: function(res2){
 

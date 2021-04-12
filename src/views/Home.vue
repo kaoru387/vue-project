@@ -305,12 +305,12 @@
 	</v-container> -->
   </div>
 </template>
-<style scoped>
+<!-- <style scoped>
 	.test {
 	  font-size: 10pt;
 	  font-weight: 600;
 	}
-</style>
+</style> -->
 <script>
 import store from '../store/app';
 import _ from 'lodash';
@@ -461,10 +461,10 @@ export default {
 	    // 	console.log('reset!!!')
 	    // 	vm.$router.push({path: '/resetpassword'})
 	    // }
-	    // // PayPay支払い
-    	// if(store.state.backuri=='/?mode=successPayPay') {
-    	// 	vm.$router.push({path: '/successpaypay'})
-    	// }
+	    // PayPay支払い
+    	if(store.state.backuri=='/?mode=successPayPay') {
+    		vm.$router.push({path: '/successpaypay'})
+    	}
     	if(store.state.backuri=='/?mode=successLineLogin') {
 	      vm.$router.push({path: '/successlinelogin'});
 	    }

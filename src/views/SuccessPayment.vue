@@ -106,19 +106,45 @@ export default {
                   message: 'カード決済・予約に成功しました。',
                 });
                 
+                // // データ再取得
+                // store.dispatch('getUsers', 
+                //   function(e){
+                //     console.log('ok');
+                //     store.commit('SET_EVENTS', []);
+                //     // 予約取得
+                //     store.dispatch('getBookings',{
+                //       callback: function(res){
+                //         if(res) store.commit('SET_ISLOADING', false);
+                //         that.$router.push({path: '/about'});
+                //       }
+                //     });
+                // });
+                
                 // データ再取得
                 store.dispatch('getUsers', 
                   function(e){
-                    console.log('ok');
-                    store.commit('SET_EVENTS', []);
+                    // 初期化
+                    store.commit('RESET_DATA');
                     // 予約取得
                     store.dispatch('getBookings',{
                       callback: function(res){
-                        if(res) store.commit('SET_ISLOADING', false);
-                        that.$router.push({path: '/about'});
+                        // 自身の予約
+                        store.dispatch('getAgenda',{
+                          params: {
+                            from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
+                            user_id: that.auth.user_id,
+                            resource_id: params.resource_id,
+                          },
+                          callback: function(res3) {
+                            // 検索終了
+                            store.commit('SET_IS_SEARCH', false);
+                            store.commit('SET_ISLOADING', false);
+                          }
+                        });
                       }
                     });
                 });
+
               },2000);
             }
           });

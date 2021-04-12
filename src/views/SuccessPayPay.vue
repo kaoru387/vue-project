@@ -1,6 +1,7 @@
 <template>
   <div>
     <v-card 
+      class="text-center"
       :loading="loading"
       tile
       max-width="360px"
@@ -8,7 +9,7 @@
       >
       <v-card-title class="pt-4 pb-3">
         <v-row justify="center" align-content="center">
-          <h4 class="pt-2">PayPay支払確認</h4>
+          <h4 class="pt-2">PayPay決済成功</h4>
         </v-row>
       </v-card-title>
       <v-icon 
@@ -21,7 +22,7 @@
         <el-alert
             class="text-left"
             type="success"
-            description="PayPay支払済の確認に成功しました。画面が切り替わるまで、しばらくこのままお待ち下さい..."
+            description="PayPay決済に成功しました！予約処理中です、このままお待ち下さい..."
             show-icon>
         </el-alert>
       </div>
@@ -38,98 +39,112 @@ import Firebase from "Firebase";
 export default {
   data() {
     return {
-      loading: false,
+      // loading: false,
     }
   },
   computed: {
+    loading() {
+      return store.state.isLoading;
+    },
+    auth() {
+      return store.state.auth;
+    },
   },
   created: function () {
-    console.log('paypay');
-    store.commit('SET_ISLOADING', true)
-
-    var that = this;
-    let session_timestamp = moment().format("YYYYMMDDHH");
-    const processA = async function(docName) {
-      var docRef = Firebase.db().collection("paypay").doc(docName);
-      const docs = await docRef.get().then(function(doc) {
-          if (doc.exists) {
-              console.log("Document data success.");
-              return doc.data();
-          } else {
-              console.log("No such document!");
-          }
-      }).catch(function(error) {
-          console.log("Error getting document:", error);
-      });
-      const merchantPaymentId = await docs.merchantPaymentId;
-      const codeId = await docs.codeId;
-      const form= await docs.form;
-
-      // paypay支払状態を取得
-      store.dispatch('getPayPayStatus',{
-        params: {
-          merchantPaymentId: merchantPaymentId
-        },
-        callback: function(res) {
-          console.log('res', res);
-          if(res==null) that.goBack();
-          if(res.status=="COMPLETED") {
-            form.super_field = res.paymentId;
-            store.dispatch('addAppointment',{
-              params: form,
-              callback: function(r){
-                store.commit('SET_ISLOADING', true)
-                setTimeout(function(){
-                  // セッションデータ削除
-                  docRef.delete().then(function() {
-                    console.log("Document successfully deleted!");
-                    setTimeout(function(){
-                      that.$message({
-                        type: 'success',
-                        message: 'ご予約いただきありがとうございました。',
-                      });
-                      that.goBack();        
-                    },1500);
-                  }).catch(function(error) {
-                      console.error("Error removing document: ", error);
-                  });
-                  // peypey削除
-                  store.dispatch('deletePayPay',{
-                    params: {
-                      codeId: codeId
-                    },
-                    callback: function(res3){
-                      console.log(res3);
-                    }
-                  });
-                },1500);
-              }
-            });
-          }else{
-            that.$message({
-              type: 'error',
-              message: 'PayPay支払確認に失敗しました。管理者にお問い合わせください。',
-            });
-            that.goBack();
-          }
-        }
-      });
-    }
-    const processAll = async function() {
-      await processA(session_timestamp);
-    }
-    processAll();
-
+    // console.log('paypay');
+    store.commit('SET_ISLOADING', true);
   },
   mounted() {
+    // console.log(store.state.auth.paypaySession);
+    store.commit('SET_ISLOADING', true);
+
+    let session = store.state.auth.paypaySession;
+
+    var that = this;
+    const merchantPaymentId = session.merchantPaymentId;
+    const codeId = session.codeId;
+    const params= session.params;
+
+    // paypay支払状態を取得
+    store.dispatch('getPayPayStatus',{
+      params: {
+        merchantPaymentId: merchantPaymentId
+      },
+      callback: function(res) {
+        // console.log('res', res);
+        if(res.status=="COMPLETED") {
+
+          params['booking[super_field]'] = res.paymentId;
+          store.dispatch('addAppointmentPayPay',{
+            params: params,
+            callback: function(r){
+              // console.log(r);
+              store.commit('SET_ISLOADING', true);
+
+              setTimeout(function(){
+
+                that.$message({
+                  type: 'success',
+                  message: '予約に成功しました。',
+                });
+
+                // peypey削除
+                store.dispatch('deletePayPay', {
+                  params: {
+                    codeId: codeId
+                  },
+                  callback: function(res3){
+
+                    // データ再取得
+                    store.dispatch('getUsers', 
+                      function(e){
+                        // 初期化
+                        store.commit('RESET_DATA');
+                        // 予約取得
+                        store.dispatch('getBookings',{
+                          callback: function(res){
+                            // 自身の予約
+                            store.dispatch('getAgenda',{
+                              params: {
+                                from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
+                                user_id: that.auth.user_id,
+                                resource_id: params.resource_id,
+                              },
+                              callback: function(res3) {
+                                // 検索終了
+                                store.commit('SET_IS_SEARCH', false);
+                                store.commit('SET_ISLOADING', false);
+                                that.$router.push({path: '/schedule'});
+                              }
+                            });
+                          }
+                        });
+                    });
+
+                  }
+                });
+
+              },1200);
+            }
+          });
+        }else{
+          that.$message({
+            type: 'error',
+            message: 'PayPay支払確認に失敗しました。管理者にお問い合わせください。',
+          });
+          that.goBack();
+        }
+      }
+    });
+
   },
   methods: {
-    goBack() {
-      store.commit('SET_BACK_URI', '');
-      store.commit('SET_ISLOADING', false)
-      // this.$router.push({path: '/'});
-      window.location.href = "https://www.fandangos-okinawa.com/reservation/"
-    }
+    // goBack() {
+    //   store.commit('SET_BACK_URI', '');
+    //   store.commit('SET_ISLOADING', false)
+    //   // this.$router.push({path: '/'});
+    //   window.location.href = "https://www.fandangos-okinawa.com/reservation/"
+    // }
   }
 }
 </script>

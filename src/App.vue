@@ -764,7 +764,11 @@ export default {
       return;
     }else if(store.state.backuri=='/?mode=stripeSuccess') {
       that.$nextTick(function () {
-        // store.commit('SET_ISLOADING', true);
+        store.commit('SET_BACK_URI', '');
+      });
+      return;
+    }else if(store.state.backuri=='/?mode=successPayPay') {
+      that.$nextTick(function () {
         store.commit('SET_BACK_URI', '');
       });
       return;
@@ -914,6 +918,7 @@ export default {
       }
     },
     searchStudio() {
+      store.commit('SET_ISLOADING', true);
       // const isValid = await this.$refs.observer.validate();
       // if (!isValid) {
       //   // ABORT!!
@@ -1186,7 +1191,7 @@ export default {
     },
     refresh() {
       this.reload();
-      console.log('backu', store.state.backuri)
+      console.log('back', store.state.backuri)
       store.commit('SET_BACK_URI', '');
       store.commit('SET_LINE_LOGIN', '');
       store.commit('RESET_DATA');

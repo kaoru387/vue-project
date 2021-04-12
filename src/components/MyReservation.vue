@@ -36,46 +36,48 @@
         </div>
       </template>
       <template v-slot:item.price="{ item }">
-        <span>¥{{ item.price.toLocaleString() }}</span>
+        <span class="mr-2 g-font-size-11 g-color-gray-dark-v5">{{ item.description }}</span><span>¥{{ item.total.toLocaleString() }}</span>
       </template>
       <template v-slot:item.isOption="{ item }">
-        <div class="form-check-inline m-0">
-          <!-- <v-simple-checkbox
-            v-model="item.isOption"
-            :disabled="true"
-          ></v-simple-checkbox> -->
+        <div class="form-check-inline m-0 mt-1">
+          <!--  -->
           <span v-if="!item.isOption" class="g-color-gray-dark-v5">
-            <span class="mr-2 g-font-size-12">利用なし</span> ¥{{item.hours*140 + item.minutes*70}}
+            <span class="g-font-size-12">利用なし</span>
           </span>
           <span v-else class="pl-2">
-            <span class="mr-2 g-font-size-12">利用あり</span> ¥{{item.hours*140 + item.minutes*70}}
+            <span class="mr-1 g-font-size-12">利用あり</span>
+            <span class="g-font-size-11 g-color-gray-dark-v5">支払済 (¥{{ item.option_price }})</span>
+            <!-- <v-simple-checkbox
+              v-model="item.isOption"
+              :disabled="true"
+            ></v-simple-checkbox> -->
           </span>
         </div>
       </template>
       <template v-slot:item.isCard="{ item }">
         <el-button
-          class="mt-1 mb-1" 
+          class="mt-2 mb-2" 
           v-if="!item.isOption"
           :disabled="auth.credit<item.hours*140 + item.minutes*70"
           @click="edit(item)">
           エアコン代精算
         </el-button>
-        <v-btn 
-          class="mt-1 mb-1" 
+        <!-- <v-btn 
+          class="mt-2 mb-2" 
           v-else
           :disabled="true"
           text>
           エアコン代精算済
-        </v-btn>
+        </v-btn> -->
         <v-btn 
           v-if="!item.isEdit"
-          class="mt-1 mb-1" 
+          class="mt-2 mb-2" 
           :disabled="true"
           text>
           終了
         </v-btn>
         <el-button
-          class="mt-1 mb-1"  
+          class="mt-2 mb-2"  
           v-if="!item.isCard && item.isEdit"
           @click="del(item)">
           予約取消
@@ -138,7 +140,7 @@
     <v-card>
       <v-card-title class="headline">ポイント精算の確認</v-card-title>
       <div class="text-center">
-        <v-list-item-title class="headline mb-2 text-primary">
+        <v-list-item-title class="headline mb-2 tg-color-primary">
           ¥ {{ item.price }}
         </v-list-item-title>
       </div>
@@ -269,19 +271,10 @@ export default {
       ],
       page: 1,
       pageCount: 0,
-      itemsPerPage: 3,
+      itemsPerPage: 2,
     }
   },
   watch: {
-    // 'used.op1': function (val) {
-    //   if(!val) return;
-    //   if(this.billingAmount<this.auth.credit) return;
-    //   // 請求金額あるがポイント不足している場合
-    //   this.$message({
-    //     type: 'error',
-    //     message: 'ポイントが不足しています。',
-    //   });
-    // },
   },
   computed: {
     loading() {
@@ -384,7 +377,7 @@ export default {
                       params: {
                         from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
                         user_id: that.auth.user_id,
-                        resource_id: that.item.resource_id,
+                        resource_id: 563549,
                       },
                       callback: function(res3) {
                         // 検索終了
@@ -437,20 +430,23 @@ export default {
                 store.commit('RESET_DATA');
                 store.dispatch('getBookings',{
                   callback: function(res){
+
                     // 自身の予約
                     store.dispatch('getAgenda',{
                       params: {
-                        from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
+                        from_date: moment().format('YYYY-MM-DD'),
+                        time: '09:00',
                         user_id: that.auth.user_id,
-                        resource_id: that.item.resource_id,
+                        resource_id: 563549,
                       },
                       callback: function(res2) {
+                        console.log(res2)
                         that.delconfirm=false;
                         store.commit('SET_ISLOADING', false);
                       }
                     });
-
                   }
+
                 });
 
               },1000);
