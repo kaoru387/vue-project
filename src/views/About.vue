@@ -9,6 +9,7 @@
       	<reception-class 
       		:items="items" 
       		@payoff="payoff"
+      		@paypay="paypay"
       		@reserve="reserve" />
 	</div>
 </template>
@@ -51,6 +52,9 @@ export default {
 	    contens() {
 	      return store.state.result.my;
 	    },
+	    supersass() {
+	      return store.state.auth.supersass;
+	    },
 	},
 	created () {
 		store.commit('SET_ISLOADING', true)
@@ -65,18 +69,18 @@ export default {
 	      callback: function(res){
 	        // that.items=res.data.slots;
 	        _.forEach(res.data.slots, function(v, k) {
+	        	// console.log(v)
 	        	let _date = moment(v.start).format("MM月DD日");
 			    let _start = moment(v.start).format("HH:mm");
 			    let _finish = moment(v.finish).format("HH:mm");
 
 			    // ポイント有効か
-			    let isPoint=true;
+			    let isPoint=false;
 			    let _price=0;
 			    if(3<v.price.length) _price = Number(v.price.replace(/,/, ''));
 				else _price = Number(v.price);
 				if(that.auth.credit < _price) isPoint=true;
-
-
+				// console.log(that.auth.credit, _price);
 	        	that.items.push({
 	        		id: v.id,
 	        		title: v.title,
@@ -87,9 +91,10 @@ export default {
 	        		description: v.description,
 	        		location: v.location,
 	        		isClass: true,
-	        		isPoint: isPoint
+	        		isPoint: isPoint,
 	        	});
 	        });
+	        store.commit('SET_IS_SEARCH', true);
 	        store.commit('SET_ISLOADING', false);
 	      }
 	    });
@@ -119,7 +124,7 @@ export default {
 			const that = this;
 			let credit = that.auth.credit;
 			credit = that.auth.credit - _price;
-			let parms = {
+			let params = {
 				'schedule_id': that.resource_id,
 				'user_id': that.auth.user_id,
 				'booking[full_name]': that.auth.username,
@@ -127,6 +132,7 @@ export default {
 				'booking[slot_id]': item.id,
 				'booking[field_1]': _price,
 				'booking[field_2]': item.title,
+				'booking[address]': 'ポイント精算',
 			}
 			// ユーザ情報更新
 			store.dispatch('saveUser',{
@@ -137,7 +143,7 @@ export default {
 					// ポイント更新
 			    	store.commit('UPDATE_USER_CREDIT', credit);
 					// 予約
-					that.saveAppointment(parms, '予約・ポイント支払い完了しました。');
+					that.saveAppointment(params, '予約・ポイント支払い完了しました。');
 				}
 			});
 
@@ -146,7 +152,7 @@ export default {
 	  		// 予約のみ
 	  		store.commit('SET_ISLOADING', true);
 	  		const that = this;
-			let parms = {
+			let params = {
 				'schedule_id': that.resource_id,
 				'user_id': that.auth.user_id,
 				'booking[full_name]': that.auth.username,
@@ -154,16 +160,68 @@ export default {
 				'booking[slot_id]': item.id,
 				'booking[field_1]': 0,
 				'booking[field_2]': item.title,
+				'booking[address]': '予約のみ',
 			}
 			// 予約
-			that.saveAppointment(parms, '予約のみ完了しました。');
+			that.saveAppointment(params, '予約のみ完了しました。');
 	  	},
-	  	saveAppointment(parms, msg) {
+	  	paypay(item) {
+	  		
+	  		let url = this.supersass.baseHost;
+	  		// let url = 'https://localhost:4006';
+	  		let _price = 0
+	  		if(3<item.price.length) _price = Number(item.price.replace(/,/, ''));
+  			else _price = Number(item.price);
+
+      		let that = this;
+      		let params = {
+				'schedule_id': that.resource_id,
+				'user_id': that.auth.user_id,
+				'booking[full_name]': that.auth.username,
+				'booking[email]': that.auth.email,
+				'booking[slot_id]': item.id,
+				'booking[field_1]': _price,
+				'booking[field_2]': item.title,
+				'booking[address]': 'PayPay決済',
+				'booking[super_field]': '',
+			}
+			// console.log(params);
+		    store.dispatch('getPayPay', {
+		        params: {
+		          merchantPaymentId: '',
+		          amount: {
+		            amount: _price,
+		            currency: "JPY"
+		          },
+		          codeType: "ORDER_QR",
+		          orderDescription: that.item.title,
+		          description: that.item.title,
+		          isAuthorization: false,
+		          redirectUrl: url+"/?mode=successPayPay",
+		          redirectType: "WEB_LINK",
+		        },
+		        callback: function(res){
+		          console.log(res);
+
+		          // 支払ID取得
+		          let session = {
+		            merchantPaymentId: res.merchantPaymentId,
+		            codeId: res.codeId,
+		            params: params
+		          };
+		          store.commit('PAYPAY_SESSION', session);
+		          console.log('session!!!')
+		          window.location.href = res.url;		          
+		        }
+		    });
+
+	  	},
+	  	saveAppointment(params, msg) {
 
 			// 予約
 			const that = this;
 			store.dispatch('addClass', {
-			    params: parms,
+			    params: params,
 			    callback: function(res){
 				    // データ取得
 				    setTimeout(function() {

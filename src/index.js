@@ -83,14 +83,11 @@ require("../assets/js/custom.js");
 
 
 // // 検証用
-// store.dispatch('getClass',{
+// store.dispatch('addForms',{
 // 	params: {
-// 		date: '2021-04-05',
-// 		time: '09:00'
-// 	  // start: '2021-04-05 09:00:00',
-// 	  // finish: '2021-06-05 10:00:00',
-// 	  // resource_id: 794202,
-// 	  // price: 800,
+// 		form_id: 55915,
+//         reservation_process_id: 549839,
+//         'content[field-1]': 'aaaa',
 // 	},
 // 	callback: function(res){
 // 		console.log('getc', res)

@@ -11,11 +11,15 @@
       @page-count="pageCount = $event"
     >
       <template v-slot:item.date="{ item }">
-        <span>{{ item.date }}</span>
-        <span class="g-font-size-13 g-color-gray-dark-v4 ml-1">{{ item.start + '-' + item.finish }}</span>
+        <div class="mt-2 mb-1">
+          <span>{{ item.date }}</span>
+          <span class="g-font-size-13 g-color-gray-dark-v4 ml-1">{{ item.start + '-' + item.finish }}</span>
+        </div>
       </template>
       <template v-slot:item.title="{ item }">
-        <span class="g-color-gray-dark-v2">{{ item.title }}</span>
+        <div class="mb-2">
+          <span class="g-color-gray-dark-v4">{{ item.title }}</span>
+        </div>
       </template>
       <!-- <template v-slot:expanded-item="{ headers, item }">
         <td :colspan="headers.length">
@@ -32,7 +36,7 @@
         <span class="g-font-size-12">{{ item.location }}</span>
       </template>
       <template v-slot:item.isClass="{ item }">
-        <v-btn
+        <!-- <v-btn
           class="mt-2 mb-2"
           outlined
           text
@@ -41,15 +45,15 @@
           @click="confirmPayoff(item)"
         >
           予約・ポイント精算
-        </v-btn>
+        </v-btn> -->
         <v-btn
           class="mt-2 mb-2"
           outlined
           color="indigo"
           text
-          @click="confirmReserve(item)"
+          @click="confirm(item)"
         >
-          予約のみ
+          参加申込み
         </v-btn>
       </template>
 
@@ -62,11 +66,24 @@
     </div>
 
     <!-- ポイント精算確認 -->
-    <v-dialog
-      v-model="isPayPoint"
+    <!-- <v-dialog
+      v-model="dialog"
       max-width="360"
+    > -->
+    <el-dialog
+      title="申込み内容の確認"
+      custom-class="dialog_category"
+      :visible="dialog"
+      :close-on-press-escape="false"
+      :close-on-click-modal="false"
+      append-to-body
+      @close="dialog = false"
+      :loading="loading"
+      width="98%"
+      :style = "{'max-width':'375px','margin': '20px auto'}"
+      center
     >
-      <v-card class="pb-3">
+      <v-card class="mx-auto text-left p-0 mb-3" outlined>
        <v-card-title>{{ item.title }}</v-card-title>
 
         <v-card-text class="justify-content-between">
@@ -74,27 +91,74 @@
             align="center"
             class="mx-0"
           >
-            <div class="grey--text">
+            <div class="g-font-size-12">
               料金：¥{{item.price}}
             </div>
           </v-row>
-
-          <div class="my-4 subtitle-1">
-            <!-- {{start}}-{{finish}} -->
+          <div class="my-3 subtitle-1 g-font-size-14">
+            <span>{{ item.date }}</span>
+            {{ item.start + '-' + item.finish }}
           </div>
-          <div>{{ item.description }}</div>
-          <p class="mt-3">場所：{{item.location}}</p>
+          <div class="g-font-size-12">{{ item.description }}</div>
+          <p class="mt-1 g-font-size-12">場所：{{item.location}}</p>
         </v-card-text>
 
+        <v-list-item class="text-right">
+          <v-list-item-subtitle class="g-font-size-18 font-weight-bold g-color-primary pr-4">支払合計：¥{{ item.price }}</v-list-item-subtitle>
+        </v-list-item>
         <v-divider class="mx-4"></v-divider>
 
-        <v-card-title class="pt-0 pb-0 text-gray">予約・支払い</v-card-title>
+        <!-- <v-card-title class="pt-0 pb-0 text-gray">予約・支払い</v-card-title> -->
 
-        <v-card-actions class="justify-content-center mt-3">
+         <v-card-actions class="justify-content-center">
+          <div class="d-flex bd-highlight">
+            <div class="p-0 flex-fill bd-highlight text-center pt-2 pb-2">
+
+              <div class="p-0 bd-highlight mb-2">
+                <el-button class="p-3" :style="{'width':'100%'}" type="success" 
+                  @click="confirmExecute('ポイント精算')"
+                  :disabled="item.isPoint" 
+                  :loading="loading">
+                  ポイント精算する
+                </el-button>
+              </div>
+
+              <span class="p-0 bd-highlight">
+                <el-button class="mb-2" :style="{'width':'100%'}" type="secondary" 
+                  @click="confirmExecute('PayPay決済')" >
+                  <img
+                    width="88" height="25"
+                    src="/images/Paypay_logo.png"
+                    alt="PayPay">
+                    <span class="ml-1">PayPay決済する</span>
+                </el-button>
+              </span>
+              
+              <div class="p-0 bd-highlight mb-2">
+                <el-button class="p-3" :style="{'width':'100%'}"
+                  @click="confirmExecute('予約のみ')" 
+                  :loading="loading">
+                  予約のみ
+                </el-button>
+              </div>
+              <!-- <span class="p-0 bd-highlight">
+                <el-button class="p-3" :style="{'width':'100%'}"
+                  outlined
+                  @click.stop="dialog = false">
+                  キャンセル
+                </el-button>
+              </span> -->
+              
+            </div>
+          </div>
+        </v-card-actions>
+
+
+        <!-- <v-card-actions class="justify-content-center mt-3">
           <v-btn
             outlined
             text
-            @click.stop="isPayPoint = false"
+            @click.stop="dialog = false"
           >
             キャンセル
           </v-btn>
@@ -107,54 +171,61 @@
             予約・ポイント精算する
           </v-btn>
 
-        </v-card-actions>
+        </v-card-actions> -->
       </v-card>
-    </v-dialog>
+    </el-dialog>
+    <!-- </v-dialog> -->
 
-    <!-- 予約のみ確認 -->
+    <!-- 実行確認 -->
     <v-dialog
-      v-model="isReserve"
+      v-model="isExecute"
       max-width="360"
     >
       <v-card class="pb-3">
-       <v-card-title>{{ item.title }}</v-card-title>
+       <v-card-title>{{ title }}確認</v-card-title>
 
         <v-card-text class="justify-content-between">
-          <v-row
-            align="center"
-            class="mx-0"
-          >
-            <div class="grey--text">
-              料金：¥{{item.price}}
-            </div>
-          </v-row>
-
-          <div class="my-4 subtitle-1">
-            <!-- {{start}}-{{finish}} -->
-          </div>
-          <div>{{ item.description }}</div>
-          <p class="mt-3">場所：{{item.location}}</p>
+          参加申込みありがとうございます。{{ title }}実行してよろしいですか？
         </v-card-text>
 
-        <v-divider class="mx-4"></v-divider>
+       <!--  <v-divider class="mx-4"></v-divider> -->
 
-        <v-card-title class="pt-0 pb-0 text-gray">予約のみ</v-card-title>
+        <!-- <v-card-title class="pt-0 pb-0 text-gray">予約のみ</v-card-title> -->
 
         <v-card-actions class="justify-content-center mt-3">
           <v-btn
             outlined
             text
-            @click.stop="isReserve = false"
+            @click.stop="isExecute = false"
           >
             キャンセル
           </v-btn>
           <v-btn
+            v-if="title=='予約のみ'"
             color="indigo"
             outlined
             text
             @click="reserve"
           >
-            予約する
+            はい
+          </v-btn>
+          <v-btn
+            v-if="title=='ポイント精算'"
+            color="indigo"
+            outlined
+            text
+            @click="payoff"
+          >
+            はい
+          </v-btn>
+          <v-btn
+            v-if="title=='PayPay決済'"
+            color="indigo"
+            outlined
+            text
+            @click="paypay"
+          >
+            はい
           </v-btn>
 
         </v-card-actions>
@@ -177,8 +248,10 @@ export default {
   },
   data() {
     return {
-      isPayPoint: false,
-      isReserve: false,
+      // isPayPoint: false,
+      // isReserve: false,
+      isExecute: false,
+      dialog: false,
       headers: [
         {
           text: '日時',
@@ -197,6 +270,7 @@ export default {
       itemsPerPage: 3,
       expanded: [],
       item: [],
+      title: '',
     }
   },
   watch: {
@@ -220,35 +294,45 @@ export default {
     auth() {
       return store.state.auth;
     },
-    // billingAmount() {
-    //   return this.item.price;
-    // },
-    // items() {
-    //   return store.state.result.myClass;
-    // },
   },
   created: function () {
   },
   mounted() {
   },
   methods: {
-    confirmPayoff(item) {
+    // confirmPayoff(item) {
+    //   // 対象データ保持
+    //   this.item = item;
+    //   this.isPayPoint = true;
+    // },
+    confirmExecute(title) {
       // 対象データ保持
-      this.item = item;
-      this.isPayPoint = true;
+      this.title = title;
+      this.isExecute = true;
+      this.dialog = false;
     },
-    confirmReserve(item) {
+    confirm(item) {
       // 対象データ保持
       this.item = item;
-      this.isReserve = true;
+      this.dialog = true;
     },
     reserve() {  //予約のみ
-      store.commit('SET_ISLOADING', true);
       this.$emit('reserve', this.item);
+      setTimeout(function(){
+        this.isExecute = false;
+      },1000);
     },
     payoff() {  //予約・ポイント精算
-      store.commit('SET_ISLOADING', true);
       this.$emit('payoff', this.item);
+      setTimeout(function(){
+        this.isExecute = false;
+      },1000);
+    },
+    paypay() {  //予約・PayPay決済
+      this.$emit('paypay', this.item);
+      setTimeout(function(){
+        this.isExecute = false;
+      },1000);
     },
     deleteReservation() {
       store.commit('SET_ISLOADING', true);

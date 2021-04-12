@@ -7,7 +7,7 @@
       </div>
     </div> -->
     <!-- <div class="col-md-12 g-pl-20 g-mb-5 g-mb-0--md p-0 d-flex justify-content-center"> -->
-    <div class="col-md-12 g-mb-10 g-mb-0--md p-2" :style="{'min-height':adjust+100+'px', 'width': '100%'}">
+    <div class="col-md-12 g-mb-10 g-mb-0--md p-2 pt-0" :style="{'min-height':adjust+100+'px', 'width': '100%'}">
       <!-- Product Info -->
       <v-tabs
         v-if="!isSearch"
@@ -15,22 +15,40 @@
         centered
       >
         <v-tabs-slider></v-tabs-slider>
-        <v-tab href="#tab-1">
+        <v-tab href="#tab-1"" class="pl-3 pr-3">
           <figure class="text-center m-0" :style="{'line-height':'17px'}">
-            <p class="g-font-size-11">全体</p>
-            <span class="g-color-gray-dark-v3 g-font-weight-500">スケジュール</span>
+            <p class="g-font-size-11">全体</p>                        
+            <span class="g-color-gray-dark-v3 g-font-weight-500">
+              スケジュール
+            </span>
           </figure>
         </v-tab>
-        <v-tab href="#tab-2">
+        <v-tab href="#tab-2" class="pl-3 pr-3">
           <figure class="text-center m-0" :style="{'line-height':'17px'}">
             <p class="g-font-size-11">あなたの</p>
-            <span class="g-color-gray-dark-v3 g-font-weight-500">スタジオ予約</span>
+            <!-- <span class="g-color-gray-dark-v3 g-font-weight-500">スタジオ予約</span> -->
+            <span class="d-inline-block g-pos-rel">
+              <span v-if="0<countMyStudio" class="u-badge-v2 g-font-size-10 g-bg-deeporange g-color-white">
+                {{ countMyStudio }}
+              </span>
+              <span class="g-color-gray-dark-v3 g-font-weight-500 pr-1">
+                スタジオ予約
+              </span>
+            </span>
           </figure>
         </v-tab>
-        <v-tab href="#tab-3">
+        <v-tab href="#tab-3" class="pl-3 pr-3">
           <figure class="text-center m-0" :style="{'line-height':'17px'}">
             <p class="g-font-size-11">あなたの</p>
-            <span class="g-color-gray-dark-v3 g-font-weight-500">クラス予約</span>
+            <!-- <span class="g-color-gray-dark-v3 g-font-weight-500">クラス予約</span> -->
+            <span class="d-inline-block g-pos-rel">
+              <span v-if="0<countMyClass" class="u-badge-v2 g-font-size-10 g-bg-yellow g-color-white">
+                {{ countMyClass }}
+              </span>
+              <span class="g-color-gray-dark-v3 g-font-weight-500 pr-1">
+                クラス予約
+              </span>
+            </span>
           </figure>
         </v-tab>
       </v-tabs>
@@ -60,36 +78,17 @@
           </v-card>
         </v-tab-item>
         <v-tab-item :value="'tab-2'">
-          <div v-if="contens.length==0 && classes.length==0" class="p-0">
+          <div v-if="contens.length==0" class="p-0">
             <el-alert
               class="text-left"
               type="warning"
-              description="あなたの予約はありません。"
+              description="あなたのスタジオ予約はありません。"
               show-icon>
             </el-alert>
           </div>
-          <div v-else class="p-0">
+          <div v-else class="p-0 ml-2 mr-2">
             <my-reservation />
           </div>
-          <!-- <table class="table table-borderless table-striped">
-            <thead>
-              <tr>
-                <th scope="col" class="text-center w-20">日時</th>
-                <th scope="col" class="text-center w-10">予約名</th>
-                <th scope="col" class="text-center w-5">料金</th>
-                <th scope="col" class="text-center w-10">エアコン利用</th>
-                <th scope="col" class="text-center"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <my-reservation
-                v-for="(item, index) in contens"
-                :key="'course-detail'+item.id" 
-                :item="item"
-                @openDetail="openDetail" />
-            </tbody>
-          </table> -->
-
           <!-- <div v-if="0<classes.length" class="p-0">
             <my-class
               v-for="(item, index) in classes"
@@ -98,14 +97,18 @@
           </div> -->
         </v-tab-item>
         <v-tab-item :value="'tab-3'">
-          <!-- <v-card flat>
-            <v-card-text>{{ text }}</v-card-text>
-            <my-reservation-history
-              v-for="(item, index) in history"
-              :key="'history-detail'+item.id" 
-              :item="item" />
-          </v-card> -->
-          <my-class />
+          <div v-if="classes.length==0" class="p-0">
+            <el-alert
+              class="text-left"
+              type="warning"
+              description="あなたのクラス予約はありません。"
+              show-icon>
+            </el-alert>
+          </div>
+          <div v-else class="p-0 ml-2 mr-2">
+            <my-class />
+          </div>
+          
         </v-tab-item>
       </v-tabs-items>
 
@@ -135,7 +138,7 @@
       @payment="payment"
       @paypay="paypay"> -->
     <studio-resource
-      :item="item"
+      ref="studio_resource" 
       :dialog-form-visible="modal_visible"
       :close-modal="close_modal"
       @confirmPay="confirmPay"
@@ -149,44 +152,56 @@
       max-width="290"
       class="pb-2"
     >
-    <v-card>
-      <v-card-title class="headline">{{ confirm_name }}の確認</v-card-title>
+      <v-card>
+        <v-card-title class="headline">{{ confirm_name }}の確認</v-card-title>
 
-      <v-card-text>
-        本当に予約・{{ confirm_name }}を実行してもよろしいですか？
-      </v-card-text>
+        <div class="text-center">
+          <v-list-item-title class="headline mb-2 g-color-primary">
+            ¥ {{ item.price+item.amount }}
+          </v-list-item-title>
+        </div>
 
-      <v-card-actions>
-        <v-spacer></v-spacer>
+        <v-card-text>
+          予約・{{ confirm_name }}を実行してよろしいですか？
+        </v-card-text>
 
-        <v-btn
-          outlined
-          text
-          @click="dialog = false"
-        >
-          キャンセル
-        </v-btn>
-        <v-btn
-          v-if="confirm_name=='カード決済'"
-          color="green darken-1"
-          outlined
-          @click="payment"
-        >
-          はい
-        </v-btn>
-        <v-btn
-          v-else
-          color="green darken-1"
-          outlined
-          @click="payoff"
-        >
-          はい
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+        <v-card-actions>
+          <v-spacer></v-spacer>
 
-
+          <v-btn
+            outlined
+            text
+            @click="dialog = false"
+          >
+            キャンセル
+          </v-btn>
+          <v-btn
+            v-if="confirm_name=='カード決済'"
+            color="green darken-1"
+            outlined
+            @click="payment"
+          >
+            はい
+          </v-btn>
+          <v-btn
+            v-if="confirm_name=='PayPay決済'"
+            color="green darken-1"
+            outlined
+            @click="paypay"
+          >
+            はい
+          </v-btn>
+          <v-btn
+            v-if="confirm_name=='ポイント精算'"
+            color="green darken-1"
+            outlined
+            @click="payoff"
+          >
+            はい
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 
 </template>
@@ -262,11 +277,7 @@ export default {
       targetDate: '',
       datetime: '',
       modal_visible: false,
-      item: {
-        datetime: '',
-        price: 0,
-        isOption: false,
-      },
+      item: [],
       search_visible: false,
       activeName: '',
       // isSearch: false,
@@ -346,6 +357,12 @@ export default {
     classes() {
       return store.state.result.myClass;
     },
+    countMyClass() {
+      return store.state.info.countMyClass;
+    },
+    countMyStudio() {
+      return store.state.info.countMyStudio;
+    },
   },
   beforeRouteEnter (to, from, next) {
     console.log('beforeRouteEnter /sche', to.fullPath, store.state.backuri);
@@ -353,7 +370,7 @@ export default {
       store.commit('SET_LINE_LOGIN', '');
       setTimeout(function(){
           store.commit('SET_ISLOADING', false);
-      },2000);
+      }, 4000);
       next();
     }
 
@@ -417,16 +434,19 @@ export default {
     // },500);
   },
   methods: {
-    // openDetail (item) { 
-    //   // 予約詳細
-    //   this.targetDate=moment(item.date).utc().format("MM月DD日");
-    //   this.item=item;
-    //   this.dialogDetail=true;
-    // },
     drawerOpen() {
       this.$emit('drawerOpen');
     },
+    backHome() {
+      store.commit('SET_BACK_URI', '/back');
+      this.$router.replace('/');
+    },
+    confirm(item) {
+      this.$refs.studio_resource.setItem(item);
+      this.modal_visible=true;
+    },
     searchStudio() {
+      store.commit('SET_ISLOADING', true);
       // const isValid = await this.$refs.observer.validate();
       // if (!isValid) {
       //   // ABORT!!
@@ -483,7 +503,7 @@ export default {
 
           let resource = querySnapshot.data()
           that.form.price = resource.resources[that.form.time_zone].price;
-          console.log('free doc', that.form.price);
+          // console.log('free doc', that.form.price);
 
           // 決済以外（ポイント精算）
           let credit = store.state.auth.credit;
@@ -547,25 +567,20 @@ export default {
       this.modal_visible=false;
       this.dialog=true;
       this.item = item;
-      // console.log(item)
+      console.log(item)
     },
     payment() { //カード決済
       store.commit('SET_ISLOADING', true)
       
-      // var currentUser = Firebase.auth().currentUser;
       let url = this.supersass.baseHost;
       // let url = 'https://localhost:4006';
-      // alert(url);
-
       let that = this;
-      // let _start = moment(item.start).format("YYYY-MM-DD HH:mm:ss");
-      // let _finish = moment(_start).add(Number(item.hour), 'h').format("YYYY-MM-DD HH:mm:ss");
-      
+ 
       // スタジオコード取得
       let _resource_id = 794201;
       if(that.item.studioName == "ナゴスタジオ") _resource_id = 794202;
 
-      let parms = {
+      let params = {
         full_name: that.auth.username,
         start: that.item.start_datetime,
         finish: that.item.finish_datetime,
@@ -573,7 +588,7 @@ export default {
         price: that.item.price,
         email: that.auth.email,
         product_name: that.item.product_name,
-        super_field: " card"
+        description: "カード決済",
       }
 
       const processA = async function(documentName) {
@@ -602,18 +617,10 @@ export default {
           const session = res.data;
           const sessionId = session.id;
 
-          parms.session_id=sessionId;
-          parms.session_data=session;
+          params.session_id=sessionId;
+          params.session_data=session;
 
-          // // 一旦保持
-          // Firebase.db().collection("sessions").doc(parms.email)
-          // .set({
-          //   sessionId: sessionId,
-          //   params: parms,
-          //   status: 'checkout'
-          // });
-          
-          store.commit('STRIPE_SESSION', parms);
+          store.commit('STRIPE_SESSION', params);
 
           const result = stripe.redirectToCheckout({
             sessionId: sessionId,
@@ -628,22 +635,104 @@ export default {
       }
       processAll();
     },
-    payoff() { // ポイント精算
+    paypay() {  // PayPay決済
+      console.log('paypay', this.item);
 
+      store.commit('SET_ISLOADING', true);
+
+      let url = this.supersass.baseHost;
+      // let url = 'https://localhost:4006';
+      let that = this;
+
+      // スタジオコード取得
+      let _resource_id = 794201;
+      if(that.item.studioName == "ナゴスタジオ") _resource_id = 794202;
+
+      // let params = {
+      //   user_id: that.auth.user_id,
+      //   full_name: that.auth.username,
+      //   start: that.item.start_datetime,
+      //   finish: that.item.finish_datetime,
+      //   resource_id: _resource_id,
+      //   price: that.item.price,
+      //   email: that.auth.email,
+      //   product_name: that.item.product_name,
+      //   amount: that.item.amount,
+      //   description: "PayPay決済",
+      // };
+      let params = {
+        'schedule_id': that.supersass.resourceId,
+        'user_id': that.auth.user_id,
+        'booking[full_name]': that.auth.username,
+        'booking[email]': that.auth.email,
+        'booking[start]': that.item.start_datetime,
+        'booking[finish]':that.item.finish_datetime,
+        'booking[resource_id]': _resource_id,
+        'booking[field_1]': that.item.price,
+        'booking[field_2]': that.item.product_name,
+        'booking[phone]':that.item.amount,
+        'booking[description]': "PayPay決済",
+        'booking[super_field]': '',
+      };
+
+      store.dispatch('getPayPay', {
+        params: {
+          merchantPaymentId: '',
+          amount: {
+            amount: that.item.price+that.item.amount,
+            currency: "JPY"
+          },
+          codeType: "ORDER_QR",
+          orderDescription: that.item.product_name,
+          description: that.item.product_name,
+          isAuthorization: false,
+          redirectUrl: url+"/?mode=successPayPay",
+          redirectType: "WEB_LINK",
+        },
+        callback: function(res){
+          console.log(res)
+
+          // 閉じる
+          that.modal_visible = false;
+
+          // 支払ID取得
+          let session = {
+            merchantPaymentId: res.merchantPaymentId,
+            codeId: res.codeId,
+            params: params
+          };
+          store.commit('PAYPAY_SESSION', session);
+          window.location.href = res.url;
+
+          // that.$confirm('<strong class="text-left">PayPay支払を開始してよろしいですか？</strong>', 'PayPayで支払う', {
+          //     dangerouslyUseHTMLString: true,
+          //     confirmButtonText: 'OK',
+          //     type: 'info',
+          //     center: true,
+          //   }).then(() => {
+          //     console.log(res)
+
+          //     // 一旦保持
+          //     Firebase.db().collection("paypay").doc(session_timestamp)
+          //     .set({
+          //       merchantPaymentId: res.merchantPaymentId,
+          //       codeId: res.codeId,
+          //       form: that.form,
+          //       status: 'create'
+          //     });
+          //     window.open(res.url, '_blank');
+          //     store.commit('SET_ISLOADING', false);
+          //   }).catch(() => {
+          // });
+          
+        }
+      });
+
+    },
+    payoff() { // ポイント精算
       store.commit('SET_ISLOADING', true);
       
       let that = this;
-      // console.log('pay', this.auth, that.item);
-
-      // this.$confirm('<strong class="text-left">レンタル料金をポイント精算してもよろしいですか？？</strong>', 'ポイント精算の確認', {
-      //     dangerouslyUseHTMLString: true,
-      //     confirmButtonText: 'OK',
-      //     type: 'info',
-      //     center: true,
-      //   }).then(() => {
-          // store.commit('SET_ISLOADING', true);
-
-          // var currentUser = Firebase.auth().currentUser;
       if(that.auth.email=='') {
         alert('ポイント精算エラー');
         return;
@@ -662,7 +751,7 @@ export default {
       //   email: that.auth.email,
       //   product_name: that.item.use_name+' '+that.item.use_type,
       // };
-      let parms = {
+      let params = {
         full_name: that.auth.username,
         start: that.item.start_datetime,
         finish: that.item.finish_datetime,
@@ -670,6 +759,8 @@ export default {
         price: that.item.price,
         email: that.auth.email,
         product_name: that.item.product_name,
+        amount: that.item.amount,
+        description: 'ポイント精算',
       }
 
       let credit = that.auth.credit;
@@ -684,13 +775,12 @@ export default {
 
             // 予約
             store.dispatch('addAppointment', {
-              params: parms,
+              params: params,
               callback: function(res2){
                 // ポイント更新
                 store.commit('UPDATE_USER_CREDIT', credit);
-                that.isPoint=true;
-                if(credit<that.item.price) that.isPoint=false;
-
+                // that.isPoint=true;
+                // if(credit<that.item.price) that.isPoint=false;
                 
                 // データ取得
                 setTimeout(function() {
@@ -705,6 +795,7 @@ export default {
                   // データ再取得
                   store.dispatch('getUsers', 
                     function(e){
+
                       // 初期化
                       store.commit('RESET_DATA');
                       // 予約取得
@@ -715,7 +806,7 @@ export default {
                             params: {
                               from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
                               user_id: that.auth.user_id,
-                              resource_id: _resource_id,
+                              resource_id: params.resource_id,
                             },
                             callback: function(res3) {
                               // 検索終了
@@ -725,6 +816,7 @@ export default {
                           });
                         }
                       });
+                      
                   });
 
                 }, 1000);
@@ -742,79 +834,6 @@ export default {
       // }).catch(() => {
       // });
     },
-    backHome() {
-      store.commit('SET_BACK_URI', '/back');
-      this.$router.replace('/');
-    },
-    confirm(item) {
-      // console.log('confirm', item)
-      this.item = item;
-      this.modal_visible=true;
-    },
-    // searchStudio(val) {
-    //   this.isSearch = val;
-    //   store.commit('SET_ISLOADING', false);
-    // },
-    // paypay(item) {
-    //   console.log(item, this.search);
-    //   this.modal_visible = false;
-    //   store.commit('SET_ISLOADING', true);
-
-    //   let that = this;
-    //   // 選択条件
-    //   that.form.start = item.start_datetime;
-    //   that.form.finish = item.finish_datetime;
-    //   that.form.price = item.price;
-    //   that.form.email = that.auth.email;
-    //   that.form.full_name = that.auth.username;
-    //   that.form.product_name = item.product_name;
-    //   that.form.super_field = '';
-    //   if(that.auth.username=='') that.form.full_name = '一般';
-    //   let session_timestamp = moment().format("YYYYMMDDHH");
-    //   console.log(session_timestamp);
-      
-    //   store.dispatch('getPayPay', {
-    //     params: {
-    //       merchantPaymentId: '',
-    //       amount: {
-    //         amount: that.form.price,
-    //         currency: "JPY"
-    //       },
-    //       codeType: "ORDER_QR",
-    //       orderDescription: that.form.product_name,
-    //       isAuthorization: false,
-    //       redirectUrl: "https://vue-authentification-b7a7a.firebaseapp.com/?mode=successPayPay",
-    //       redirectType: "WEB_LINK",
-    //     },
-    //     callback: function(res){
-    //       // 支払ID取得
-    //       // that.form.merchantPaymentId = res.merchantPaymentId;
-    //       // that.form.codeId = res.codeId;
-    //       // store.commit('SET_FORM', that.form);
-    //       that.$confirm('<strong class="text-left">PayPay支払を開始してよろしいですか？</strong>', 'PayPayで支払う', {
-    //           dangerouslyUseHTMLString: true,
-    //           confirmButtonText: 'OK',
-    //           type: 'info',
-    //           center: true,
-    //         }).then(() => {
-    //           console.log(res)
-
-    //           // 一旦保持
-    //           Firebase.db().collection("paypay").doc(session_timestamp)
-    //           .set({
-    //             merchantPaymentId: res.merchantPaymentId,
-    //             codeId: res.codeId,
-    //             form: that.form,
-    //             status: 'create'
-    //           });
-    //           window.open(res.url, '_blank');
-    //           store.commit('SET_ISLOADING', false);
-    //         }).catch(() => {
-    //       });
-          
-    //     }
-    //   });
-    // },
   }
 }
 </script>

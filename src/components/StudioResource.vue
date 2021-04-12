@@ -12,15 +12,17 @@
     :style = "{'max-width':'375px','margin': '20px auto'}"
     center
   >
-    <!-- <span class="font-weight-medium " :style="{'font-size':'20px'}">{{ targetDate + ' ' + item.datetime }}</span> -->
-    <div class="d-flex flex-column bd-highlight m-0 mb-3 text-center">
+    <div class="text-center mb-1">
+      <span class="font-weight-medium " :style="{'font-size':'20px'}">{{ targetDate + ' ' + item.datetime }}</span>
+    </div>
+    <!-- <div class="d-flex flex-column bd-highlight m-0 mb-3 text-center">
       <div class="p-0 bd-highlight">
         <h4>{{ targetDate }}</h4>
       </div>
       <div class="p-0 bd-highlight">
         <span class="font-weight-medium" :style="{'font-size':'18px'}">{{ item.datetime }}</span>
       </div>
-    </div>
+    </div> -->
     <v-card
       :loading="loading"
       class="mx-auto text-left p-0 mb-1"
@@ -28,15 +30,13 @@
     >
       <v-list-item three-line>
         <v-list-item-content>
-          <div class="d-flex justify-content-end p-2 pt-3 pb-0">
+          <!-- <div class="d-flex justify-content-end p-2 pt-3 pb-0">
             <div>
               <div class="d-flex flex-column bd-highlight m-0 text-right">
-                <!-- <el-badge v-if="auth.username=='' || !auth.isLine" type="danger" class="pt-2 bd-highlight" :value="'一般のお客様'"></el-badge>
-                <el-badge v-else class="pt-2 bd-highlight" type="success" :value="'会員様'"></el-badge> -->
                 <span v-if="auth.email!==''" class="p-0 bd-highlight sample">ポイント：{{ auth.credit.toLocaleString() }}</span></span>
               </div>
             </div>
-          </div>
+          </div> -->
           <!-- .toLocaleString() -->
           <!-- <div class="d-flex flex-column bd-highlight m-0">
             <div class="font-weight-medium pt-2" :style="{'text-transform':'capitalize','font-size':'20px'}">
@@ -53,6 +53,16 @@
             <v-list-item-subtitle class="mt-1">利用時間：{{ item.hour }}時間</span></v-list-item-subtitle>
             <v-list-item-subtitle class="mt-1">利用ﾀｲﾌﾟ：{{ item.use_name }}</span></v-list-item-subtitle>
             <v-list-item-subtitle class="mt-1">人数ﾀｲﾌﾟ：{{ item.use_type }}</span></v-list-item-subtitle>
+
+            <div class="d-flex justify-content-between pt-2 pb-2">
+              <label class="form-check-inline u-check g-color-gray-dark-v5 g-font-size-14 g-pl-25 mt-2">
+                <input v-model="isOption" type="checkbox" name='checkbox' class="d-block u-check-icon-checkbox-v6 g-absolute-centered--y g-left-0"><i class="fa" data-check-icon="&#xf00c"></i></input>
+                エアコン利用
+              </label>
+              <div v-if="isOption" class="g-font-size-14">
+                <p class="text-secondary m-0 pt-2">¥{{ billingAmount }}</p>
+              </div>
+            </div>
           </div>
         </v-list-item-content>
         <v-list-item-avatar
@@ -71,27 +81,21 @@
             alt="コザスタジオ">
         </v-list-item-avatar>
       </v-list-item>
-
+      <v-list-item class="text-right">
+        <v-list-item-subtitle class="g-font-size-18 font-weight-bold g-color-primary pr-4">支払合計：¥{{ total.toLocaleString() }}</v-list-item-subtitle>
+      </v-list-item>
+      <v-divider class="mx-4"></v-divider>
       <v-card-actions class="justify-content-center pb-2">
         <div class="d-flex bd-highlight">
-          <div class="p-0 flex-fill bd-highlight text-center pt-4 pb-4">
-            <!-- <span class="p-0 bd-highlight">
-              <el-button class="mb-4" :style="{'width':'100%'}" type="secondary" @click="paypay">
-                <img
-                  width="88" height="25"
-                  src="/images/Paypay_logo.png"
-                  alt="PayPay">
-                  <span class="ml-1">PayPayで支払う</span>
-              </el-button>
-            </span> -->
-            <div class="p-0 bd-highlight mb-4">
-              <el-alert
+          <div class="p-0 flex-fill bd-highlight text-center pt-2 pb-4">
+            <div class="p-0 bd-highlight mb-2">
+              <!-- <el-alert
                 v-if="!isPoint"
                 class="p-1 mb-2"
                 type="error"
                 description="ポイントが不足しています。"
                 show-icon>
-              </el-alert>
+              </el-alert> -->
               <!-- <el-button class="p-3" :style="{'width':'100%'}" type="success" @click="payoff" :disabled="auth.credit<item.price" :loading="loading">
                 ポイント精算する
               </el-button> -->
@@ -103,14 +107,29 @@
               </el-button> -->
               <el-button class="p-3" :style="{'width':'100%'}" type="success" 
                 @click="payoff" 
-                :disabled="auth.credit<item.price" 
+                :disabled="!isPoint" 
                 :loading="loading">
                 ポイント精算する
               </el-button>
-              
             </div>
+
             <span class="p-0 bd-highlight">
-              <el-button :style="{'width':'100%'}" type="secondary" @click="payment" :loading="loading">
+              <el-button class="mb-2" :style="{'width':'100%'}" type="secondary" 
+                @click="paypay">
+                <img
+                  width="88" height="25"
+                  src="/images/Paypay_logo.png"
+                  alt="PayPay">
+                  <span class="ml-1">PayPay決済する</span>
+              </el-button>
+            </span>
+
+            <span class="p-0 bd-highlight">
+              <el-button 
+                :style="{'width':'100%'}" type="secondary" 
+                @click="payment" 
+                :disabled="isOption"
+                :loading="loading">
                 <img
                   width="120" height="22"
                   src="/images/card_5brand.png"
@@ -143,10 +162,10 @@ export default {
       type: Boolean,
       default: false,
     },
-    item: { 
-      type: Object, 
-      default: () => {} 
-    },
+    // item: { 
+    //   type: Object, 
+    //   default: () => {} 
+    // },
     closeModal: {
       type: Function,
       default: function () {},
@@ -154,18 +173,36 @@ export default {
   },
   data() {
     return {
-      dialog: false,
-      title: '',
-      isTarget: false,
-      useType: '',
+      // dialog: false,
+      // title: '',
+      // isTarget: false,
+      // useType: '',
       // targetDate: '',
-      form: {
+      item: {
+        studioName: '',
         hour: '',
         use_type: '',
         use_name: '',
+        amount: 0,
       },
+      isOption: false,
+      hours: 0,
+      minutes: 0,
       isPoint: true,
+      total: 0,
     }
+  },
+  watch: {
+    'isOption': function (val) {
+      // エアコン利用
+      if(val) {
+        this.total += this.billingAmount;
+        this.item.amount=this.billingAmount;
+      } else {
+        this.total = this.item.price;
+        this.item.amount=0;
+      }
+    },
   },
   computed: {
     targetDate() {
@@ -181,32 +218,44 @@ export default {
     auth() {
       return store.state.auth;
     },
+    billingAmount() {  //エアコン代
+      return this.hours*140 + this.minutes*70;
+    },
   },
   created: function () {
 
-    // this.form.hour = this.search.hour;
-    // this.form.use_type = this.search.use_type;
-    // this.form.use_name = this.search.use_name;
-
-    // // 過去データは取消不可
-    // // console.log(this.$moment().format('YYYY-MM-DD'), this.item.start)
-    // if(this.$moment().format('YYYY-MM-DD')<=this.item.start){
-    //   if(this.item.user_id==this.auth.user_id) this.isTarget=true;
-    // }
-    // this.targetDate = moment(this.item.start).utc().format("MM月DD日")
-    // this.useType = this.item.use_type
   },
   mounted() {
-    
-    // ポイント
-    if(this.auth.credit<this.item.price){
-      this.isPoint=false;
-    }
+  
   },
   methods: {
-    // applyExperience() {
-    //   this.$emit('apply',this.item);
-    // },
+    setItem(item) {
+
+      // 利用時間を数値変換
+      this.hours = Number(item.hours);
+      this.minutes = Number(item.minutes);
+
+      this.isOption=false;
+
+      // ポイント利用可否
+      if(this.auth.credit<item.price) this.isPoint=false;
+
+      this.item = {
+        studioName: item.studioName,
+        hour: item.hour,
+        use_type: item.use_type,
+        use_name: item.use_name,
+        price: item.price,
+        amount: 0,
+        start_datetime: item.start_datetime,
+        finish_datetime: item.finish_datetime,
+        datetime: item.datetime,
+        product_name: item.product_name,
+        description: '',
+      };
+      this.total = Number(item.price);
+
+    },
     payoff() { //ポイント精算確認
       this.$emit('confirmPay', 'ポイント精算', this.item);
     },
@@ -214,9 +263,9 @@ export default {
       // this.$emit('payment', this.item);
       this.$emit('confirmPay', 'カード決済', this.item);
     },
-    // paypay() {  //paypay決済
-    //   this.$emit('paypay',this.item)
-    // },
+    paypay() {  //paypay決済
+      this.$emit('confirmPay','PayPay決済', this.item);
+    },
     close () {
       this.closeModal();
       this.$el.scrollTo(0,0);

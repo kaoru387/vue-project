@@ -264,6 +264,7 @@ router.beforeEach((to, from, next) => {
       }
       break;
     case 'successPayPay':
+      // console.log('p', to.fullPath)
       if(to.fullPath !== '/successpaypay'){
         store.commit('SET_BACK_URI', to.fullPath)
       }else{
