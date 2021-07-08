@@ -45,6 +45,7 @@ import store from '../store/app';
 import axios from "axios"
 import Firebase from "Firebase";
 import firebase from "@firebase/app";
+import moment from "moment"
 
 export default {
   data() {
@@ -62,176 +63,182 @@ export default {
     console.log('payment!')
     store.commit('SET_ISLOADING', true);
   },
-  mounted() {
-    console.log('mounted!!!!!', store.state.auth.session);
+  // mounted() {
+  //   console.log('mounted!!!!!', store.state.auth.session);
 
-    // store.commit('SET_ISLOADING', true);
+  //   // store.commit('SET_ISLOADING', true);
 
-    let that = this;
-    // let docName = "";
-    // let currentUser = Firebase.auth().currentUser;
-    // docName = currentUser.email;
-    // if(docName==null) docName = currentUser.phoneNumber;
-    // console.log('key', docName);
+  //   let that = this;
+  //   // let docName = "";
+  //   // let currentUser = Firebase.auth().currentUser;
+  //   // docName = currentUser.email;
+  //   // if(docName==null) docName = currentUser.phoneNumber;
+  //   // console.log('key', docName);
 
-    const processA = async function() {
-      const sessionId = await store.state.auth.session.session_id;
-      const params= await store.state.auth.session;
+  //   const processA = async function() {
+  //     const sessionId = await store.state.auth.session.session_id;
+  //     const params= await store.state.auth.session;
 
-      console.log(sessionId, params)
-      const response = await firebase.functions().httpsCallable('getStripe');
-      await response({
-        sessionId: sessionId
-      }).then((res) => {
-        store.commit('SET_ISLOADING', true);
-        console.log('success payment.', res.data);
-        const session = res.data
-        if(session.payment_status=='paid'){
+  //     console.log(sessionId, params)
+  //     const response = await firebase.functions().httpsCallable('getStripe');
+  //     await response({
+  //       sessionId: sessionId
+  //     }).then((res) => {
+  //       store.commit('SET_ISLOADING', true);
+  //       console.log('success payment.', res.data);
+  //       const session = res.data
+  //       if(session.payment_status=='paid'){
 
-          // params.email=session.customer_details.email;
-          params.email=store.state.auth.email;
+  //         // params.email=session.customer_details.email;
+  //         params.email=store.state.auth.email;
 
-          console.log('params', params);
+  //         // console.log('params', params);
 
-          // Sucpersass予約
-          store.dispatch('addAppointmentCard', {
-            params: params,
-            callback: function(res2){
-              store.commit('SET_ISLOADING', true);
-              console.log('save',res2);
-
-              setTimeout(function(){
-                that.$message({
-                  type: 'success',
-                  message: 'カード決済・予約に成功しました。',
-                });
+  //         // Sucpersass予約
+  //         store.dispatch('addAppointmentCard', {
+  //           params: params,
+  //           callback: function(res2){
+  //             store.commit('SET_ISLOADING', true);
+  //             console.log('save',res2);
+  //             setTimeout(function(){
+  //               that.$message({
+  //                 type: 'success',
+  //                 message: 'カード決済・予約に成功しました。',
+  //               });
                 
-                // // データ再取得
-                // store.dispatch('getUsers', 
-                //   function(e){
-                //     console.log('ok');
-                //     store.commit('SET_EVENTS', []);
-                //     // 予約取得
-                //     store.dispatch('getBookings',{
-                //       callback: function(res){
-                //         if(res) store.commit('SET_ISLOADING', false);
-                //         that.$router.push({path: '/about'});
-                //       }
-                //     });
-                // });
+  //               // // データ再取得
+  //               // store.dispatch('getUsers', 
+  //               //   function(e){
+  //               //     console.log('ok');
+  //               //     store.commit('SET_EVENTS', []);
+  //               //     // 予約取得
+  //               //     store.dispatch('getBookings',{
+  //               //       callback: function(res){
+  //               //         if(res) store.commit('SET_ISLOADING', false);
+  //               //         that.$router.push({path: '/about'});
+  //               //       }
+  //               //     });
+  //               // });
                 
-                // データ再取得
-                store.dispatch('getUsers', 
-                  function(e){
-                    // 初期化
-                    store.commit('RESET_DATA');
-                    // 予約取得
-                    store.dispatch('getBookings',{
-                      callback: function(res){
-                        // 自身の予約
-                        store.dispatch('getAgenda',{
-                          params: {
-                            from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
-                            user_id: that.auth.user_id,
-                            resource_id: params.resource_id,
-                          },
-                          callback: function(res3) {
-                            // 検索終了
-                            store.commit('SET_IS_SEARCH', false);
-                            store.commit('SET_ISLOADING', false);
-                          }
-                        });
-                      }
-                    });
-                });
+  //               // データ再取得
+  //               store.dispatch('getUsers', 
+  //                 function(e){
+                    
+  //                   // 初期化
+  //                   store.commit('RESET_DATA');
+  //                   // 予約取得
+  //                   store.dispatch('getBookings',{
+  //                     callback: function(res){
+  //                       // 検索終了
+  //                       store.commit('SET_IS_SEARCH', false);
+  //                       store.commit('SET_ISLOADING', false);
+  //                       that.$router.push({path: '/about'});
+                         
+  //                       // // 自身の予約
+  //                       // store.dispatch('getAgenda',{
+  //                       //   params: {
+  //                       //     from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
+  //                       //     user_id: store.state.auth.user_id,
+  //                       //     resource_id: params.resource_id,
+  //                       //   },
+  //                       //   callback: function(res3) {
+  //                       //     // 検索終了
+  //                       //     store.commit('SET_IS_SEARCH', false);
+  //                       //     store.commit('SET_ISLOADING', false);
+  //                       //     that.$router.push({path: '/about'});
+  //                       //   }
+  //                       // });
+  //                     }
+  //                   });
+  //               });
 
-              },2000);
-            }
-          });
-        }
-      });
-    }
-    const processAll = async function() {
-      await processA();
-    }
-    processAll();
+  //             },1200);
+  //           }
+  //         });
+  //       }
+  //     });
+  //   }
+  //   const processAll = async function() {
+  //     await processA();
+  //   }
+  //   processAll();
 
-  },
+  // },
   methods: {
-    submit() {
-      store.commit('SET_ISLOADING', true);
+    // submit() {
+    //   store.commit('SET_ISLOADING', true);
 
-      let that = this;
-      let docName = "";
-      let currentUser = Firebase.auth().currentUser;
-      docName = currentUser.email;
-      if(docName==null) docName = currentUser.phoneNumber;
-      console.log('key', docName);
-      // if(!currentUser){
-      //   // ログインなしの場合
-      //   docName = "stripe@dummy.com";
-      // }else{
-      //   // ログインありの場合、ポイント精算なので決済不要
-      //   store.commit('SET_ISLOADING', false)
-      //   return;
-      // }
-      const processA = async function(docName) {
-        store.commit('SET_ISLOADING', true)
-        // Stripe Checkout
-        // var docRef = Firebase.db().collection("sessions").doc(docName);
-        // const docs = await docRef.get().then(function(doc) {
-        //     if (doc.exists) {
-        //         console.log("Document data:", doc.data().sessionId);
-        //         return doc.data();
-        //     } else {
-        //         // doc.data() will be undefined in this case
-        //         console.log("No such document!");
-        //     }
-        // }).catch(function(error) {
-        //     console.log("Error getting document:", error);
-        // });
-        const sessionId = await docs.sessionId;
-        const params= await docs.params;
-        const response = await firebase.functions().httpsCallable('getStripe');
-        await response({
-          sessionId: sessionId
-        }).then((res) => {
-          console.log('success payment.', res.data);
-          const session = res.data
-          if(session.payment_status=='paid'){
-            // params.email=session.customer_details.email;
+    //   let that = this;
+    //   let docName = "";
+    //   let currentUser = Firebase.auth().currentUser;
+    //   docName = currentUser.email;
+    //   if(docName==null) docName = currentUser.phoneNumber;
+    //   console.log('key', docName);
+    //   // if(!currentUser){
+    //   //   // ログインなしの場合
+    //   //   docName = "stripe@dummy.com";
+    //   // }else{
+    //   //   // ログインありの場合、ポイント精算なので決済不要
+    //   //   store.commit('SET_ISLOADING', false)
+    //   //   return;
+    //   // }
+    //   const processA = async function(docName) {
+    //     store.commit('SET_ISLOADING', true)
+    //     // Stripe Checkout
+    //     // var docRef = Firebase.db().collection("sessions").doc(docName);
+    //     // const docs = await docRef.get().then(function(doc) {
+    //     //     if (doc.exists) {
+    //     //         console.log("Document data:", doc.data().sessionId);
+    //     //         return doc.data();
+    //     //     } else {
+    //     //         // doc.data() will be undefined in this case
+    //     //         console.log("No such document!");
+    //     //     }
+    //     // }).catch(function(error) {
+    //     //     console.log("Error getting document:", error);
+    //     // });
+    //     const sessionId = await docs.sessionId;
+    //     const params= await docs.params;
+    //     const response = await firebase.functions().httpsCallable('getStripe');
+    //     await response({
+    //       sessionId: sessionId
+    //     }).then((res) => {
+    //       console.log('success payment.', res.data);
+    //       const session = res.data
+    //       if(session.payment_status=='paid'){
+    //         // params.email=session.customer_details.email;
 
-            console.log('params', params);
+    //         console.log('params', params);
 
-            // Sucpersass予約
-            store.dispatch('addAppointment', {
-              params: params,
-              callback: function(res2){
-                store.commit('SET_ISLOADING', true)
-                console.log('save',res2)
+    //         // Sucpersass予約
+    //         store.dispatch('addAppointment', {
+    //           params: params,
+    //           callback: function(res2){
+    //             store.commit('SET_ISLOADING', true)
+    //             console.log('save',res2)
                 
-                // // セッションデータ削除
-                // docRef.delete().then(function() {
-                //     console.log("Document successfully deleted!");
-                //     setTimeout(function(){
-                //       window.location.href = "https://www.fandangos-okinawa.com/reservation/" 
-                //       store.commit('SET_ISLOADING', false)
-                //     },1000);
-                // }).catch(function(error) {
-                //     console.error("Error removing document: ", error);
-                // });
+    //             // // セッションデータ削除
+    //             // docRef.delete().then(function() {
+    //             //     console.log("Document successfully deleted!");
+    //             //     setTimeout(function(){
+    //             //       window.location.href = "https://www.fandangos-okinawa.com/reservation/" 
+    //             //       store.commit('SET_ISLOADING', false)
+    //             //     },1000);
+    //             // }).catch(function(error) {
+    //             //     console.error("Error removing document: ", error);
+    //             // });
 
-              }
-            });
-          }
-        });
-      }
-      const processAll = async function() {
-        await processA(docName);
-      }
-      processAll();
+    //           }
+    //         });
+    //       }
+    //     });
+    //   }
+    //   const processAll = async function() {
+    //     await processA(docName);
+    //   }
+    //   processAll();
 
-    },
+    // },
     // reload() {
     //   store.commit('SET_ISLOADING', true)
     //   store.commit('SET_BACK_URI', '');

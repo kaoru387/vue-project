@@ -1,13 +1,13 @@
 <template>
   <div id="free-calendar">
-    <div class="pl-3 pr-3 pt-0">
+    <!-- <div class="pl-3 pr-3 pt-0">
       <el-alert
         class="mb-10 text-left"
         type="success"
         :description="'予約時間を選択してください。'"
         show-icon>
       </el-alert>
-    </div>
+    </div> -->
     <v-row justify="center" align-content="center">
       <h5>{{ initialDate }}</h5>
     </v-row>
@@ -127,6 +127,11 @@ export default {
   created: function () {
     // console.log(this.search.date)
     // this.initialDate='2021-02-23';
+
+    this.$message({
+      type: 'success',
+      message: '予約時間を選択してください。',
+    });
   },
   watch: {
     // events:  function(newEvents) {

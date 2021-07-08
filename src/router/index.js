@@ -15,7 +15,7 @@ import VerifyEmailInvalid from '../views/VerifyEmailInvalid.vue'
 // import Account from '../views/Account.vue'
 import ResetPassword from '../views/ResetPassword.vue'
 // import EditAccount from '../views/EditAccount.vue'
-import Admin from '../views/Admin.vue'
+// import Admin from '../views/Admin.vue'
 import SuccessPayPay from '../views/SuccessPayPay.vue'
 import LineLogin from '../views/LineLogin.vue'
 import SuccessLineLogin from '../views/SuccessLineLogin.vue'
@@ -47,14 +47,9 @@ const routes = [
     component: Login,
   },
   // {
-  //   path: '/account',
-  //   name: 'account',
-  //   component: Account,
-  // },
-  // {
-  //   path: '/editaccount',
-  //   name: 'editaccount',
-  //   component: EditAccount,
+  //   path: '/reception',
+  //   name: 'reception',
+  //   component: () => import('../views/Reception.vue')
   // },
   {
     path: '/sendemail',
@@ -75,21 +70,16 @@ const routes = [
     /* webpackChunkName: "about" */ 
     component: () => import('../views/About.vue')
   },
-  {
-    path: '/admin',
-    name: 'admin',
-    component: Admin,
-  },
   // {
-  //   path: "/admission", 
-  //   name: 'admission',
-  //   component: () =>import("../components/AdmissionCheckout.vue")
+  //   path: '/admin',
+  //   name: 'admin',
+  //   component: Admin,
   // },
-  {
-    path: "/reservation", 
-    name: 'reservation',   
-    component: () =>import("../views/Home.vue")
-  },
+  // {
+  //   path: "/reservation", 
+  //   name: 'reservation',   
+  //   component: () =>import("../views/Home.vue")
+  // },
   {
     path: "/verifyemail", 
     name: 'verifyemail',   
@@ -142,36 +132,17 @@ const router = new VueRouter({
 // router gards
 router.beforeEach((to, from, next) => {
 
+  // 検証用
+  // store.commit('RESET_DATA');
+  // store.commit('SET_BACK_URI', '');
+  // store.commit('SET_LINE_LOGIN', '');
+  
   store.commit('SET_ISLOADING', true);
-
-  // // LINE LOGINチェック
-  // let session_timestamp = moment().format("YYYYMMDDHH");
-  // var docRef = Firebase.db().collection("signIn").doc(session_timestamp);
-  // docRef.get().then(function(doc) {
-  //   if (doc.exists) {
-  //     console.log("db sign in!!!", doc.data());
-  //     let lineUser = doc.data();
-  //     Firebase.signInWithEmailAndPassword(lineUser.email, lineUser.email);
-  //     // ログイン後、削除。
-  //     docRef.delete().then(function() {
-  //       console.log("Document successfully deleted!");
-  //     }).catch(function(error) {
-  //         console.error("Error removing document: ", error);
-  //     });
-  //   }else{
-  //     store.commit('SET_ISLOADING', false);
-  //   }
-  // }).catch(function(error) {
-  //   console.log("error!?", error);
-  //   store.commit('SET_ISLOADING', false);
-  // });
-
-  // console.log(store.state.auth.username);
-
+  // console.log('wa',to.fullPath)
 
   // 通常処理
   Firebase.onAuth();
-
+  
   var auth = Firebase.auth();
   // Get the action to complete.
   var mode = getParameterByName('mode');
@@ -191,23 +162,17 @@ router.beforeEach((to, from, next) => {
     };
     console.log('line login.');
     store.commit('SET_LINE_LOGIN', lineLogin);
-    // store.commit('SET_BACK_URI', '/?mode=logined')
-
-  // //   let lineLogin = {
-  // //     code: code,
-  // //     state: state,
-  // //   };
-  // //   console.log('line login.');
-  // //   // store.commit('SET_BACK_URI', '/?mode=successLineLogin')
-
-  // //   // // 一旦保持
-  // //   // let session_timestamp = moment().format("YYYYMMDDHH");
-  // //   // Firebase.db().collection("linelogin").doc(session_timestamp)
-  // //   // .set({
-  // //   //   code: code,
-  // //   //   state: state,
-  // //   // });
   }
+
+  // // 受付ID
+  // var reseption_id = getParameterByName('reseptionId');
+  // if(reseption_id){
+  //   console.log('R',reseption_id);
+  //   store.commit('SET_RESEPTION_ID', reseption_id);
+  //   store.commit('SET_BACK_URI', '/reception')
+  //   next();
+  //   return;
+  // } 
   
   switch (mode) {
     case 'resetPassword':
@@ -218,7 +183,6 @@ router.beforeEach((to, from, next) => {
         // handleResetPassword(auth, actionCode, continueUrl, lang);
       }else{
         console.log('test',to.fullPath)
-        // store.commit('SET_BACK_URI', '');
       }
       break;
     case 'verifyEmail':
@@ -241,11 +205,6 @@ router.beforeEach((to, from, next) => {
       }
       break;
     case 'stripeSuccess':
-      // if(to.fullPath !== '/successpayment'){
-      //   store.commit('SET_BACK_URI', to.fullPath)
-      // }else{
-      //   next();
-      // }
       console.log('stripeSuccess', store.state.auth.session, to.fullPath);
       if(to.fullPath == '/?mode=stripeSuccess'){
         store.commit('SET_BACK_URI', to.fullPath);
@@ -265,7 +224,8 @@ router.beforeEach((to, from, next) => {
       break;
     case 'successPayPay':
       // console.log('p', to.fullPath)
-      if(to.fullPath !== '/successpaypay'){
+      // if(to.fullPath !== '/successpaypay'){
+      if(to.fullPath == '/?mode=successPayPay'){
         store.commit('SET_BACK_URI', to.fullPath)
       }else{
         next();
@@ -292,6 +252,7 @@ router.beforeEach((to, from, next) => {
       // Error: invalid mode.
   }
   next();
+  
 })
 
 // router.afterEach((to, from) => {

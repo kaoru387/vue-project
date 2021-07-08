@@ -78,9 +78,9 @@ export default {
   },
   created: function () {
     console.log('charges')
-    store.dispatch('getCharges',{
-      limit: 20
-    });
+    // store.dispatch('getCharges',{
+    //   limit: 20
+    // });
     // console.log(this.item.title)
     // let today = this.$moment().format('YYYY-MM-DD');
     // let target_date = moment(this.item.start).utc().format("YYYY-MM-DD");

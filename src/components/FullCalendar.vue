@@ -86,7 +86,7 @@ export default {
       calendarOptions: {
         timeZone: 'UTC',
         plugins: [ dayGridPlugin, timeGridPlugin, interactionPlugin ],
-        initialView: 'timeGridWeek',
+        initialView: 'dayGridMonth',
         // initialDate: this.iniDate,
         headerToolbar: {
           left:   'title',
@@ -114,7 +114,7 @@ export default {
         // viewDidMount: this.viewDidMount,
         businessHours: {
           daysOfWeek: [ 0, 1, 2, 3, 4, 5, 6 ],
-          startTime: '7:00',
+          startTime: '8:00',
           endTime: '24:00'
         },
         eventTimeFormat: { hour: 'numeric', minute: '2-digit' },

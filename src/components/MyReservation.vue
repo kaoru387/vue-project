@@ -1,28 +1,20 @@
 <template>
   <div>
     <v-data-table
+      v-if="items.length"
       :headers="headers"
       :items="items"
-      sort-by="date"
+      :sort-by="['updated', 'date']"
+      :sort-desc="[true, false]"
+      multi-sort
       :page.sync="page"
       :items-per-page="itemsPerPage"
       hide-default-footer
-      class="g-color-gray-dark-v3"
+      class="g-color-gray-dark-v2"
       @page-count="pageCount = $event"
     >
-      <!-- <td :colspan="headers.length">
-        More info about {{ item }}
-      </td> -->
-      <!-- <template v-slot:item="{item}">
-        <tr :class="{'elevation-1 primary': item.isEdit}">
-          <td v-for="(value, index) in item" :key="index">
-            {{ value }}
-          </td>
-        </tr>
-      </template> -->
       <template slot="no-data" class="p-3">
         <span class="g-font-size-13 g-color-gray-dark-v4">スタジオ予約はありません。</span>   
-        <!-- <span class="g-font-size-13 g-color-gray-dark-v4">スタジオ予約はありません。</span>    -->
       </template>
       <template v-slot:item.date="{ item }">
         <div class="mt-2 mb-1">
@@ -35,7 +27,7 @@
           <span class="g-color-gray-dark-v4">{{ item.title }}</span>
         </div>
       </template>
-      <template v-slot:item.price="{ item }">
+      <template v-slot:item.total="{ item }">
         <span class="mr-2 g-font-size-11 g-color-gray-dark-v5">{{ item.description }}</span><span>¥{{ item.total.toLocaleString() }}</span>
       </template>
       <template v-slot:item.isOption="{ item }">
@@ -83,195 +75,169 @@
           予約取消
         </el-button>
       </template>
+      <template v-slot:item.updated="{ item }">
+        <span class="g-color-gray-dark-v5">{{ item.updated }}</span>
+      </template>
     </v-data-table>
     <div class="text-center pt-2">
       <v-pagination
         v-model="page"
         :length="pageCount"
       ></v-pagination>
-      <!-- <v-text-field
-        :value="itemsPerPage"
-        label="Items per page"
-        type="number"
-        min="-1"
-        max="15"
-        @input="itemsPerPage = parseInt($event, 10)"
-      ></v-text-field> -->
     </div>
 
-  <!-- 予約取消 -->
-  <v-dialog
-    v-model="delconfirm"
-    max-width="290"
-  >
-    <v-card>
-      <v-card-title class="headline">予約取消の確認</v-card-title>
+    <!-- 予約取消 -->
+    <v-dialog
+      v-model="delconfirm"
+      max-width="290"
+    >
+      <v-card>
+        <v-card-title class="headline">予約取消の確認</v-card-title>
 
-      <v-card-text>
-        本当に予約を取消してよろしいですか？
-      </v-card-text>
+        <v-card-text class="pb-2">
+          本当に予約を取消してよろしいですか？
+        </v-card-text>
+        <v-card-text :style="{'color':'blue', 'font-size':'9pt'}">
+          お支払い分は、PayPayへ返金されます。
+        </v-card-text>
 
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn
-          outlined
-          text
-          @click.stop="delconfirm = false"
-        >
-          キャンセル
-        </v-btn>
-        <v-btn
-          color="error"
-          outlined
-          text
-          @click="deleteReservation"
-        >
-          はい
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            outlined
+            text
+            @click.stop="delconfirm = false"
+          >
+            キャンセル
+          </v-btn>
+          <v-btn
+            color="error"
+            outlined
+            text
+            @click="deleteReservationPayPay"
+          >
+            はい
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
-  <!-- エアコン代の支払い確認 -->
-  <v-dialog
-    v-model="payconfirm"
-    max-width="290"
-  >
-    <v-card>
-      <v-card-title class="headline">ポイント精算の確認</v-card-title>
-      <div class="text-center">
-        <v-list-item-title class="headline mb-2 tg-color-primary">
-          ¥ {{ item.price }}
-        </v-list-item-title>
-      </div>
+    <!-- 予約取消ポイント変換 -->
+    <v-dialog
+      v-model="pointconfirm"
+      max-width="290"
+    >
+      <v-card>
+        <v-card-title class="headline">予約取消の確認</v-card-title>
 
-      <v-card-text>
-        エアコン代をポイント精算してよろしいですか？
-      </v-card-text>
+        <v-card-text>
+          本当に予約を取消してよろしいですか？
+        </v-card-text>
+        <v-card-text :style="{'color':'blue', 'font-size':'9pt'}">
+          お支払い分は、ポイントへ変換されます。
+        </v-card-text>
 
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn
-          outlined
-          text
-          @click.stop="payconfirm = false"
-        >
-          キャンセル
-        </v-btn>
-        <v-btn
-          color="primary"
-          outlined
-          text
-          @click="payoff"
-        >
-          ポイント精算する
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            outlined
+            text
+            @click.stop="pointconfirm = false"
+          >
+            キャンセル
+          </v-btn>
+          <v-btn
+            color="error"
+            outlined
+            text
+            @click="deleteReservation"
+          >
+            はい
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
-</div>
-<!-- 
-  <tr>
-    <th scope="row" class="text-left">
-      <span class="g-font-size-12">{{targetDate}}</span>
-      <p>{{item.datetime}}</p>
-    </th>
-    <td class="text-left p-2 align-middle text-secondary">
-      <span class="g-font-size-12">{{ item.title }}</span>
-    </td>
-    <td class="text-right p-1 align-middle text-secondary" :style="{'width':'10%'}">
-      <span class="g-font-size-12">¥{{ item.price.toLocaleString() }}</span>
-    </td>
-    <td class="text-center p-0 align-middle text-secondary" :style="{'width':'20%'}">
-      <label v-if="!item.isClass" class="form-check-inline u-check g-color-gray-dark-v5 g-font-size-12 mt-2">
-        <input v-model="used.op1" type="checkbox" name='checkbox' class="d-block u-check-icon-checkbox-v6 g-absolute-centered--y g-left-0" :disabled="true"><i class="fa" data-check-icon="&#xf00c"></i></input>
-      </label>
-      <v-icon
-        v-else
-        small
-      >
-        mdi-minus
-      </v-icon>
-    </td>
-    <td class="text-center p-0 align-middle text-secondary" :style="{'width':'15%'}">
-      <v-icon
-        v-if="!item.isClass"
-        small
-        class="mr-2"
-        @click="detail"
-      >
-        mdi-pencil
-      </v-icon>
-      <v-icon
-        v-else
-        small
-        class="mr-2"
-      >
-        mdi-minus
-      </v-icon>
-      <v-icon
-        small
-        @click="detail"
-      >
-        mdi-delete
-      </v-icon>
-    </td>
-  </tr> -->
+    <!-- エアコン代の支払い確認 -->
+    <v-dialog
+      v-model="payconfirm"
+      max-width="290"
+    >
+      <v-card>
+        <v-card-title class="headline">ポイント精算の確認</v-card-title>
+        <div class="text-center">
+          <v-list-item-title class="headline mb-2 tg-color-primary">
+            ¥ {{ item.price }}
+          </v-list-item-title>
+        </div>
+
+        <v-card-text>
+          エアコン代をポイント精算してよろしいですか？
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            outlined
+            text
+            @click.stop="payconfirm = false"
+          >
+            キャンセル
+          </v-btn>
+          <v-btn
+            color="primary"
+            outlined
+            text
+            @click="payoff"
+          >
+            ポイント精算する
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
+
 </template>
-<!-- <style scoped>
-  .item {
-    margin-top: 10px;
-    margin-right: 0px;
-  }
-</style> -->
+
 <script>
 import store from '../store/app';
 import axios from "axios"
 import moment from "moment"
 
 export default {
-  // props: {
-  //   item: { 
-  //     type: Object, 
-  //     default: () => {} 
-  //   },
-  // },
   data() {
     return {
       dialog: false,
       delconfirm: false,
+      pointconfirm: false,
       payconfirm: false,
-      // used: {
-      //   op1: false,
-      // },
       item: {
         price: 0,
       },
-      // hours: 0,
-      // minutes: 0,
-      // isOption: false,
-      // optionAmount: 0,
-      // targetDate: '',
-      // date: '',
-      // start: '',
-      // finish: '',
       headers: [
         {
           text: '日時',
           align: 'start',
           value: 'date',
-          sortable: false, 
+          sortable: true, 
         },
         { text: '内容', align: 'start', sortable: false, value: 'title' },
-        { text: '料金', align: 'start', sortable: false, value: 'price' },
+        { text: '料金', align: 'start', sortable: false, value: 'total' },
         { text: 'エアコン利用', sortable: false, value: 'isOption' },
+        {
+          text: '作成日',
+          align: 'start',
+          value: 'updated',
+          sortable: true,
+        },
         { text: '' , sortable: false, value: 'isCard' },
         // { text: '', value: 'data-table-expand' },
       ],
       page: 1,
       pageCount: 0,
       itemsPerPage: 2,
+      paypayDetails: [],
+      isTimeLimit: false,
     }
   },
   watch: {
@@ -286,34 +252,14 @@ export default {
     auth() {
       return store.state.auth;
     },
-    // billingAmount() {  //エアコン代
-    //   return this.hours*140 + this.minutes*70;
-    // },
     items() {
       return store.state.result.my;
     },
   },
   created: function () {
-    // console.log('my', this.item)
-
-    // // 対象日付
-    // this.targetDate = moment(this.item.start).utc().format("MM/DD");
-
-    // // 利用時間を数値変換
-    // this.hours = Number(this.item.hours);
-    // this.minutes = Number(this.item.minutes);
-
-    // // エアコン利用料
-    // if(0<this.item.superField) {
-    //   this.optionAmount=this.item.superField;
-    //   this.used.op1=true;
-    //   this.isOption=true;
-    // }
-
+    // console.log('my', this.items)
   },
   mounted() {
-    // this.title = this.selectDate+'の予約';
-    // console.log('nu', this.auth.credit + this.item.price)
   },
   methods: {
     edit(item) {
@@ -324,17 +270,50 @@ export default {
       // this.$emit('openDetail', this.item);
     },
     del(item) {
-      // console.log(item);
+      console.log(item);
       this.item=item;
-      this.delconfirm=true;
+      // this.delconfirm=true;
+      const that = this;
+      if(item.description=="PayPay決済"){
+        store.commit('SET_ISLOADING', true);
+        console.log("delete my class.", item.description);
+
+        // paypay支払状態を取得
+        store.dispatch('getPayPayStatus',{
+          params: {
+            merchantPaymentId: item.super_field
+          },
+          callback: function(res) {
+
+            console.log(res)
+            that.paypayDetails=res;
+            
+            // if(res.status=="COMPLETED"){
+            //   // paypay決済キャンセル可
+            //   that.isTimeLimit = false;
+            // }else{
+            //   // paypay決済キャンセル不可、ポイント変換
+            //   that.isTimeLimit = true;
+            // }
+            that.delconfirm=true;
+            store.commit('SET_ISLOADING', false);
+            // console.log('params', params);
+          }
+        });
+
+      } else {
+        // ポイント変換、paypay以外
+        that.pointconfirm=true;
+      }
+
+
     },
-    payoff() {
+    payoff() {  // エアコン代ポイント精算
       store.commit('SET_ISLOADING', true);
 
       const that = this;
       let credit = that.auth.credit;
       credit = that.auth.credit - that.item.price;
-      // console.log(credit);
 
       store.dispatch('saveUser',{
         params: {
@@ -361,33 +340,40 @@ export default {
                   message: 'エアコン代ポイント精算完了しました。',
                 });
 
-                // 閉じる
-                that.payconfirm=false;
+                // // 閉じる
+                // that.payconfirm=false;
                
-                // 予約
-                // store.commit('SET_EVENTS', []);
-
-                // データ初期化
                 store.commit('RESET_DATA');
-                store.dispatch('getBookings',{
-                  callback: function(res){
+                setTimeout(function(){
+                  store.dispatch('getBookings',{
+                    callback: function(err, res){
+                      // store.commit('SET_ISLOADING', false);
+                      // store.commit('SET_BACK_URI', '/schedule');
+                      // that.$router.replace('/');
 
-                    // 自身の予約
-                    store.dispatch('getAgenda',{
-                      params: {
-                        from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
-                        user_id: that.auth.user_id,
-                        resource_id: 563549,
-                      },
-                      callback: function(res3) {
-                        // 検索終了
-                        store.commit('SET_IS_SEARCH', false);
-                        store.commit('SET_ISLOADING', false);
-                      }
-                    });
+                      // 自身の予約
+                      store.dispatch('getAgenda',{
+                        params: {
+                          // from_date: moment().format('YYYY-MM-DD'),
+                          // time: '09:00',
+                          // user_id: that.auth.user_id,
+                          resource_id: 563549,
+                        },
+                        callback: function(res2) {
+                          console.log(res2)
+                          that.payconfirm=false;
 
-                  }
-                });
+                          store.commit('SET_BACK_URI', '/schedule');
+                          that.$router.replace('/');
+
+                          store.commit('SET_IS_SEARCH', false);
+                          store.commit('SET_ISLOADING', false);
+                        }
+                      });
+                      
+                    }
+                  });
+                },200);
 
               }, 1000);
             }
@@ -395,21 +381,117 @@ export default {
         }
       });
     },
+    deleteReservationPayPay() {
+      store.commit('SET_ISLOADING', true);
+
+      let that = this;
+      console.log(that.paypayDetails, that.item);
+
+      const timeStamp = Math.round((new Date()).getTime() / 1000);
+      // console.log("timeStamp", timeStamp);
+
+
+      // PayPay返金
+      store.dispatch('cancelPayPay', {
+        params: {
+          merchantRefundId: '',
+          paymentId: that.paypayDetails.paymentId,
+          amount: that.paypayDetails.amount,
+          requestedAt: timeStamp,
+          reason: 'スタジオ予約の取消',
+        },
+        callback: function(res) {
+
+          // console.log('cancel pay', res);
+          if(res.data.status!=='CREATED') {
+            alert('PayPay返金処理に失敗しました！管理者へお問い合わせください。')
+            return;
+          }
+          console.log('cancel pay success!');
+
+          store.dispatch('deleteAppointment',{
+            params: {
+              id: that.item.id,
+              resourceId: that.item.resource_id,
+            },
+            callback: function(res3) {
+              console.log(res3)
+
+              // 完了メッセージ
+              that.$message({
+                type: 'success',
+                message: '予約を取消しました。',
+              });
+
+              // that.delconfirm=false;
+
+              // // 自身の予約
+              // store.dispatch('getAgenda',{
+              //   params: {
+              //     resource_id: 563549,
+              //   },
+              //   callback: function(res4) {
+              //     console.log('callback agenda', res4)
+              //     store.commit('SET_IS_SEARCH', false);
+              //     store.commit('SET_ISLOADING', false);
+              //     store.commit('SET_BACK_URI', '/schedule');
+              //     that.$router.push('/');
+              //   }
+              // });
+
+              // データ再取得
+              store.commit('RESET_DATA');
+              setTimeout(function(){
+                store.commit('SET_ISLOADING', true);
+                store.dispatch('getBookings',{
+                  callback: function(err, res){
+
+                    // 自身の予約
+                    store.dispatch('getAgenda',{
+                      params: {
+                        resource_id: 563549,
+                      },
+                      callback: function(res2) {
+                        console.log(res2)
+                        that.delconfirm=false;
+
+                        store.commit('SET_BACK_URI', '/schedule');
+                        that.$router.replace('/');
+
+                        store.commit('SET_IS_SEARCH', false);
+                        store.commit('SET_ISLOADING', false);
+                      }
+                    });
+
+                  }
+                });
+              },400);
+
+            }
+          });
+
+        }
+      });
+
+    },
     deleteReservation() {
       store.commit('SET_ISLOADING', true);
 
       let that = this;
       let credit = that.auth.credit;
-      credit = Number(that.auth.credit) + Number(that.item.price);
+      // credit = Number(that.auth.credit) + Number(that.item.price);
+      credit = Number(that.auth.credit) + Number(that.item.total);
 
       // エアコン利用の場合、戻す
-      if(that.item.isOption) credit = credit + that.item.hours*140 + that.item.minutes*70;
+      // if(that.item.isOption) credit = credit + that.item.hours*140 + that.item.minutes*70;
+      // console.log(credit,that.item)
 
       store.dispatch('saveUser',{
         params: {
           credit: credit,
         },
         callback: function(res){
+
           // ポイント更新
           store.commit('UPDATE_USER_CREDIT', credit);
           store.dispatch('deleteAppointment',{
@@ -425,31 +507,35 @@ export default {
                 type: 'success',
                 message: '予約を取消しました。',
               });
+
+              // データ再取得
+              store.commit('RESET_DATA');
               setTimeout(function(){
-                // データ初期化
-                store.commit('RESET_DATA');
+                store.commit('SET_ISLOADING', true);
                 store.dispatch('getBookings',{
-                  callback: function(res){
+                  callback: function(err, res){
 
                     // 自身の予約
                     store.dispatch('getAgenda',{
                       params: {
-                        from_date: moment().format('YYYY-MM-DD'),
-                        time: '09:00',
-                        user_id: that.auth.user_id,
                         resource_id: 563549,
                       },
                       callback: function(res2) {
                         console.log(res2)
-                        that.delconfirm=false;
+                        that.pointconfirm=false;
+
+                        store.commit('SET_BACK_URI', '/schedule');
+                        that.$router.replace('/');
+
+                        store.commit('SET_IS_SEARCH', false);
                         store.commit('SET_ISLOADING', false);
                       }
                     });
+
                   }
-
                 });
+              },400);
 
-              },1000);
             }
           });
         }

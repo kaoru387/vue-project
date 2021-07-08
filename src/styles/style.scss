@@ -636,3 +636,10 @@ td{
 .popover-body{
   width: 200px;
 }
+
+.box-read{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+

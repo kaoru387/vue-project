@@ -70,19 +70,17 @@ export default {
     },
   },
   created: function () {
-
   },
   mounted() {
+    // トップへ
+    this.$vuetify.goTo(0);
   },
   methods: {
     result(res) {
       console.log(res)
     },
     getLineUrl: async function(){
-      console.log('OK', this.lineLogin);
-          
       store.commit('SET_ISLOADING', true);
-      // const url = "https://localhost:4006";
       const url = this.supersass.baseHost;
       store.dispatch('getLineLogin',{
         params: {
@@ -90,7 +88,7 @@ export default {
           redirect_uri: url+'/?mode=successLineLogin',
         },
         callback: function(res){
-          console.log('success linelogin.', res);
+          console.log('success linelogin.');
           store.commit('SET_ISLOADING', false);
           window.location.href = res.data;
         }

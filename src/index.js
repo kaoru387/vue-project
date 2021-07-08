@@ -38,6 +38,18 @@ import firebase from "@firebase/app";
 import Firebase from 'Firebase'
 Firebase.init();
 
+// SameSite対応
+import VueCookies from 'vue-cookies'
+Vue.use(VueCookies);
+// set default config
+Vue.$cookies.config('1d');
+
+// // set global cookie
+// Vue.$cookies.set('theme','default', null, null, null, true, "None");
+// Vue.$cookies.set('hover-time','1s',null, null, null, true, "None");
+// Vue.$cookies.set("key","value",null, null, null, true, "None");
+// Vue.$cookies.set("google.com","default",null, null, null, true, "None");
+
 window.jQuery = window.$ = require('jquery');
 
 // <!-- JS Global Compulsory -->
@@ -52,15 +64,6 @@ require('../assets/vendor/slick-carousel/slick/slick.js');
 require('../assets/vendor/hs-megamenu/src/hs.megamenu.js');
 require('../assets/vendor/malihu-scrollbar/jquery.mCustomScrollbar.concat.min.js');
 require('../assets/vendor/appear.js');
-
-// <!-- JS Unify -->
-// require('../assets/js/hs.core.js');
-// require('../assets/js/components/hs.header.js');
-// require('../assets/js/helpers/hs.hamburgers.js');
-// require('../assets/js/components/hs.dropdown.js');
-// require('../assets/js/components/hs.scrollbar.js');
-
-// <script src="../assets/js/components/hs.go-to.js"></script>
 
 // <!-- JS Implementing Plugins -->
 require('../assets/vendor/hs-megamenu/src/hs.megamenu.js');
@@ -82,68 +85,15 @@ require('../assets/js/components/hs.carousel.js');
 require("../assets/js/custom.js");
 
 
-// // 検証用
-// store.dispatch('addForms',{
-// 	params: {
-// 		form_id: 55915,
-//         reservation_process_id: 549839,
-//         'content[field-1]': 'aaaa',
-// 	},
-// 	callback: function(res){
-// 		console.log('getc', res)
-// 	}
-// });
-
-// Firestore db作成
-// store.dispatch('getInfo',{
-// // store.dispatch('addAppointment',{
-// 	params: {},
-// 	callback: function(res){
-// 		_.forEach(store.state.result.bookings, function(v, k) {
-// 			// ユーザマスター
-// 			// Firebase.db().collection("balances").doc(v['email'])
-// 	  //         .set({
-// 	  //         	id: v['id'],
-// 	  //           name: v['email'],
-// 	  //       });
-
-// 	  // 		// 予約
-// 	  //       var washingtonRef = Firebase.db().collection("balances").doc(v['email']);
-// 			// washingtonRef.update({
-// 			//     bookings: firebase.firestore.FieldValue.arrayUnion({
-// 			//     	product_name: v['product_name'],
-// 			//     	date: v['date'],
-// 			//     	price: v['price'],
-// 			//     	start: v['start'],
-// 			//     	finish: v['finish'],
-// 			//     	created: v['created'],
-// 			//     })
-// 			// });
-// 		});
-
-// 		// // 料金マスター作成
-// 		// _.forEach(res, function(v, k) {
-//   //         // console.log(v.id, k);
-//   //         Firebase.db().collection("schedules").doc(v.name)
-//   //         .set({
-//   //         	id: v.id,
-//   //           name: v.name,
-//   //           type: 'resource',
-//   //           group: 'mamber',
-//   //           resources: {
-//   //           	'1:00': {name:"1時間",price: 800},
-//   //           	'1:30': {name:"1.5時間",price: 1200},
-//   //           	'2:00': {name:"2時間",price: 1600}
-//   //           }
-//   //         });
-//   //       })
-// 	}
-// });
+// 検証用：ログイン
+// Firebase.signInWithEmailAndPassword('kaoru1225@gmail.com', 'kaoru1225@gmail.com');
+// Firebase.signInWithEmailAndPassword('yutaka6201@gmail.com', 'yutaka6201@gmail.com');
 Firebase.auth().onAuthStateChanged(user => {
 
 	store.commit('SET_ISLOADING', true);
 	let that = this;
 	if (user) {
+		console.log('login dayo.');
 		// ログイン情報
 		if (user.ma) {
 		  localStorage.setItem('jwt', user.ma);
@@ -151,12 +101,11 @@ Firebase.auth().onAuthStateChanged(user => {
 		if (user.uid) {
 			// メール認証済のみユーザ管理
 			if(user.emailVerified) {
-				// console.log('emailVerified')
-				// store.commit('SET_AUTH', user);
 		 		store.commit('onUserStatusChanged', true)
 			}
 			store.commit('SET_AUTH', user);
-			
+			// console.log('index login info', user);
+
 			//---------------
 		 	// supersass
 		 	//---------------
@@ -187,10 +136,18 @@ Firebase.auth().onAuthStateChanged(user => {
 			            'address': "",
 		      		}
 		      		// 存在しない場合、新規登録する
-		      		store.dispatch('addUser',{
+		      		store.dispatch('addUser', {
 		      			params: newUser,
 		      			callback: function(res){
-		      				console.log('新規登録に成功しました!!',res)
+		      				console.log('新規登録に成功しました!!',res);
+		      				that.$message({
+	                  type: 'success',
+	                  message: '新規登録に成功しました！',
+	                });
+	                // リロード
+		      				setTimeout(function(){
+		      					window.location.href = '/';
+		      				}, 600);
 		      			}
 		      		});
 		      		return;
@@ -214,7 +171,35 @@ Firebase.auth().onAuthStateChanged(user => {
 		 	store.commit('onUserStatusChanged', false)
 		}
 	} else {
-		store.commit('onAuthEmailChanged', "")
+		
+		// キャッシュ確認
+		let isKey = Vue.$cookies.isKey("arts-auth");
+		if(isKey){
+			// ログイン情報保持している場合
+			let user = Vue.$cookies.get("arts-auth");
+			if(user.isPhoneNumber) {
+				// 電話番号ログインは自動ログインできない
+				Vue.$cookies.remove("arts-auth");
+				return;
+			}
+
+			// ログイン情報
+		 	let password = user.email;
+			// ログインする
+    	Firebase.signInWithEmailAndPassword(password, password);
+    	setTimeout(function(){
+    		// ユーザー情報取得
+            store.dispatch('getUsers',function(e){
+              let currentUserStatus = Firebase.auth().currentUser;
+              if(!currentUserStatus) console.log('index no singin');
+              else store.commit('SET_AUTH', currentUserStatus)
+            });
+    	}, 200);
+        	
+		}else{
+			store.commit('onAuthEmailChanged', "");
+		}
+
 	}
 	new Vue({
 		router,
@@ -228,7 +213,6 @@ Firebase.auth().onAuthStateChanged(user => {
 		  },
 		},
 		mounted: function() {
-		 	// console.log('yaho');
 
 		 	$.HSCore.components.HSCarousel.init('[class*="js-carousel"]');
 
@@ -253,7 +237,6 @@ Firebase.auth().onAuthStateChanged(user => {
 	        // initialization of HSScrollBar component
 	        $.HSCore.components.HSScrollBar.init($('.js-scrollbar'));
 
-
 		    // initialization of countdowns
 		    var countdowns = $.HSCore.components.HSCountdown.init('.js-countdown', {
 		        yearsElSelector: '.js-cd-years',
@@ -266,7 +249,6 @@ Firebase.auth().onAuthStateChanged(user => {
 
 	        // initialization of go to
 	        $.HSCore.components.HSGoTo.init('.js-go-to');
-
 
 	        $('#carouselCus1').slick('setOption', 'responsive', [{
 	          breakpoint: 1200,

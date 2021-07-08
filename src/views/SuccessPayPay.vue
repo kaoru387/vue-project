@@ -31,6 +31,7 @@
 </template>
 
 <script>
+import Vue from 'vue';
 import store from '../store/app';
 import moment from "moment"
 // import firebase from "@firebase/app";
@@ -50,17 +51,47 @@ export default {
       return store.state.auth;
     },
   },
+  // beforeRouteEnter (to, from, next) {
+  //   console.log('beforeRouteEnter /paypay', to.fullPath);
+  //   if(to.fullPath=='/successpaypay') {
+  //     store.commit('SET_BACK_URI', '');
+  //     next();
+  //   }else{
+  //     // next();
+  //   }
+  // },
   created: function () {
-    // console.log('paypay');
+    // alert('paypay');
     store.commit('SET_ISLOADING', true);
   },
   mounted() {
-    // console.log(store.state.auth.paypaySession);
+    console.log('paypay mounted!', store.state.auth.paypaySession);
     store.commit('SET_ISLOADING', true);
-
-    let session = store.state.auth.paypaySession;
-
+    
     var that = this;
+
+    // let session = store.state.auth.paypaySession;
+    let isKey = Vue.$cookies.isKey("paypay-session");
+    if(!isKey){
+      alert('セッションエラー発生しました。管理者へお問い合わせください！');
+      return;
+    }
+    let session = Vue.$cookies.get("paypay-session");
+    if(session=="") {
+      alert('セッションエラー不具合！');
+      return;
+    }
+
+    // 2度実行される問題の対応
+    if(session=="fin") {
+      Vue.$cookies.set("paypay-session", "");
+      return;
+    }
+    Vue.$cookies.set("paypay-session", "fin");
+      
+    // console.log('session', session);
+    // alert('テスト中1');
+
     const merchantPaymentId = session.merchantPaymentId;
     const codeId = session.codeId;
     const params= session.params;
@@ -71,69 +102,86 @@ export default {
         merchantPaymentId: merchantPaymentId
       },
       callback: function(res) {
-        // console.log('res', res);
+        console.log('status!!', res);
+        // console.log('params', params);
+        // console.log('session??', session);
+        // alert('テスト中2');
+
+        store.commit('SET_ISLOADING', true);
         if(res.status=="COMPLETED") {
 
-          params['booking[super_field]'] = res.paymentId;
-          store.dispatch('addAppointmentPayPay',{
+          // 20210628 change-start
+          // params['booking[super_field]'] = res.paymentId;
+          params['booking[super_field]'] = merchantPaymentId;
+          // 20210628 change-end
+
+          // スタジオ予約
+          store.dispatch('addAppointmentPayPay', {
             params: params,
             callback: function(r){
-              // console.log(r);
+
               store.commit('SET_ISLOADING', true);
 
               setTimeout(function(){
-
                 that.$message({
                   type: 'success',
-                  message: '予約に成功しました。',
+                  message: 'PayPay決済確認・予約に成功しました！',
                 });
 
-                // peypey削除
-                store.dispatch('deletePayPay', {
-                  params: {
-                    codeId: codeId
-                  },
-                  callback: function(res3){
+                // // peypey削除
+                // store.dispatch('deletePayPay', {
+                //   params: {
+                //     codeId: codeId
+                //   },
+                //   callback: function(res2){
+                //     console.log('delete QR', res2);
 
-                    // データ再取得
-                    store.dispatch('getUsers', 
-                      function(e){
-                        // 初期化
-                        store.commit('RESET_DATA');
-                        // 予約取得
-                        store.dispatch('getBookings',{
-                          callback: function(res){
-                            // 自身の予約
-                            store.dispatch('getAgenda',{
-                              params: {
-                                from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
-                                user_id: that.auth.user_id,
-                                resource_id: params.resource_id,
-                              },
-                              callback: function(res3) {
-                                // 検索終了
-                                store.commit('SET_IS_SEARCH', false);
-                                store.commit('SET_ISLOADING', false);
-                                that.$router.push({path: '/schedule'});
-                              }
-                            });
+                    // データ初期化
+                    store.commit('RESET_DATA');
+                    // 全ての予約
+                    store.dispatch('getBookings',{
+                      callback: function(err, res){
+                        console.log('success paypay get booking.', res)
+
+                        // あなたのクラス予約を取得
+                        store.dispatch('getAgenda',{
+                          params: {
+                            resource_id: 563549,
+                            // user_id: that.auth.user_id
+                          },
+                          callback: function(res3){
+                            console.log('get!!!', res3)
+                            store.commit('SET_IS_SEARCH', false);
+                            store.commit('SET_ISLOADING', false);
+                            store.commit('SET_BACK_URI', '/schedule');
+                            if(that.$route.path!=='/schedule') {
+                              that.$router.push({path: '/schedule'});
+                              return;
+                            }
+                            that.$router.push('/');
                           }
                         });
+                        
+                      }
                     });
 
-                  }
-                });
+                //   }
+                // });
 
-              },1200);
+              }, 600);
+
             }
           });
+
         }else{
           that.$message({
             type: 'error',
-            message: 'PayPay支払確認に失敗しました。管理者にお問い合わせください。',
+            message: 'PayPay支払確認に失敗しました。管理者にお問い合わせください。status:'+res.status,
           });
-          that.goBack();
+          store.commit('SET_ISLOADING', false);
+          // that.goBack();
         }
+
       }
     });
 

@@ -22,9 +22,9 @@
 <script>
 import store from '../store/app';
 import axios from "axios"
+
 import firebase from "../Firebase";
 import firebaseapp from "@firebase/app";
-// import firebaseui from "firebaseui-ja";
 
 // import { mdiAccount,mdiKey } from '@mdi/js'
 export default {
@@ -75,25 +75,17 @@ export default {
   //   lock: mdiKey,
   // }),
   computed: {
-    // username() {
-    //   return this.$store.actions.email
-    // },
-    // userStatus() {
-    //   //return true in login state
-    //   return this.$store.actions.isSignedIn
-    // },
-    // ui() {
-    //   return store.state.firebaseui;
-    // }
+    auth() {
+      return store.state.auth;
+    },
   },
   created: function () {
     // store.commit('SET_ISLOADING', false)
     // this.ui = new firebaseui.auth.AuthUI(firebase.auth());
   },
   mounted() {
-    console.log("Login mounted");
-    console.log(this.$route.path);
-    
+    // console.log("Login mounted");
+    // console.log(this.$route.path);
     store.commit('SET_ISLOADING', false);
 
     let that = this;
@@ -103,7 +95,7 @@ export default {
         signInSuccess: function(currentUser, credential, redirectUrl) {
           // サインイン成功時のコールバック関数
           // 戻り値で自動的にリダイレクトするかどうかを指定
-          console.log('1',currentUser)
+          console.log('1',currentUser, credential, redirectUrl);
           return true;
         },
         signInSuccessWithAuthResult: function(authResult, redirectUrl) {
@@ -186,8 +178,11 @@ export default {
       signInSuccessUrl: '/?mode=signedIn',
       // signInOptions: firebase.signInOptions(),
       signInOptions: [
-        // firebaseapp.auth.EmailAuthProvider.PROVIDER_ID,
-        firebaseapp.auth.PhoneAuthProvider.PROVIDER_ID,
+        {
+          provider: firebaseapp.auth.PhoneAuthProvider.PROVIDER_ID,
+          defaultCountry: 'JP',
+          whitelistedCountries: ['JP', '+81']
+        }
       ],
       // tosUrl: '<your-tos-url>',
       // privacyPolicyUrl: '<your-privacy-policy-url>',
@@ -199,14 +194,23 @@ export default {
       if (user) {
         ui.reset();
         that.isFirst=false;
+
+        store.commit('SET_ISLOADING', true);
+        store.commit('SET_BACK_URI', '');
+
+        console.log('login!!!!!!', that.auth);
+
         // 最新取得
         store.dispatch('getUsers',function(e){
+          // ログイン情報取得
+          store.commit('SET_AUTH', user);
+
+          // リロード
           setTimeout(function(){
-            store.commit('SET_AUTH', user)
-            store.commit('SET_ISLOADING', false)
-          },200);
+            window.location.href = '/';
+          }, 400);
         });
-        // store.commit('SET_ISLOADING', false)
+        
       }else{
         firebase.onAuth();
         ui.start("#firebaseui-auth-container", uiConfig);
@@ -232,7 +236,7 @@ export default {
     backHome() {
       store.commit('SET_BACK_URI', '/back');
       this.$router.replace('/');
-    }
+    },
   }
 }
 </script>

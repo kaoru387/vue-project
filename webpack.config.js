@@ -21,73 +21,73 @@ module.exports = {
   },
   mode: env,
   module: {
-      rules: [
+    rules: [
+      {
+          test: /\.js$/,
+          exclude: /node_modules/,
+          use: {
+              loader: "babel-loader"
+          }
+      },
+      {
+          test: /\.vue$/, // ファイルが.vueで終われば...
+          loader: 'vue-loader',
+      },
+      {
+        test: /\.(sc|c|sa)ss$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          // 'vue-style-loader',
           {
-              test: /\.js$/,
-              exclude: /node_modules/,
-              use: {
-                  loader: "babel-loader"
-              }
+            loader: "css-loader",
+            options: {
+              //URL の解決を無効に
+              url: false,
+              // ソースマップを有効に
+              sourceMap: true,
+            },
           },
           {
-              test: /\.vue$/, // ファイルが.vueで終われば...
-              loader: 'vue-loader',
-          },
-          {
-            test: /\.(sc|c|sa)ss$/,
-            use: [
-              MiniCssExtractPlugin.loader,
-              // 'vue-style-loader',
-              {
-                loader: "css-loader",
-                options: {
-                  //URL の解決を無効に
-                  url: false,
-                  // ソースマップを有効に
-                  sourceMap: true,
-                },
+            loader: "sass-loader",
+            options: {
+              // dart-sass を優先
+              implementation: require('sass'),
+              sassOptions: {
+                // fibers を使わない場合は以下で false を指定
+                fiber: false,
               },
-              {
-                loader: "sass-loader",
-                options: {
-                  // dart-sass を優先
-                  implementation: require('sass'),
-                  sassOptions: {
-                    // fibers を使わない場合は以下で false を指定
-                    fiber: false,
-                  },
-                  // ソースマップを有効に
-                  sourceMap: true,
-                },
-              },
-            ]
+              // ソースマップを有効に
+              sourceMap: true,
+            },
           },
+        ]
+      },
+      {
+        // test: /\.(png|jpe?g|gif|svg|eot|ttf|woff|woff2)(\?.+)?$/,
+        test: /\.(eot|svg|ttf|woff|woff2)(\?\S*)?$/, 
+        // test: /\.(eot|otf|ttf|woff2?|svg)(\?.+)?$/,
+        // include: /node_modules/,
+        include: [
+          path.resolve('src'),
+          path.resolve('node_modules/element-ui/'),
+          // path.resolve('assets/vendor/'),
+        ],
+        use: [
           {
-            // test: /\.(png|jpe?g|gif|svg|eot|ttf|woff|woff2)(\?.+)?$/,
-            test: /\.(eot|svg|ttf|woff|woff2)(\?\S*)?$/, 
-            // test: /\.(eot|otf|ttf|woff2?|svg)(\?.+)?$/,
-            // include: /node_modules/,
-            include: [
-              path.resolve('src'),
-              path.resolve('node_modules/element-ui/'),
-              // path.resolve('assets/vendor/'),
-            ],
-            use: [
-              {
-                loader: 'url-loader',
-                // loader: 'file-loader',
-                options: {
-                  limit: 100000,
-                  outputPath: 'fonts/',
-                  publicPath : function(path){
-                     return '/assets/fonts/' + path;
-                  },
-                  name: '[name].[ext]',
-                },
+            loader: 'url-loader',
+            // loader: 'file-loader',
+            options: {
+              limit: 100000,
+              outputPath: 'fonts/',
+              publicPath : function(path){
+                 return '/assets/fonts/' + path;
               },
-            ],
+              name: '[name].[ext]',
+            },
           },
-      ]
+        ],
+      },
+    ]
   },
   resolve: {
     modules: [path.join(__dirname, 'src'), 'node_modules', 'assets'],

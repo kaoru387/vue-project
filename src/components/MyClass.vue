@@ -3,7 +3,8 @@
     <v-data-table
       :headers="headers"
       :items="items"
-      sort-by="date"
+      :sort-by="['updated', 'date']"
+      :sort-desc="[true, false]"
       :page.sync="page"
       :items-per-page="itemsPerPage"
       hide-default-footer
@@ -32,7 +33,7 @@
       <template v-slot:item.price="{ item }">
         <div class="mb-1">
           <span v-if="item.isPaid" class="mr-2 g-font-size-12 g-color-gray-dark-v5">{{ item.status }}</span>
-          <span v-else class="mr-2 g-font-size-12">未払い</span>
+          <span v-else class="mr-2 g-font-size-12">現地払い</span>
           <span>¥{{item.price.toLocaleString()}}</span>
         </div>
         <!-- <span>¥{{ item.price.toLocaleString() }}</span> -->
@@ -52,7 +53,7 @@
         <span class="g-font-size-12">{{ item.location }}</span>
       </template>
       <template v-slot:item.isEdit="{ item }">
-        <v-btn
+        <!-- <v-btn
           v-if="!item.isPaid"
           class="mt-2 mb-2"
           outlined
@@ -62,7 +63,7 @@
           @click="confirmPayPoint(item)"
         >
           ポイント精算
-        </v-btn>
+        </v-btn> -->
         <v-btn 
           v-if="!item.isEdit"
           class="mt-2 mb-2" 
@@ -100,13 +101,22 @@
       v-model="delconfirm"
       max-width="290"
     >
-      <v-card>
+      <v-card class="pb-2">
         <v-card-title class="headline">予約取消の確認</v-card-title>
 
-        <v-card-text>
+        <v-card-text class="pb-2">
           本当に予約を取消してよろしいですか？
         </v-card-text>
-
+        <v-card-text :style="{'color':'blue', 'font-size':'9pt'}">
+          お支払い分は、PayPayへ返金されます。
+        </v-card-text>
+        <!-- <v-card-text v-if="!isTimeLimit"  :style="{'color':'blue', 'font-size':'9pt'}">
+          お支払い分は、PayPayへ返金されます。
+        </v-card-text>
+        <v-card-text v-else :style="{'color':'red', 'font-size':'9pt'}">
+          PayPay返金の有効期限を過ぎましたので、返金については管理者へお問い合わせください。このまま取消した場合、お支払い分はポイントへ変換されます。
+        </v-card-text> -->
+       
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
@@ -120,7 +130,7 @@
             color="error"
             outlined
             text
-            @click="deleteReservation"
+            @click="deleteReservationPayPay"
           >
             はい
           </v-btn>
@@ -130,22 +140,25 @@
 
     <!-- ポイント精算の確認 -->
     <v-dialog
-      v-model="payconfirm"
+      v-model="pointconfirm"
       max-width="290"
     >
-      <v-card>
-        <v-card-title class="headline">ポイント精算の確認</v-card-title>
+      <v-card class="pb-2">
+        <v-card-title class="headline">予約取消の確認</v-card-title>
 
         <v-card-text>
-          ポイント精算してよろしいですか？
+          本当に予約を取消してよろしいですか？
         </v-card-text>
-        
+        <v-card-text :style="{'color':'blue', 'font-size':'9pt'}">
+          お支払い分は、ポイントへ変換されます。
+        </v-card-text>
+
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
             outlined
             text
-            @click.stop="payconfirm = false"
+            @click.stop="pointconfirm = false"
           >
             キャンセル
           </v-btn>
@@ -153,7 +166,7 @@
             color="indigo"
             outlined
             text
-            @click="payPoint"
+            @click="deleteReservation"
           >
             はい
           </v-btn>
@@ -208,17 +221,9 @@ export default {
   // },
   data() {
     return {
-      // dialog: false,
       delconfirm: false,
-      payconfirm: false,
-      // used: {
-      //   op1: false,
-      // },
-      // hours: 0,
-      // minutes: 0,
-      // isOption: false,
-      // optionAmount: 0,
-      // targetDate: '',
+      pointconfirm: false,
+      // isTimeLimit: false,
       headers: [
         {
           text: '日時',
@@ -230,6 +235,12 @@ export default {
         { text: '料金', align: 'start', sortable: false, value: 'price' },
         { text: '内容', align: 'start', sortable: false, value: 'description' },
         { text: '場所', align: 'start', sortable: false, value: 'location' },
+        {
+          text: '作成日',
+          align: 'start',
+          value: 'updated',
+          sortable: true, 
+        },
         { text: '' , sortable: false, value: 'isEdit' },
       ],
       page: 1,
@@ -237,18 +248,13 @@ export default {
       itemsPerPage: 2,
       expanded: [],
       item: [],
+      merchantRevertId: '',
+      paymentId: '',
+      requestedAt: '',
+      paypayDetails: [],
     }
   },
   watch: {
-    // 'used.op1': function (val) {
-    //   if(!val) return;
-    //   if(this.billingAmount<this.auth.credit) return;
-    //   // 請求金額あるがポイント不足している場合
-    //   this.$message({
-    //     type: 'error',
-    //     message: 'ポイントが不足しています。',
-    //   });
-    // },
   },
   computed: {
     search() {
@@ -268,100 +274,109 @@ export default {
   mounted() {
     // this.title = this.selectDate+'の予約';
     // console.log('nu', this.auth.credit + this.item.price)
+    // console.log('nu', this.item)
+    // this.isPayPay=false;
+    // if(this.item.status=="PayPay決済") this.isPayPay=true;
   },
   methods: {
-    confirmDelete(item) { // 予約削除の確認
-      this.item=item;
-      this.delconfirm=true;
-    },
-    confirmPayPoint(item) { // ポイント精算の確認
-      // console.log(item);
-      this.item=item;
-      this.payconfirm=true;
-    },
-    payPoint() {
-      store.commit('SET_ISLOADING', true);
+    confirmDelete(item) {   // 予約削除の確認
+
+      console.log('HI' ,item);
+      this.item = item;
 
       const that = this;
-      let credit = that.auth.credit;
-      credit = that.auth.credit - that.item.price;
-      // console.logs(credit);
+      if(item.status=="PayPay決済"){
+        store.commit('SET_ISLOADING', true);
+        console.log("delete my class.", item.status);
 
-      store.dispatch('saveUser',{
+        // paypay支払状態を取得
+        store.dispatch('getPayPayStatus',{
+          params: {
+            merchantPaymentId: item.super_field
+          },
+          callback: function(res) {
+
+            console.log(res)
+            that.paypayDetails=res;
+            
+            // if(res.status=="COMPLETED"){
+            //   // paypay決済キャンセル可
+            //   that.isTimeLimit = false;
+            // }else{
+            //   // paypay決済キャンセル不可、ポイント変換
+            //   that.isTimeLimit = true;
+            // }
+            that.delconfirm=true;
+            store.commit('SET_ISLOADING', false);
+
+            // console.log('params', params);
+          }
+        });
+
+      } else {
+        // ポイント変換、paypay以外
+        that.pointconfirm=true;
+      }
+
+    },
+    deleteReservationPayPay() {
+      store.commit('SET_ISLOADING', true);
+
+      let that = this;
+      console.log(that.paypayDetails);
+
+      const timeStamp = Math.round((new Date()).getTime() / 1000);
+      // console.log("timeStamp", timeStamp);
+
+      // PayPay返金
+      store.dispatch('cancelPayPay', {
         params: {
-          credit: credit,
+          merchantRefundId: '',
+          paymentId: that.paypayDetails.paymentId,
+          amount: that.paypayDetails.amount,
+          requestedAt: timeStamp,
+          reason: 'クラス予約の取消',
         },
-        callback: function(res){
-          console.log('save', res);
+        callback: function(res) {
 
-          // 予約
-          store.dispatch('editClass', {
+          console.log('cancel pay', res);
+          if(res.data.status!=='CREATED') {
+            alert('PayPay返金処理に失敗しました！管理者へお問い合わせください。')
+            return;
+          }
+          console.log('cancel pay success!');
+
+          store.dispatch('deleteAppointment',{
             params: {
               id: that.item.id,
-              amount: that.item.price,
-              resource_id: that.item.resource_id,
-              description: 'ポイント精算'
+              resourceId: that.item.resource_id,
             },
-            callback: function(res2){
+            callback: function(res3) {
 
-              // ポイント更新
-              store.commit('UPDATE_USER_CREDIT', credit);
-             
-              // データ取得
-              setTimeout(function() {
+              console.log(res3)
 
-                that.$message({
-                  type: 'success',
-                  message: 'ポイント精算完了しました。',
-                });
-                // 閉じる
-                that.payconfirm=false;
+              // 完了メッセージ
+              that.$message({
+                type: 'success',
+                message: '予約を取消しました。',
+              });
 
-                // データ初期化
-                store.commit('RESET_DATA');
-                store.dispatch('getBookings',{
-                  callback: function(res){
+              that.delconfirm=false;
 
-                    // 自身の予約
-                    store.dispatch('getAgenda',{
-                      params: {
-                        from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
-                        user_id: that.auth.user_id,
-                        resource_id: that.item.resource_id,
-                      },
-                      callback: function(res3) {
-                        // 検索終了
-                        store.commit('SET_IS_SEARCH', false);
-                        store.commit('SET_ISLOADING', false);
-                      }
-                    });
+              // 自身の予約
+              store.dispatch('getAgenda',{
+                params: {
+                  user_id: that.auth.user_id,
+                  resource_id: that.item.resource_id,
+                },
+                callback: function(res4) {
+                  store.commit('SET_IS_SEARCH', false);
+                  store.commit('SET_ISLOADING', false);
+                  store.commit('SET_BACK_URI', '/schedule');
+                  that.$router.push('/');
+                }
+              });
 
-                  }
-                });
-
-
-                // // 支払済
-                // that.used.op1=true;
-                // that.isOption=true;
-                // that.optionAmount=that.billingAmount;
-
-                // // データ再取得
-                // store.dispatch('getUsers', 
-                //   function(e){
-                //     // 予約取得
-                //     store.commit('SET_EVENTS', []);
-                //     // 予約取得
-                //     store.dispatch('getBookings',{
-                //       callback: function(res){
-                //         // 検索終了
-                //         store.commit('SET_IS_SEARCH', false);
-                //         if(res) store.commit('SET_ISLOADING', false);
-                //         // that.$router.push({path: '/about'});
-                //       }
-                //     });
-                // });
-
-              }, 1000);
             }
           });
 
@@ -373,65 +388,57 @@ export default {
 
       let that = this;
       let credit = that.auth.credit;
-      credit = Number(that.auth.credit) + Number(that.item.price);
+      credit = Number(that.auth.credit) + Number(that.item.paid);
+      console.log('credit', credit);
+      console.log(that.paypayDetails);
 
-      // store.dispatch('saveUser',{
-      //   params: {
-      //     credit: credit,
-      //   },
-      //   callback: function(res){
+      // ユーザー情報更新
+      store.dispatch('saveUser',{
+        params: {
+          credit: credit,
+        },
+        callback: function(res2){
 
           // ポイント更新
           store.commit('UPDATE_USER_CREDIT', credit);
           store.dispatch('deleteAppointment',{
             params: {
               id: that.item.id,
-              // created: moment(that.item.created).format("YYYY-MM-DD"),
-              // start: that.item.start,
-              // user_id: that.item.user_id,
               resourceId: that.item.resource_id,
             },
-            callback: function(res) {
+            callback: function(res3) {
 
-              console.log(res)
+              console.log(res3)
 
               // 完了メッセージ
               that.$message({
                 type: 'success',
                 message: '予約を取消しました。',
               });
-              setTimeout(function(){
-                // データ初期化
-                store.commit('RESET_DATA');
-                // 予約
-                store.commit('SET_EVENTS', []);
-                store.dispatch('getBookings',{
-                  callback: function(res){
-                    // 自身の予約
-                    store.dispatch('getAgenda',{
-                      params: {
-                        from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
-                        user_id: that.auth.user_id,
-                        resource_id: that.item.resource_id,
-                      },
-                      callback: function(res2) {
-                        that.delconfirm=false;
-                        store.commit('SET_ISLOADING', false);
-                      }
-                    });
 
-                  }
-                });
-                
-              },1000);
+              // 自身の予約
+              store.dispatch('getAgenda',{
+                params: {
+                  user_id: that.auth.user_id,
+                  resource_id: that.item.resource_id,
+                },
+                callback: function(res4) {
+                  that.pointconfirm=false;
+                  store.commit('SET_IS_SEARCH', false);
+                  store.commit('SET_ISLOADING', false);
+                  store.commit('SET_BACK_URI', '/schedule');
+                  that.$router.push('/');
+                }
+              });
 
             }
           });
-
-      //   }
-      // });
+        }
+      });
 
     },
+
+
   }
 }
 </script>

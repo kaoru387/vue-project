@@ -32,11 +32,11 @@ import createPersistedState from "vuex-persistedstate";
 
 import xml2js from 'xml2js'
 const parser = new xml2js.Parser({
-        async: false, 
-        explicitArray: false
-      });
+  async: false, 
+  explicitArray: false
+});
 import firebase from "@firebase/app";
-import Firebase from "Firebase";
+// import Firebase from "Firebase";
 
 // const debug = process.env.NODE_ENV !== 'production'
 const debug = process.env.NODE_ENV !== 'development'
@@ -46,13 +46,11 @@ const state = {
       events: [],
       users: [],
       bookings: [],
-      charges: [],
       schedules: [],
       resources: [],
-      // myschedules: [],
+      classes: [],
       myClass: [],
       my: [],
-      // history: [],
     },
     master:{},
     form:{
@@ -82,10 +80,12 @@ const state = {
       session: '',
       paypaySession: '',
       isNeedName: false,
+      isPhoneNumber: false,
+      resource_id: '',
     },
     authStatus: false,
     info: {
-      browser:'',
+      userAgent:'',
       isPersonal: true,
       isSafariLogin: false,
       actionCode: '',
@@ -97,6 +97,7 @@ const state = {
     search: {},
     isSearch: false,
     lineLogin: '',
+    receptionId:'',
 }
 
 const actions = {
@@ -172,6 +173,7 @@ const actions = {
         method: 'POST',
         params,
       }).then((res) => {
+        console.log(res);
         let data = JSON.parse(res.data).data;
         callback(data)
       });
@@ -182,7 +184,7 @@ const actions = {
     processAll();
   },
   getPayPayStatus: (store,{params,callback}) => {
-    const processA = async function(documentName) {
+    const processA = async function() {
       const response = await firebase.functions().httpsCallable('getPayPay');
       await response({
         method: 'POST',
@@ -198,8 +200,26 @@ const actions = {
     processAll();
   },
   deletePayPay: (store,{params,callback}) => {
-    const processA = async function(documentName) {
+    const processA = async function() {
       const response = await firebase.functions().httpsCallable('deletePayPay');
+      await response({
+        method: 'POST',
+        params,
+      }).then((res) => {
+        console.log('app', res)
+        let data = JSON.parse(res.data).data;
+        callback(data)
+      });
+    }
+    const processAll = async function() {
+      await processA();
+    }
+    processAll();
+  },
+  // 返金対応
+  getRefundPayPay: (store,{params,callback}) => {
+    const processA = async function() {
+      const response = await firebase.functions().httpsCallable('getRefundPayPay');
       await response({
         method: 'POST',
         params,
@@ -213,26 +233,43 @@ const actions = {
     }
     processAll();
   },
-  getCharges: (store,{params,callback}) => {
-    try {
-      const processA = async function() {
-        const httpEvent = firebase.functions().httpsCallable('getChargeStripe');
-        await httpEvent({ 
-          params: {
-            params
-          }
-        }).then((res) => {
-          store.commit('SET_CHARGES', res.data.data)
-        });
-      }
-      const processAll = async function() {
-        await processA()
-      }
-      processAll()
-    } catch(error){
-      console.log(error)
+  cancelPayPay: (store,{params,callback}) => {
+    const processA = async function() {
+      const response = await firebase.functions().httpsCallable('cancelPayPay');
+      await response({
+        method: 'POST',
+        params,
+      }).then((res) => {
+        console.log(res);
+        let data = JSON.parse(res.data);
+        callback(data)
+      });
     }
+    const processAll = async function() {
+      await processA();
+    }
+    processAll();
   },
+  // getCharges: (store,{params,callback}) => {
+  //   try {
+  //     const processA = async function() {
+  //       const httpEvent = firebase.functions().httpsCallable('getChargeStripe');
+  //       await httpEvent({ 
+  //         params: {
+  //           params
+  //         }
+  //       }).then((res) => {
+  //         store.commit('SET_CHARGES', res.data.data)
+  //       });
+  //     }
+  //     const processAll = async function() {
+  //       await processA()
+  //     }
+  //     processAll()
+  //   } catch(error){
+  //     console.log(error)
+  //   }
+  // },
   getUsers: (store,callback) => {
     try {
       const processA = async function() {
@@ -259,7 +296,7 @@ const actions = {
       console.log(error)
     }
   },
-  getAgenda: (store,{params, callback}) => {  //自身のクラス予約
+  getAgenda: (store,{params, callback}) => {  //あなたのクラス予約
     try {
       const processA = async function() {
         const httpEvent2 = firebase.functions().httpsCallable('getSSass');
@@ -267,10 +304,9 @@ const actions = {
           path: '/agenda/'+params.resource_id+'.json',
           method: 'GET',
           params: {
-            user: params.user_id,
+            user: store.state.auth.user_id,
             api_key: supersassConfig.apiKey,
             account: supersassConfig.account,
-            from: params.from_date,
             slot: true
           },
           headers: {
@@ -279,52 +315,20 @@ const actions = {
             "Access-Control-Allow-Origin": "*",
           }
         }).then((res) => {
+          // console.log('my agenda!!!', res, params, store.state.auth.user_id);
           // 初期化
           store.state.result.myClass=[];
-
+          store.state.info.countMyClass=0;
           let result = res.data;
+          if(result.bookings==undefined) {
+            callback('error');
+            return;
+          }
+          console.log('agenda ok.', result.bookings.length)
           _.forEach(result.bookings, function(v, k) {
             setMyEvent(store, v, params.resource_id);
           })
           callback('success.');
-        });
-      }
-      const processAll = async function() {
-        await processA()
-      }
-      processAll()
-    } catch(error){
-      console.log(error)
-    }
-  },
-  getForms: (store,{params, callback}) => {
-    try {
-      const processA = async function() {
-        const httpEvent2 = firebase.functions().httpsCallable('getSSass');
-        const d_appoint = httpEvent2({ 
-          path: '/forms',
-          method: 'GET',
-          params: {
-            form_id: 55915,
-            account: supersassConfig.account,
-            checksum: supersassConfig.checksum,
-          },
-          headers: {
-            "Accept": "*/*",
-            "Contsent-Type": "application/json; charset=utf-8",
-            "Access-Control-Allow-Origin": "*",
-          }
-        }).then((res) => {
-          // // 初期化
-          // store.state.result.myClass=[];
-
-          let result = res.data;
-          console.log('forms', result);
-          // _.forEach(result.bookings, function(v, k) {
-          //   console.log(v)
-          //   setMyEvent(store, v, params.resource_id);
-          // })
-          // callback('success.');
         });
       }
       const processAll = async function() {
@@ -357,9 +361,39 @@ const actions = {
             "Access-Control-Allow-Origin": "*",
           }
         }).then((res) => {
-          // console.log('OK', res);
-          callback(res);
+          console.log('class ok');
+          
+          // 初期化
+          store.state.result.classes=[];
+
+          _.forEach(res.data.slots, function(v, k) {
+              let _date = moment(v.start).format("MM月DD日");
+              let _start = moment(v.start).format("HH:mm");
+              let _finish = moment(v.finish).format("HH:mm");
+
+              // ポイント有効か
+              let isPoint=false;
+              let _price=0;
+              if(3<v.price.length) _price = Number(v.price.replace(/,/, ''));
+            else _price = Number(v.price);
+            if(store.state.auth.credit < _price) isPoint=true;
+            // console.log(that.auth.credit, _price);
+              store.state.result.classes.push({
+                id: v.id,
+                title: v.title,
+                price: v.price,
+                date: _date,
+                start: _start,
+                finish: _finish,
+                description: v.description,
+                location: v.location,
+                isClass: true,
+                isPoint: isPoint,
+              });
+            });
+
         });
+        callback('success.');
       }
       // スタジオ
       const processAll = async function() {
@@ -499,55 +533,54 @@ const actions = {
     }
   },
   getBookings: (store, {callback}) => {
-    // store.commit('SET_ISLOADING', true)
+    store.commit('SET_ISLOADING', true);
     try {
+      // 前月
+
+      // フォーマット:SSで59以上の値がきてエラーになる→01に固定で解消
+      // let m_before = moment().subtract(1, 'months').utc().format("YYYY-MM-DD HH:MM:SS");
+      let m_before = moment().subtract(1, 'months').utc().format("YYYY-MM-DD 08:00:00");
+      // console.log(supersassConfig.resourceId, m_before);
+
       let that = this;
       const processA = async function() {
         const httpEvent = firebase.functions().httpsCallable('getSSass');
         await httpEvent({ 
-          path: '/bookings',
+          // path: '/bookings',
+          path: '/changes/'+supersassConfig.resourceId+'.json',
           params: {
-            schedule_id: supersassConfig.resourceId,
-            checksum: supersassConfig.checksum,
+            // schedule_id: supersassConfig.resourceId,
+            from: m_before,
+            api_key: supersassConfig.apiKey,
+            limit: 200,
+            // checksum: supersassConfig.checksum,
+            // 'booking[start]': m_before
           },
-          headers: {
-            "Accept": "application/xml",
-            "Content-Type": "application/xml; charset=utf-8",
-            "Access-Control-Allow-Origin": "*",
-          }
+          // headers: {
+          //   "Access-Control-Allow-Credentials": "true",
+          //   "Authorization": "Basic " + btoa(supersassConfig.account + ":" + supersassConfig.apiKey),
+          //   "Accept": "application/json",
+          //   "Access-Control-Allow-Origin": "*",
+          // }
+          // headers: {
+          //   "Accept": "application/xml",
+          //   "Content-Type": "application/xml; charset=utf-8",
+          //   "Access-Control-Allow-Origin": "*",
+          // }
         }).then((res) => {
-          // xml to json
-          // store.state.result.bookings=[];
-          // ログインユーザー予約
-          // store.state.result.myschedules=[];
-          // store.state.result.my=[];
-          // store.state.result.history=[];
-          // let my = [];
+          console.log('booking data.', res.data.bookings.length);
+          if(res.data.bookings==null || res.data.bookings==undefined) {
+            callback(true, res);
+            return;
+          }
+          console.log('OK♪')
 
-          parser.parseString(res.data, function (err, result) {
-
-            // 個人と団体データ様式が異なるため
-            let _datas=result.reservations;
-            if(_datas==undefined) _datas = result.appointments;
-
-            // -----------------------------
-            // 管理者が変更すると、この形式になる?
-            // -----------------------------
-            if(_datas.reservation){
-              if(1<_datas.reservation.length){
-                _.forEach(_datas.reservation, function(v, k) {
-                  // console.log(v)
-                  setScheduleEvent(store, v);
-                });
-              }else{
-                // 1件しかない場合、配列じゃない。
-                setScheduleEvent(store, _datas.reservation);
-              }   
-            }
+          // 初期化
+          store.state.info.countMyStudio=0;
+          _.forEach(res.data.bookings, function(v, k) {  
+            setScheduleEvent(store, v);
           });
-          // console.log(my);
-          // store.state.result.myschedules=store.state.result.my;
-          callback(true);
+          callback(false, res);
         });
       }
       // スタジオ
@@ -780,7 +813,7 @@ const actions = {
             "Access-Control-Allow-Origin": "*",
           }
         }).then((res) => {
-          console.log("success add???!", res);
+          console.log("success add!!", res);
           callback(res)
         });
       }
@@ -972,7 +1005,10 @@ const actions = {
 
 // 
 function setMyEvent(store, v, resource_id) {
-  // console.log(v);
+  
+  // 作成日
+  let _updated = moment(v['created_on']).utc().format("YYYY-MM-DD");
+
   // 取消可能か
   let isEdit=true;
   // 当日以前の予約は取消不可
@@ -991,6 +1027,7 @@ function setMyEvent(store, v, resource_id) {
   if(3<v['price'].length) _price = Number(v['price'].replace(/,/, ''));
   else _price = Number(v['price']);
   _price=_price/100
+  // console.log('my price', _price)
 
   // 支払い確認
   let _paid=0;
@@ -1022,11 +1059,12 @@ function setMyEvent(store, v, resource_id) {
     isEdit: isEdit,
     resource_id: resource_id,
     isPaid: isPaid,
-    status: v.address
+    status: v.address,
+    updated: _updated,
+    super_field: v['super_field'],
   });
 
 };
-
 
 function setFreeData(params, v, resources) {
   // console.log(v.start, params)
@@ -1044,7 +1082,6 @@ function setFreeData(params, v, resources) {
   }
   let hours = diff.hours() < 10 ? "0" + diff.hours() : diff.hours();
   let minutes = diff.minutes() < 10 ? "0" + diff.minutes() : diff.minutes();
-  // console.log('diff', hours + ":" + minutes);
   // 30分ごとなので、変換
   if(minutes==30) minutes=1;
   // End -----------------------------------------------
@@ -1080,7 +1117,6 @@ function setFreeData(params, v, resources) {
     minutes: minutes,
   });
   return resources;
-  
 }
 
 function getRandomInt(min, max) {
@@ -1091,18 +1127,24 @@ function getRandomInt(min, max) {
 
 // カレンダーイベント追加
 function setScheduleEvent(store, v) {
-  // console.log(v);
-  // let description = v['status-message'];
-  let _start = moment(v['start']['_']).utc().format("HH:mm");
-  let _finish = moment(v['finish']['_']).utc().format("HH:mm");
+  if(v['deleted']) return;
+  
+  // let _start = moment(v['start']['_']).utc().format("HH:mm");
+  // let _finish = moment(v['finish']['_']).utc().format("HH:mm");
+  // let _updated = moment(v['updated-on']['_']).utc().format("YYYY-MM-DD");
+  let _start = moment(v['start']).format("HH:mm");
+  let _finish = moment(v['finish']).format("HH:mm");
+  let _updated = moment(v['created_on']).format("YYYY-MM-DD");
 
   // 合計時間を取得 -----------------------------------------------
   const start = moment.duration(_start, "HH:mm");
   const end = moment.duration(_finish, "HH:mm");
   const diff = end.subtract(start);
-  if (diff.hours() < 0 || diff.minutes() < 0) {
-    return "00:00";
-  }
+  // if (diff.hours() < 0 || diff.minutes() < 0) {
+  //   console.log(v)
+  //   return "00:00";
+  // }
+  
   let hours = diff.hours() < 10 ? "0" + diff.hours() : diff.hours();
   let minutes = diff.minutes() < 10 ? "0" + diff.minutes() : diff.minutes();
   // console.log('diff', hours + ":" + minutes);
@@ -1112,20 +1154,22 @@ function setScheduleEvent(store, v) {
 
   // Firestore更新用-start
   let product_name = '管理者変更';
-  let obj = Object.prototype.toString.call(v['field-2'])
-  if(obj == '[object String]') product_name = v['field-2'];
+  // let obj = Object.prototype.toString.call(v['field-2'])
+  // if(obj == '[object String]') product_name = v['field-2'];
+  if(v['field_2']!==null) product_name = v['field_2'];
   
-  let price = v['price'];
-  let obj2 = Object.prototype.toString.call(v['field-1'])
-  if(obj2 == '[object String]') {
-    // price = v['field-1'];
-    price = Number(v['field-1'].replace(/,/, ''));
-  }
+  let price = Number(v['price']);
+  // let obj2 = Object.prototype.toString.call(v['field-1'])
+  // if(obj2 == '[object String]') {
+  //   price = Number(v['field-1'].replace(/,/, ''));
+  // }
+  if(v['field_1']!==null) price = Number(v['field_1']);
 
   let description = 'ポイント精算';
-  let obj3 = Object.prototype.toString.call(v['description'])
-  if(obj3 == '[object String]') description = v['description'];
-
+  // let obj3 = Object.prototype.toString.call(v['description'])
+  // if(obj3 == '[object String]') description = v['description'];
+  if(v['description']!==null) description = v['description'];
+  
   // カード決済かを取得
   let isCard = false;
   // let obj3 = Object.prototype.toString.call(v['field-2'])
@@ -1137,7 +1181,7 @@ function setScheduleEvent(store, v) {
   
   // コザが含まれているか検索
   let color = supersassConfig.nagoColor;
-  var result = v['res-name'].indexOf('コザ');
+  var result = v['res_name'].indexOf('コザ');
   if(result!==-1) {
     // コザ
     color = supersassConfig.kozaColor;
@@ -1146,37 +1190,36 @@ function setScheduleEvent(store, v) {
   let title='予約済';
 
   store.state.result.bookings.push({
-    id: v['id']['_'],
-    email: v['full-name'],
+    id: v['id'],
+    email: v['full_name'],
     product_name: product_name,
     price: price,
-    date: moment(v['start']['_']).utc().format("YYYY-MM-DD"),
+    date: moment(v['start']).utc().format("YYYY-MM-DD"),
     start: _start,
     finish: _finish,
-    created: moment(v['created-on']['_']).utc().format("YYYY-MM-DD"),
+    created: moment(v['created_on']).utc().format("YYYY-MM-DD"),
   });
 
   // Firestore更新用-end
   store.state.result.events.push({
-    id: v['id']['_'],
-    title: title+' '+price+' '+v['res-name'],
-    start: v['start']['_'],
-    end: v['finish']['_'],
+    id: v['id'],
+    title: title+' '+price+' '+v['res_name'],
+    start: v['start'],
+    end: v['finish'],
     description: description,
     datetime: _start+'-'+_finish,
     product_name: product_name,
-    studioName: v['res-name'],
+    studioName: v['res_name'],
     iconColor: color,
     color: color,
     display: '',
-    created: v['created-on']['_'],
-    user_id: v['user-id']['_'],
+    created: v['created_on'],
+    user_id: v['user_id'],
     allDay: allDay,
   });
 
   // ログインユーザーの予約
-  if(store.state.auth.email==v['email']){
-
+  if(store.state.auth.email==v['email']) {
     // オプション金額
     let option_price=0;
     let isOption=false;
@@ -1187,18 +1230,18 @@ function setScheduleEvent(store, v) {
     //     isOption=true;
     //   }
     // }
-    let obj4 = Object.prototype.toString.call(v['phone'])
-    if(obj4 == '[object String]') {
+    // let obj4 = Object.prototype.toString.call(v['phone'])
+    // if(obj4 == '[object String]') {
       if(v['phone']!==''){
         option_price = Number(v['phone'].replace(/,/, ''));
         if(0<option_price) isOption=true;
       }
-    }
+    // }
     // 取消可能か
     let isEdit=true;
     // 当日以前の予約は取消不可
     let today = moment().format("YYYY-MM-DD");
-    let target = moment(v['start']['_']).utc().format("YYYY-MM-DD");
+    let target = moment(v['start']).format("YYYY-MM-DD");
     if(target<today) isEdit=false;
 
     // 自身の今後の予約数
@@ -1206,26 +1249,26 @@ function setScheduleEvent(store, v) {
 
     // 予約
     store.state.result.my.push({
-      id: v['id']['_'],
+      id: v['id'],
       // title: title+' '+price+' '+v['res-name'],
       title: product_name,
       price: price,
       total: price+option_price,
-      start: v['start']['_'],
-      end: v['finish']['_'],
+      start: v['start'],
+      end: v['finish'],
       description: description,
       datetime: _start+'-'+_finish,
       date: target,
       product_name: product_name,
-      studioName: v['res-name'],
+      studioName: v['res_name'],
       iconColor: color,
       // color: color,
       borderColor: color,
       color: 'white',
       fontColor: 'black',
       display: '',
-      created: v['created-on']['_'],
-      user_id: v['user-id']['_'],
+      created: v['created_on'],
+      user_id: v['user_id'],
       allDay: allDay,
       isEdit: isEdit,
       isCard: isCard,
@@ -1234,6 +1277,8 @@ function setScheduleEvent(store, v) {
       option_price: option_price,
       isOption: isOption,
       resource_id: supersassConfig.resourceId,
+      updated: _updated,
+      super_field: v['super_field'],
     });
 
   }
@@ -1254,6 +1299,7 @@ const mutations = {
     // state.result.myschedules=[]
     state.auth.isAdmissionFee = false;
     state.auth.isNeedName = false;
+    state.auth.isPhoneNumber = false;
   },
   onUserStatusChanged(state, status) {
     state.authStatus = status;
@@ -1268,11 +1314,11 @@ const mutations = {
   SET_BOOKINGS (state, data) {
     state.result.bookings = data
   },
-  SET_CHARGES (state, data) {
-    state.result.charges = data
-  },
+  // SET_CHARGES (state, data) {
+  //   state.result.charges = data
+  // },
   SET_SCHEDULES (state, data) {
-    state.result.schedules = data
+    state.result.schedules = data;
   },
   SET_EVENTS (state, data) {
     state.result.events = data
@@ -1290,15 +1336,16 @@ const mutations = {
     
     state.auth.username = auth.displayName;
     if(auth.email==null){
+      // 電話番号認証
       state.auth.email = auth.phoneNumber;
       state.auth.emailVerified=true;
+      state.auth.isPhoneNumber=true;
     }else{
       state.auth.email = auth.email
       state.auth.emailVerified=auth.emailVerified;
+      state.auth.isPhoneNumber=false;
     }
-    // state.info.isSafariLogin = false;
-    // console.log('get auth',auth);
-
+    
     // イベント取得
     let name = auth.email;
     if(auth.email==null) name = auth.phoneNumber;
@@ -1333,13 +1380,10 @@ const mutations = {
       supersassuser.full_name==''){
       state.auth.isNeedName = true;
     }
-    // console.log('super', supersassuser);
-    
-    // // 権限
-    // if(supersassuser.super_field==1) {
-    //   state.auth.isLine = true;
-    //   state.auth.isMember = true;
-    // }
+    // console.log('supersass', supersassuser);
+
+    // ユーザー情報7日保持
+    Vue.$cookies.set("arts-auth", state.auth, "7d");
   },
   SET_AUTH_ROLE (state, general){
     state.auth.general = general;
@@ -1347,18 +1391,27 @@ const mutations = {
   SET_AUTH_CHECKSUM (state, hash){
     state.auth.checksum = hash;
   },
-  SET_INFO_BROUSER (state, browser){
-    state.info.browser = browser;
+  SET_USER_AGENT (state, userAgent){
+    state.info.userAgent = userAgent;
   },
   RESET_DATA (state) {
     state.result.bookings = [];
     state.result.events = [];
     state.result.my = [];
-    // state.result.history = [];
     state.result.myClass = [];
+
+    state.result.resources = [];
+    state.result.users = [];
+    // ログインなしのクラス
+    state.result.classes = [];  
+
     state.info.countMyStudio=0;
     state.info.countMyClass=0;
+
   },
+  // SET_IS_UPDATE (state, bool){
+  //   state.isUpdate = bool;
+  // },
   // RESET_VUEX_STATE(state) {
   //   // ローカルストレージ初期化
   //   Object.assign(state, JSON.parse(localStorage.getItem('state')));
@@ -1396,7 +1449,16 @@ const mutations = {
     state.auth.session = session
   },
   PAYPAY_SESSION (state, session){
-    state.auth.paypaySession = session
+    state.auth.paypaySession = session;
+    if(session=="") {
+      Vue.$cookies.remove("paypay-session");
+      return;
+    }
+    // 24時間
+    Vue.$cookies.set("paypay-session", session, "24h");
+  },
+  SET_RESEPTION_ID (state, session){
+    state.receptionId = session
   },
 }
 

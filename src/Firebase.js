@@ -14,6 +14,7 @@ import firebaseui from "firebaseui-ja";
 // const authUi=new firebaseui.auth.AuthUI(firebase.auth());
 
 var db;
+var my;
 
 export default {
   //読み込み時に、firebase機能の設定をする
@@ -23,8 +24,12 @@ export default {
     db = firebase.firestore();
   },
   auth(){
-    return firebase.auth();
+    if(my==undefined) my = firebase.auth();
+    return my;
   },
+  // setAuth(auth){
+  //   my = auth;
+  // },
   authUI(){
     return firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(firebase.auth())
     // return new firebaseui.auth.AuthUI(firebase.auth())
@@ -52,14 +57,10 @@ export default {
     firebase.auth().signInWithEmailAndPassword(email, password)
       .then(res => {
         console.log("success login.");
-        // res.user.getIdToken().then(idToken => {
-        //   // localStorage.setItem('jwt', idToken);
-        //   router.push('/').catch(err => {
-        //     console.log("router push /");
-        //   });
-        // })
+        // // ユーザー取得
+        // store.commit('SET_AUTH', res.user);
       }, err => {
-        console.log(err.message);
+        console.log('error', err.message);
       })
   },
   //emailとパスワードでアカウント作成する
@@ -74,19 +75,38 @@ export default {
         console.log(err.message);
       })
   },
+  // // 電話番号ログイン
+  // signInWithPhoneNumber(phoneNumber, appVerifier) {
+  //   firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
+  //     .then(res => {
+  //       console.log("success phone login.", res);
+
+  //       // res.user.getIdToken().then(idToken => {
+  //       //   // localStorage.setItem('jwt', idToken);
+  //       //   router.push('/').catch(err => {
+  //       //     console.log("router push /");
+  //       //   });
+  //       // })
+  //     }, err => {
+  //       console.log(err.message);
+  //     })
+  // },
   //ログアウト
   //ログアウト後は、保存しているjwtを削除して、vuexのmutationに実装した状態の更新処理でユーザーをログアウト状態にする。
   logOut() {
     let that = this;
     firebase.auth().signOut()
       .then(() => {
+        console.log('logout ok.')
+        // セッションクリア
         localStorage.removeItem("jwt")
+        localStorage.clear()
+
         store.commit('onAuthEmailChanged', "");
         store.commit('onUserStatusChanged', false);
+
         // // ストレージ初期化
-        // store.commit('RESET_VUEX_STATE');
-        // セッションクリア
-        localStorage.clear()
+        // store.commit('RESET_DATA');
         // if(router.path!=='/') router.push('/');
 
         // .then(function() {
@@ -135,7 +155,7 @@ export default {
     let options = [
       {
         provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
-        requireDisplayName: false
+        // requireDisplayName: false
       }
       // firebase.auth.TwitterAuthProvider.PROVIDER_ID,
       // firebase.auth.EmailAuthProvider.PROVIDER_ID,

@@ -63,9 +63,9 @@ export default {
     bookings() {
       return store.state.result.bookings;
     },
-    charges() {
-      return store.state.result.charges;
-    },
+    // charges() {
+    //   return store.state.result.charges;
+    // },
   },
   created: function () {
     console.log('customer!',this.item)

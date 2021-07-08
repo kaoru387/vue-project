@@ -30,81 +30,37 @@
     >
       <v-list-item three-line>
         <v-list-item-content>
-          <!-- <div class="d-flex justify-content-end p-2 pt-3 pb-0">
-            <div>
-              <div class="d-flex flex-column bd-highlight m-0 text-right">
-                <span v-if="auth.email!==''" class="p-0 bd-highlight sample">ポイント：{{ auth.credit.toLocaleString() }}</span></span>
-              </div>
-            </div>
-          </div> -->
-          <!-- .toLocaleString() -->
-          <!-- <div class="d-flex flex-column bd-highlight m-0">
-            <div class="font-weight-medium pt-2" :style="{'text-transform':'capitalize','font-size':'20px'}">
-              {{ item.studioName }}
-            </div>
-          </div> -->
           <v-list-item-title class="font-weight-bold">
             <div class="font-weight-medium pl-1 pt-0" :style="{'text-transform':'capitalize','font-size':'22px'}">
               {{ item.studioName }}
             </div>
           </v-list-item-title>
           <div class="p-0 pl-3">
-            <v-list-item-subtitle class="font-weight-bold pb-1">レンタル料金：¥{{ item.price }}</v-list-item-subtitle>
+            <v-list-item-subtitle>レンタル料金：¥{{ item.price }}</v-list-item-subtitle>
             <v-list-item-subtitle class="mt-1">利用時間：{{ item.hour }}時間</span></v-list-item-subtitle>
             <v-list-item-subtitle class="mt-1">利用ﾀｲﾌﾟ：{{ item.use_name }}</span></v-list-item-subtitle>
             <v-list-item-subtitle class="mt-1">人数ﾀｲﾌﾟ：{{ item.use_type }}</span></v-list-item-subtitle>
-
+            
             <div class="d-flex justify-content-between pt-2 pb-2">
               <label class="form-check-inline u-check g-color-gray-dark-v5 g-font-size-14 g-pl-25 mt-2">
                 <input v-model="isOption" type="checkbox" name='checkbox' class="d-block u-check-icon-checkbox-v6 g-absolute-centered--y g-left-0"><i class="fa" data-check-icon="&#xf00c"></i></input>
                 エアコン利用
               </label>
               <div v-if="isOption" class="g-font-size-14">
-                <p class="text-secondary m-0 pt-2">¥{{ billingAmount }}</p>
+                <p class="text-secondary m-0 pt-2 pr-4">¥{{ billingAmount }}</p>
               </div>
             </div>
           </div>
         </v-list-item-content>
-        <v-list-item-avatar
-          class="p-4 mr-3"
-          tile
-          size="100"
-          color="grey"
-        >
-          <img
-            v-if="item.studioName=='ナゴスタジオ'"
-            src="http://www.fandangos-okinawa.com/wordpress/wp-content/uploads/2016/10/img_nag.jpg"
-            alt="ナゴスタジオ">
-          <img
-            v-else
-            src="http://www.fandangos-okinawa.com/wordpress/wp-content/uploads/2016/10/img_cdd.jpg"
-            alt="コザスタジオ">
-        </v-list-item-avatar>
       </v-list-item>
-      <v-list-item class="text-right">
+      <v-list-item class="text-right mt-2">
         <v-list-item-subtitle class="g-font-size-18 font-weight-bold g-color-primary pr-4">支払合計：¥{{ total.toLocaleString() }}</v-list-item-subtitle>
       </v-list-item>
-      <v-divider class="mx-4"></v-divider>
+      <v-divider class="mx-4 mb-0"></v-divider>
       <v-card-actions class="justify-content-center pb-2">
         <div class="d-flex bd-highlight">
-          <div class="p-0 flex-fill bd-highlight text-center pt-2 pb-4">
+          <div class="p-0 flex-fill bd-highlight text-center p-3">
             <div class="p-0 bd-highlight mb-2">
-              <!-- <el-alert
-                v-if="!isPoint"
-                class="p-1 mb-2"
-                type="error"
-                description="ポイントが不足しています。"
-                show-icon>
-              </el-alert> -->
-              <!-- <el-button class="p-3" :style="{'width':'100%'}" type="success" @click="payoff" :disabled="auth.credit<item.price" :loading="loading">
-                ポイント精算する
-              </el-button> -->
-              <!-- <el-button class="p-3" :style="{'width':'100%'}" type="success" 
-                @click.stop="dialog = true" 
-                :disabled="auth.credit<item.price" 
-                :loading="loading">
-                ポイント精算する?
-              </el-button> -->
               <el-button class="p-3" :style="{'width':'100%'}" type="success" 
                 @click="payoff" 
                 :disabled="!isPoint" 
@@ -113,8 +69,9 @@
               </el-button>
             </div>
 
-            <span class="p-0 bd-highlight">
-              <el-button class="mb-2" :style="{'width':'100%'}" type="secondary" 
+            <span v-if="!auth.isPhoneNumber" class="p-0 bd-highlight">
+              <!-- <span class="sample" :style="{'color':'red'}">PayPay決済メンテナンス中、誠に申し訳ありません。</span> -->
+              <el-button class="mb-3" :style="{'width':'100%'}" type="secondary" 
                 @click="paypay">
                 <img
                   width="88" height="25"
@@ -124,12 +81,12 @@
               </el-button>
             </span>
 
-            <span class="p-0 bd-highlight">
+            <span v-if="!auth.isPhoneNumber" class="bd-highlight">
               <el-button 
                 :style="{'width':'100%'}" type="secondary" 
                 @click="payment" 
-                :disabled="isOption"
-                :loading="loading">
+                :loading="loading"
+                :disabled="isOption">
                 <img
                   width="120" height="22"
                   src="/images/card_5brand.png"
@@ -238,7 +195,7 @@ export default {
       this.isOption=false;
 
       // ポイント利用可否
-      if(this.auth.credit<item.price) this.isPoint=false;
+      if(this.auth.credit<item.price) this.isPoint = false;
 
       this.item = {
         studioName: item.studioName,
@@ -254,7 +211,6 @@ export default {
         description: '',
       };
       this.total = Number(item.price);
-
     },
     payoff() { //ポイント精算確認
       this.$emit('confirmPay', 'ポイント精算', this.item);

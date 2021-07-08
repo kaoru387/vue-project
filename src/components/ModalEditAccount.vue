@@ -76,7 +76,6 @@
   import axios from "axios"
   import _ from 'lodash';
   import firebase from "../Firebase";
-  // import { mdiAccount,mdiKey } from '@mdi/js'
 
   import { PhoneNumberUtil } from 'google-libphonenumber'
   import { ValidationProvider, ValidationObserver } from 'vee-validate';
@@ -122,7 +121,6 @@ export default {
   },
   data() {
     return {
-      // loading: true,
       form: {
         providerId: "",
         uid: "",
@@ -135,9 +133,6 @@ export default {
     }
   },
   computed: {
-    // users() {
-    //   return store.state.result.users;
-    // },
     loading() {
       return store.state.isLoading;
     },
@@ -176,16 +171,19 @@ export default {
           user.updateProfile({
             displayName: that.form.full_name,
           }).then(function() {
-            setTimeout(function(){
-              store.dispatch('getUsers',
-                function(e){
-                  that.$message({
-                    type: 'success',
-                    message: '会員情報を更新しました。',
-                  });
+
+            store.dispatch('getUsers',
+              function(e){
+                store.commit('SET_AUTH', user);
+                that.$message({
+                  type: 'success',
+                  message: '会員情報を更新しました。',
+                });
+                setTimeout(function(){
                   that.closeModal();
-              });
-           },500);
+                }, 600);
+            });
+           
           }).catch(function(error) {
             // An error happened.
             console.log('error.')
@@ -193,37 +191,6 @@ export default {
           return res;
         }
       });
-
-      // const f = await firebase.auth().createUserWithEmailAndPassword(this.form.email, this.form.password).then(
-      //   (user) => {
-          
-      //     let currentUser = firebase.auth().currentUser;
-      //     console.log('OK', currentUser);
-      //     currentUser.updateProfile({
-      //           displayName: that.form.username,
-      //     }).then(function() {
-           
-      //     }).catch(function(error) {
-      //       // An error happened.
-      //     });
-      //     currentUser.sendEmailVerification()
-      //     .then(() => {
-      //       that.$router.replace('/sendemail')
-      //     }).catch((err) => {
-      //       alert('EmailVerificationでerrが発生しました。', err)
-      //     })
-          
-      //   },
-      //   (err) => {
-      //     let errorCode = err.code
-      //     let errorMessage = err.message
-      //     // console.log(errorCode)
-      //     if(errorCode=='auth/email-already-in-use') {
-      //       alert('emailは既に存在しています！');
-      //     }
-      //   }
-      // )
-      
     },
     // cancel() {
     //   this.$router.push({path: '/'});

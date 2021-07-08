@@ -1,13 +1,7 @@
 <template>
   <div class="row align-items-center g-bg-white">
-    <el-page-header v-if="isSearch" @back="drawerOpen" content="空き時間検索" title="スタジオ予約" class="p-3 pb-2"></el-page-header>
-    <!-- <div class="col-md-12 d-flex justify-content-center">
-      <div class="mb-0">
-        あなたのポイント：<span class="g-color-primary g-font-weight-500 g-font-size-20 mr-2">{{ auth.credit.toLocaleString() }}</span>
-      </div>
-    </div> -->
-    <!-- <div class="col-md-12 g-pl-20 g-mb-5 g-mb-0--md p-0 d-flex justify-content-center"> -->
-    <div class="col-md-12 g-mb-10 g-mb-0--md p-2 pt-0" :style="{'min-height':adjust+100+'px', 'width': '100%'}">
+    <el-page-header v-if="isSearch" @back="cancel" content="空き時間検索" title="戻る" class="p-3 pb-2"></el-page-header>
+    <div class="col-md-12 g-mb-10 g-mb-0--md p-2 pt-5" :style="{'min-height':adjust+100+'px', 'width': '100%'}">
       <!-- Product Info -->
       <v-tabs
         v-if="!isSearch"
@@ -16,16 +10,16 @@
       >
         <v-tabs-slider></v-tabs-slider>
         <v-tab href="#tab-1"" class="pl-3 pr-3">
-          <figure class="text-center m-0" :style="{'line-height':'17px'}">
-            <p class="g-font-size-11">全体</p>                        
+          <figure class="g-font-size-13 text-center m-0" :style="{'line-height':'17px'}">
+            <!-- <p>全体</p> -->
             <span class="g-color-gray-dark-v3 g-font-weight-500">
-              スケジュール
+              全ての予約
             </span>
           </figure>
         </v-tab>
         <v-tab href="#tab-2" class="pl-3 pr-3">
-          <figure class="text-center m-0" :style="{'line-height':'17px'}">
-            <p class="g-font-size-11">あなたの</p>
+          <figure class="g-font-size-13 text-center m-0" :style="{'line-height':'17px'}">
+            <p>あなたの</p>
             <!-- <span class="g-color-gray-dark-v3 g-font-weight-500">スタジオ予約</span> -->
             <span class="d-inline-block g-pos-rel">
               <span v-if="0<countMyStudio" class="u-badge-v2 g-font-size-10 g-bg-deeporange g-color-white">
@@ -38,8 +32,8 @@
           </figure>
         </v-tab>
         <v-tab href="#tab-3" class="pl-3 pr-3">
-          <figure class="text-center m-0" :style="{'line-height':'17px'}">
-            <p class="g-font-size-11">あなたの</p>
+          <figure class="g-font-size-13 text-center m-0" :style="{'line-height':'17px'}">
+            <p>あなたの</p>
             <!-- <span class="g-color-gray-dark-v3 g-font-weight-500">クラス予約</span> -->
             <span class="d-inline-block g-pos-rel">
               <span v-if="0<countMyClass" class="u-badge-v2 g-font-size-10 g-bg-yellow g-color-white">
@@ -55,26 +49,12 @@
       <v-tabs-items v-if="!isSearch" v-model="tab">
         <v-tab-item :value="'tab-1'">
           <v-card flat>
-            <full-calendar ref="calendar" 
+            <full-calendar 
+              ref="calendar" 
               v-if="!isSearch"
               :events="events"
               :view-name="'dayGridMonth'">      
             </full-calendar>
-            <!-- <div class="p-3 pt-0">
-              <el-alert
-                v-if="isSearch && items.length==0"
-                class="text-left"
-                type="error"
-                description="予約可能な空き時間はありません。"
-                show-icon>
-              </el-alert>
-            </div> -->
-            <!-- <my-full-calendar ref="calendar" 
-          v-if="contens.length"
-            :events="contens"
-            :view-name="'dayGridMonth'"
-            @close="cancel">
-        </my-full-calendar> -->
           </v-card>
         </v-tab-item>
         <v-tab-item :value="'tab-2'">
@@ -108,7 +88,6 @@
           <div v-else class="p-0 ml-2 mr-2">
             <my-class />
           </div>
-          
         </v-tab-item>
       </v-tabs-items>
 
@@ -254,10 +233,6 @@ export default {
       studio_options: ['ナゴスタジオ','コザスタジオ'],
       use_options: ['フラメンコ練習', 'その他の利用'],
       form: {
-        // full_name: '',
-        // email: '',
-        // start: '',
-        // finish: '',
         resource_id: '',
         price: 0,
         date: '',
@@ -291,21 +266,15 @@ export default {
       // dialogDetail: false,
     }
   },
-  watch: {
-    // 'isSearch': function (val) {
-    //   // 検索中の場合、タブ3を表示
-    //   if(!val) return;
-    //   let that = this;
-    //   setTimeout(function(){
-    //     that.tab = 'tab-3';
-    //   },500);
-    // },
+  beforeRouteEnter (to, from, next) {
+    console.log('beforeRouteEnter /sche', to.fullPath, store.state.backuri);
+    if(to.fullPath=='/schedule' && store.state.backuri=='/schedule') {
+      store.commit('SET_LINE_LOGIN', '');
+      next(vm => {
+        store.commit('SET_ISLOADING', false);
+      });
+    }
   },
-  // beforeRouteEnter (to, from, next) {
-  //   //ページの更新
-  //   console.log('beforeRouteEnter kata-');
-  //   next();
-  // },
   computed: {
     // textState: function (e) {
     //   if (this.count <= 150) {
@@ -314,6 +283,9 @@ export default {
     //     return false;
     //   }
     // },
+    height() {
+      return window.innerHeight;
+    },
     count: function () {
       return 2;
       // return this.$store.state.TweetDialog.message.length;
@@ -363,75 +335,36 @@ export default {
     countMyStudio() {
       return store.state.info.countMyStudio;
     },
-  },
-  beforeRouteEnter (to, from, next) {
-    console.log('beforeRouteEnter /sche', to.fullPath, store.state.backuri);
-    if(to.fullPath=='/schedule') {
-      store.commit('SET_LINE_LOGIN', '');
-      setTimeout(function(){
-          store.commit('SET_ISLOADING', false);
-      }, 4000);
-      next();
-    }
-
-    // let that = this;
-    // next(vm => {
-    //   if(store.state.backuri=='/?mode=stripeCancel') {
-    //     that.$message({
-    //       type: 'error',
-    //       message: 'カード決済をキャンセルしました。',
-    //     });
-    //     store.commit('SET_BACK_URI', '');
-    //   }
-    // })
-
+    userAgent() {
+      return store.state.info.userAgent;
+    },
   },
   created: function () {
-    // this.form.date = this.search.date;
-    // this.form.time = this.search.start;
-    // this.form.studio_name = this.search.studio_name;
-
-    // this.$message({
-    //   type: 'success',
-    //   message: 'スタジオの空き時間を検索しています。検索結果よりご希望の時間をお選びください。',
-    //   duration: 3000
-    // });
-
-    // this.isSafariLogin = localStorage.getItem('isSafariLogin');
-    // 日付初期値
-    // this.form.date = this.$moment().format('YYYY-MM-DD');
-    // this.$nextTick(function() {
-    //   store.commit('SET_ISLOADING', false)
-    // });
-    // store.commit('SET_SELECT_RESOURCES', [])
-
-    // // 日付取得
-    // let _date = this.$moment().format('YYYY-MM-DD');
-    // // クラス受付を取得
-    // let that = this;
-    // store.dispatch('getAgenda',{
-    //   params: {
-    //     from_date: _date,
-    //     time: '09:00',
-    //     resource_id: 563549,
-    //     user_id: that.auth.user_id
-    //   },
-    //   callback: function(res){
-    //     console.log('hi', res)
-    //     // that.items=res.data.slots;
-    //   }
-    // });
-
+    
   },
   mounted() {
-    // var that = this;
-    // setTimeout(function(){
-    // //   // that.$message({
-    // //   //   type: 'warning',
-    // //   //   message: '空き時間を検索して、予約時間を選択し予約してください。',
-    // //   // });
-    // //   store.commit('SET_ISLOADING', false);
-    // },500);
+    console.log('res mounted.');
+    // トップへ
+    this.$vuetify.goTo(0);
+
+    // ログイン済のみ
+    if(store.state.auth.email=='') return;
+
+    store.commit('SET_ISLOADING', true);
+    // クラス受付を取得
+    store.dispatch('getAgenda',{
+      params: {
+        // time: '09:00',
+        resource_id: 563549,
+        // user_id: this.auth.user_id
+      },
+      callback: function(res){
+        console.log('arere', res);
+        if(res=="error") return;
+        store.commit('SET_ISLOADING', false);
+      }
+    });
+
   },
   methods: {
     drawerOpen() {
@@ -567,13 +500,12 @@ export default {
       this.modal_visible=false;
       this.dialog=true;
       this.item = item;
-      console.log(item)
+      // console.log(item)
     },
     payment() { //カード決済
       store.commit('SET_ISLOADING', true)
       
       let url = this.supersass.baseHost;
-      // let url = 'https://localhost:4006';
       let that = this;
  
       // スタジオコード取得
@@ -640,28 +572,19 @@ export default {
 
       store.commit('SET_ISLOADING', true);
 
+      // 検索終了
+      store.commit('SET_IS_SEARCH', false);
+
       let url = this.supersass.baseHost;
-      // let url = 'https://localhost:4006';
       let that = this;
 
       // スタジオコード取得
       let _resource_id = 794201;
       if(that.item.studioName == "ナゴスタジオ") _resource_id = 794202;
 
-      // let params = {
-      //   user_id: that.auth.user_id,
-      //   full_name: that.auth.username,
-      //   start: that.item.start_datetime,
-      //   finish: that.item.finish_datetime,
-      //   resource_id: _resource_id,
-      //   price: that.item.price,
-      //   email: that.auth.email,
-      //   product_name: that.item.product_name,
-      //   amount: that.item.amount,
-      //   description: "PayPay決済",
-      // };
       let params = {
         'schedule_id': that.supersass.resourceId,
+        'api_key': that.supersass.apiKey,
         'user_id': that.auth.user_id,
         'booking[full_name]': that.auth.username,
         'booking[email]': that.auth.email,
@@ -672,14 +595,18 @@ export default {
         'booking[field_2]': that.item.product_name,
         'booking[phone]':that.item.amount,
         'booking[description]': "PayPay決済",
-        'booking[super_field]': '',
       };
+
+      // 金額
+      let _price = Number(that.item.price+that.item.amount);
+      // // 検証用
+      // _price = 3;
 
       store.dispatch('getPayPay', {
         params: {
           merchantPaymentId: '',
           amount: {
-            amount: that.item.price+that.item.amount,
+            amount: _price,
             currency: "JPY"
           },
           codeType: "ORDER_QR",
@@ -688,6 +615,7 @@ export default {
           isAuthorization: false,
           redirectUrl: url+"/?mode=successPayPay",
           redirectType: "WEB_LINK",
+          userAgent: that.userAgent
         },
         callback: function(res){
           console.log(res)
@@ -704,27 +632,6 @@ export default {
           store.commit('PAYPAY_SESSION', session);
           window.location.href = res.url;
 
-          // that.$confirm('<strong class="text-left">PayPay支払を開始してよろしいですか？</strong>', 'PayPayで支払う', {
-          //     dangerouslyUseHTMLString: true,
-          //     confirmButtonText: 'OK',
-          //     type: 'info',
-          //     center: true,
-          //   }).then(() => {
-          //     console.log(res)
-
-          //     // 一旦保持
-          //     Firebase.db().collection("paypay").doc(session_timestamp)
-          //     .set({
-          //       merchantPaymentId: res.merchantPaymentId,
-          //       codeId: res.codeId,
-          //       form: that.form,
-          //       status: 'create'
-          //     });
-          //     window.open(res.url, '_blank');
-          //     store.commit('SET_ISLOADING', false);
-          //   }).catch(() => {
-          // });
-          
         }
       });
 
@@ -742,15 +649,6 @@ export default {
       let _resource_id = 794201;
       if(that.item.studioName == "ナゴスタジオ") _resource_id = 794202;
 
-      // let parms = {
-      //   full_name: that.auth.username,
-      //   start: that.item.start_datetime,
-      //   finish: that.item.finish_datetime,
-      //   resource_id: _resource_id,
-      //   price: that.item.price,
-      //   email: that.auth.email,
-      //   product_name: that.item.use_name+' '+that.item.use_type,
-      // };
       let params = {
         full_name: that.auth.username,
         start: that.item.start_datetime,
@@ -764,7 +662,7 @@ export default {
       }
 
       let credit = that.auth.credit;
-      credit = that.auth.credit - that.item.price;
+      credit = that.auth.credit - that.item.price - that.item.amount;
       const supersass = async function() {
         await store.dispatch('saveUser',{
           params: {
@@ -779,47 +677,37 @@ export default {
               callback: function(res2){
                 // ポイント更新
                 store.commit('UPDATE_USER_CREDIT', credit);
-                // that.isPoint=true;
-                // if(credit<that.item.price) that.isPoint=false;
-                
-                // データ取得
+
+                that.$message({
+                  type: 'success',
+                  message: '予約・ポイント精算を完了しました。',
+                });
+
+                that.dialog=false;
+
+                // データ再取得
+                store.commit('RESET_DATA');
                 setTimeout(function() {
-
-                  that.$message({
-                    type: 'success',
-                    message: '予約・ポイント精算を完了しました。',
-                  });
-
-                  that.dialog=false;
-
-                  // データ再取得
-                  store.dispatch('getUsers', 
-                    function(e){
-
-                      // 初期化
-                      store.commit('RESET_DATA');
-                      // 予約取得
-                      store.dispatch('getBookings',{
-                        callback: function(res){
-                          // 自身の予約
-                          store.dispatch('getAgenda',{
-                            params: {
-                              from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
-                              user_id: that.auth.user_id,
-                              resource_id: params.resource_id,
-                            },
-                            callback: function(res3) {
-                              // 検索終了
-                              store.commit('SET_IS_SEARCH', false);
-                              store.commit('SET_ISLOADING', false);
-                            }
-                          });
+                  store.dispatch('getBookings',{
+                    callback: function(err, res){
+                      // 自身の予約
+                      store.dispatch('getAgenda',{
+                        params: {
+                          // from_date: moment().format('YYYY-MM-DD HH:mm:ss'),
+                          // user_id: that.auth.user_id,
+                          resource_id: 563549,
+                        },
+                        callback: function(res3) {
+                          // 検索終了
+                          store.commit('SET_IS_SEARCH', false);
+                          store.commit('SET_ISLOADING', false);
+                          store.commit('SET_BACK_URI', '/schedule');
+                          that.$router.push('/');
                         }
                       });
-                      
+                    }
                   });
-
-                }, 1000);
+                }, 600);
               }
             });
 
@@ -831,8 +719,7 @@ export default {
         await supersass()
       }
       all();
-      // }).catch(() => {
-      // });
+
     },
   }
 }

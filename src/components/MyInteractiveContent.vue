@@ -109,7 +109,7 @@ export default {
                     // 予約
                     store.commit('SET_EVENTS', []);
                     store.dispatch('getBookings',{
-                      callback: function(res){
+                      callback: function(err, res){
                         store.dispatch('getUsers',function(e){
                           that.$emit('close');
                           store.commit('SET_ISLOADING', false)
